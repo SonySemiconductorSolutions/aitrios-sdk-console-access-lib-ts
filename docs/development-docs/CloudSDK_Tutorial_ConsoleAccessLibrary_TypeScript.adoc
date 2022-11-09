@@ -1,0 +1,82 @@
+= Cloud SDK Console Access Library TypeScript Tutorial
+:organization: Sony
+:encoding: utf-8
+:lang: en
+:sectnums:
+:chapter-label:
+:toc:
+:toclevels: 2
+:toc-title: Table of Contents
+
+== Objective
+To explain the various APIs exposed by Console Access Library and help the user to build and use the library.
+
+== Prerequisites
+The following is the required software you need to install in your system
+
+* vscode
+* Node >=v14.16.0
+* install typescript globally
+** npm install -g typescript
+
+== Usage
+
+=== Installation and Setup
+The following is a step for installing and setting up Console Access Library Sample Application
+
+1. Clone the repository
+    ** https://github.com/SonySemiconductorSolutions/aitrios-sdk-console-access-lib-ts.git
+2. Open terminal and go to the lib path and run the following command
++ 
+```
+    tsc
+    tsc -b
+    npm pack
+```
+
+3. Open terminal and go to the src path and run the following command
++ 
+```
+    npm install
+    tsc -b
+    npm pack
+```
+
+4. Open terminal and go to the samples/demo-console path and run the following command
++ 
+```
+    npm install
+```
+
+=== Set Configuration Parameter to start Console Access Library Sample Application
+
+aitrios-sdk-console-access-lib-ts\samples\demo-console\src\controller\config.ts
+
+----
+DemoConfiguration= {
+    deviceId : '__deviceId__',
+    subDirectoryName : "__subDirectoryName__",
+    numberOfImages: numberOfImages,
+    skip: skip,
+    numberOfInferenceresults: numberOfInferenceresults,
+    filter: "__filter__",
+    raw: raw,
+    time: "__time__",
+    getImagesOrderBy: "__getImagesOrderBy__"
+}
+
+ConsoleAccessSettings= {
+    baseUrl: "__baseUrl__",
+    tokenUrl: "__tokenUrl__",
+    clientSecret: "__clientSecret__",
+    clientId: "__clientId__"
+}
+----
+
+=== Starting the App
+
+To run the CLI demo, open cmd terminal from the root folder, and run the following command.
+
+```
+npx ts-node index.ts
+```

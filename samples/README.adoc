@@ -1,0 +1,13 @@
+== Samples to demonstrate Console Access Library
+
+=== demo-console
+
+It is provides testing interface with console
+
+## Run the demo-console
+
+```
+cd demo-console
+npm install
+npx ts-node index.ts
+```
