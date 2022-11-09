@@ -1,4 +1,4 @@
-= Cloud SDK Console Access Library TypeScript Tutorial
+= pass:[<br/>]Cloud SDK Console Access Library TypeScript Tutorial
 :organization: Sony
 :encoding: utf-8
 :lang: en
