@@ -506,13 +506,7 @@ T.B.D.
 T.B.D.
 
 == 目標性能
-* 品質の目標
-** 単体試験
-*** C0カバレッジ100%
-*** 入力引数の境界値テスト
-** 結合試験
-*** <<#_Functional-Overview ,機能(Functional Overview)>> として定義されている条件について網羅 +
-    確認方法：Postman等外部ツールを使用して送ったConsoleのLow Level SDKのAPIのリクエストの応答値と、Console Access Libraryを使用して送ったリクエストの応答値が一致しているか
+* 無し
 
 == 制限事項
 * 無し
