@@ -12,13 +12,13 @@
     "lintReport": "eslint ./src/**/* -f node_modules/eslint-html-reporter/reporter.js -o newRulereport.html"
   },
   "author": "",
-  "license": "ISC",
   "dependencies": {
     "ajv": "^8.11.0",
     "ajv-errors": "^3.0.0",
     "axios": "^1.1.3",
     "js-client": "file:../lib/js-client/js-client-0.1.0.tgz",
-    "winston": "^3.3.3"
+    "winston": "^3.3.3",
+    "https-proxy-agent": "5.0.1"
   },
   "devDependencies": {
     "@types/node": "^18.6.2",

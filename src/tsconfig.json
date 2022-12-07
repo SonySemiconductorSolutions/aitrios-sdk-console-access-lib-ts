@@ -9,7 +9,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "types": ["node"],
+    "typeRoots": ["node_modules/@types"]
   },
   "esModuleInterop": true
 }

@@ -21,7 +21,6 @@ import ajvErrors from 'ajv-errors';
 import ValidationError from 'ajv/dist/runtime/validation_error';
 import { Config } from '../common/config';
 
-
 const ajv = new Ajv({allErrors: true});
 ajvErrors(ajv);
 
@@ -120,7 +119,13 @@ export class StartUploadInferenceResult {
                 throw validate.errors;
             }
             const accessToken= await this.config.getAccessToken();
-            const apiConfig = new Configuration({ basePath: this.config.baseUrl, accessToken });
+            const baseOptions= await this.config.setOption();
+
+            const apiConfig = new Configuration({
+                basePath: this.config.baseUrl,
+                accessToken,
+                baseOptions
+            });
             this.api = new DeviceCommandApi(apiConfig);
             const res = await this.api.startUploadInferenceResult(deviceId);
             return res;
