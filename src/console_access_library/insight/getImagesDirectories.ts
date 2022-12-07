@@ -117,7 +117,13 @@ export class GetImageDirectories {
                 throw validate.errors;
             }
             const accessToken= await this.config.getAccessToken();
-            const apiConfig = new Configuration({ basePath: this.config.baseUrl, accessToken });
+            const baseOptions= await this.config.setOption();
+
+            const apiConfig = new Configuration({
+                basePath: this.config.baseUrl,
+                accessToken,
+                baseOptions
+            });
             this.api = new InsightApi(apiConfig);
             const res = await this.api.getImageDirectories(deviceId);
             return res;

@@ -21,6 +21,8 @@ import ValidationError from 'ajv/dist/runtime/validation_error';
 import { Configuration } from 'js-client';
 import { ErrorCodes } from './errorCodes';
 import ajvErrors from 'ajv-errors';
+import { HttpsProxyAgent } from "https-proxy-agent"
+import url from "url"
 
 const ajv = new Ajv({allErrors: true});
 ajvErrors(ajv);
@@ -118,9 +120,17 @@ export class Config {
         }
     }
 
-    
     async getAccessToken(){
         try {
+            let httpsAgent
+            if(process.env.https_proxy != null){
+                const proxyHostname = url.parse(process.env.https_proxy).hostname
+                const proxyPort = url.parse(process.env.https_proxy).port
+                const auth = url.parse(process.env.https_proxy).auth
+                
+                httpsAgent = new HttpsProxyAgent({ host: proxyHostname, port: proxyPort, auth: auth });
+            }
+            
             const { data } = await axios.post(
                 this.tokenUrl,
                 {
@@ -133,7 +143,9 @@ export class Config {
                   headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                   },
-                },
+                  httpsAgent: httpsAgent?httpsAgent:null,
+                  proxy: false
+                }
             );
             const { access_token } = data || {};
             return access_token;
@@ -143,5 +155,21 @@ export class Config {
             return "error in get token"+ error.message;
         }
     
+    }
+
+    async setOption(){
+        let baseOptions
+        if(process.env.https_proxy != null){
+            const proxyHostname = url.parse(process.env.https_proxy).hostname
+            const proxyPort = url.parse(process.env.https_proxy).port
+            const auth = url.parse(process.env.https_proxy).auth
+
+            const httpsAgent = new HttpsProxyAgent({ host: proxyHostname, port: proxyPort, auth: auth });
+            baseOptions = {
+                httpsAgent, 
+                proxy: false
+            };
+        }
+        return baseOptions
     }
 }

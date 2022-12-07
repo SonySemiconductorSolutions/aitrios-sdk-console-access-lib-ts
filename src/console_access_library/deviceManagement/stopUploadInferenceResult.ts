@@ -21,7 +21,6 @@ import { DeviceCommandApi, Configuration } from 'js-client';
 import { Config } from '../common/config';
 import { Logger } from '../common/logger';
 
-
 const ajv = new Ajv({allErrors: true});
 ajvErrors(ajv);
 
@@ -119,7 +118,13 @@ export class StopUploadInferenceResult {
                 throw validate.errors;
             }
             const accessToken= await this.config.getAccessToken();
-            const apiConfig = new Configuration({ basePath: this.config.baseUrl, accessToken });
+            const baseOptions= await this.config.setOption();
+
+            const apiConfig = new Configuration({
+                basePath: this.config.baseUrl,
+                accessToken,
+                baseOptions
+            });
             this.api = new DeviceCommandApi(apiConfig);
             const res = await this.api.stopUploadInferenceResult(deviceId);
             return res;
