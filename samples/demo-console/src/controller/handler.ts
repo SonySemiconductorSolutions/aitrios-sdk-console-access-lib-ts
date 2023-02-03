@@ -23,11 +23,9 @@ export class APIHandler{
     }
 
     async handleRequest(data: { apiEnum?: any; apiParams?: any; apiRequestBody?: any; }, callbackListener: { (response: any): void; (arg0: { response: string; }): void; }) {
-        console.log("inside the handle request with data: ", data)
         // for console based demo app all input parameters will pick form config file to execute the apis
        new APIExecutor().excecute().then((rs)=> {
         const responseData= rs;
-        console.log("handledata received response:: ", responseData)
         callbackListener(responseData);
       
         })

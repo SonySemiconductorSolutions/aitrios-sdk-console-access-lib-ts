@@ -1,0 +1,11 @@
+{
+    "E001": {
+        "code": "E001: ",
+        "msg": "%s."
+    },
+
+    "E002": {
+        "code": "E002: ",
+        "msg": "Please check the connection information used to retrieve %s."
+    }
+}

@@ -1,103 +1,136 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import { CommandParameterFileApi, Configuration } from 'js-client';
 import { Config } from '../common/config';
-import { Logger } from '../common/logger';
+import * as Logger from '../common/logger/logger';
+import { ErrorCodes, genericErrorMessage } from '../common/errorCodes';
 
 /**
- * This class provides method to get a commandParameterFile list.
+ * This class implements API to get a commandParameterFile list
  */
 export class GetCommandParameterFile {
-    
     config: Config;
     api: CommandParameterFileApi;
 
+    /**
+     * Constructor Method for the class GetCommandParameterFile
+     * @param config : Object of Config Class
+     */
     constructor(config: Config) {
         this.config = config;
     }
-    
 
     /**
-     * Get a commandParameterFile list.
+     * getCommandParameterFile- Get command parameter file list.
      * @returns
-     * - 'Success Response' : Object with below key and value pairs.
-     *       - 'parameter_list' (object) : List of CommandParameters registered in Console Access Library
+     * - Object: table:: Success Response
+
+            +-------------------+--------------+----------+-------------------------------+
+            |  Level1           | Level2       | Type     |  Description                  |
+            +-------------------+--------------+----------+-------------------------------+
+            |  `parameter_list` |              | `array`  | Parameter file list           |
+            +-------------------+--------------+----------+-------------------------------+
+            |                   | `parameter`  | `string` | The setting value. json       |
+            +-------------------+--------------+----------+-------------------------------+
+            |                   | `filename`   | `string` | File Name                     |
+            +-------------------+--------------+----------+-------------------------------+
+            |                   | `comment`    | `string` | comment                       |
+            +-------------------+--------------+----------+-------------------------------+
+            |                   | `isdefault`  | `string` | True: Default parameter       |
+            |                   |              |          | not False: Default            |
+            +-------------------+--------------+----------+-------------------------------+
+            |                   | `device_ids` | `List`   | List of target devices.       |
+            +-------------------+--------------+----------+-------------------------------+
+            |                   | `ins_id`     | `string` | Set the creator of the setting|
+            +-------------------+--------------+----------+-------------------------------+
+            |                   | `ins_date`   | `string` | Set the date and time that    |
+            |                   |              |          | the setting was created       |
+            +-------------------+--------------+----------+-------------------------------+
+            |                   | `upd_id`     | `string` | Set who updated the settings. |
+            +-------------------+--------------+----------+-------------------------------+
+            |                   | `upd_date`   | `string` | Set the date and time when    |
+            |                   |              |          | the settings were updated     |
+            +-------------------+--------------+----------+-------------------------------+
+
      * - 'Generic Error Response' :
-     *       If the http_status returned from the Low Level SDK
-     *       API is other than 200. Dictionary with below key and value pairs.
-     *       - 'message' (str) : error message returned from the Low Level SDK API
-     *       - 'error_code' (str) : "Generic Error"
+     *   If Any generic error returned from the Low Level SDK.
+     *   Object with below key and value pairs.
+     *      - 'result' (str) : "ERROR"
+     *      - 'message' (str) : error message returned from the Low Level SDK API
+     *      - 'code' (str) : "Generic Error"
+     *      - 'datetime' (str) : Time
+     * 
      * - 'Validation Error Response' :
-     *   If incorrect API input parameters. Dictionary with below key and value pairs.
-     *   - 'message' (str) : validation error message for respective input parameter
-     *   - 'error_code' (str) : "E001"
-     * - 'Key Error Response' :
-     *   If API key error returned from the Low Level SDK API.
-     *   Dictionary with below key and value pairs.
-     *   - 'message' (str) : error message returned from the Low Level SDK API
-     *   - 'error_code' (str) : "Key Error"
-     * - 'Type Error Response' :
-     *   If API type error returned from the Low Level SDK API.
-     *   Dictionary with below key and value pairs.
-     *   - 'message' (str) : error message returned from the Low Level SDK API
-     *   - 'error_code' (str) : "Type Error"
-     * - 'Attribute Error Response' :
-     *   If API attribute error returned from the Low Level SDK API.
-     *   Dictionary with below key and value pairs.
-     *   - 'message' (str) : error message returned from the Low Level SDK API
-     *   - 'error_code' (str) : "Attribute Error"
-     * - 'Value Error Response' :
-     *   If API value error returned from the Low Level SDK API.
-     *   Dictionary with below key and value pairs.
-     *   - 'message' (str) : error message returned from the Low Level SDK API
-     *   - 'error_code' (str) : "Value Error"
+     *   If incorrect API input parameters OR \
+     *   if any input string parameter found empty.
+     *   Then, Object with below key and value pairs.
+     *      - 'result' (str) : "ERROR"
+     *      - 'message' (str) : validation error message for respective input parameter
+     *      - 'code' (str) : "E001"
+     *      - 'datetime' (str) : Time
+     * 
+     * - 'HTTP Error Response' :
+     *   If the API http_status returned from the Console Server
+     *   is other than 200. Object with below key and value pairs.
+     *      - 'result' (str) : "ERROR"
+     *      - 'message' (str) : error message returned from the Console server.
+     *      - 'code' (str) : error code received from the Console server.
+     *      - 'datetime' (str) : Time
      *
      * @example
      * Below is the example of result format.
      * .. code-block:: typescript
-     *    import  { Client } from 'consoleaccesslibrary';
-     *      const configuration = {
-     *          baseUrl: "__base_url__"
-     *        	tokenUrl: "__token_url__"
-     *          clientSecret: '__client_secret__'
-     *          clientId: '__client_id__'
-     *      }
+     *    import { Client, Config } from 'consoleaccesslibrary'
+     * 
+     *    const consoleEndpoint: "__consoleEndpoint__";
+     *    const portalAuthorizationEndpoint: "__portalAuthorizationEndpoint__";
+     *    const clientId: '__clientId__';
+     *    const clientSecret: '__clientSecret__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
      *  
-     *      const client = await Client.createInstance(configuration);
-     *      const response= await client.deviceManagement.getCommandParameterFile();
+     *    const client = await Client.createInstance(config);
+     *    const response= await client.deviceManagement.getCommandParameterFile();
      *
-    */
-    async getCommandParameterFile(){
+     */
+    async getCommandParameterFile() {
         Logger.info('getCommandParameterFile');
         try {
             const accessToken= await this.config.getAccessToken();
             const baseOptions= await this.config.setOption();
 
             const apiConfig = new Configuration({
-                basePath: this.config.baseUrl,
+                basePath: this.config.consoleEndpoint,
                 accessToken,
                 baseOptions
             });
             this.api = new CommandParameterFileApi(apiConfig);
             const res = await this.api.getCommandParameter();
             return res;
-        }
-        catch(error){
-           return error; 
+        } catch (error) {
+            if (error.response) {
+                /*
+                 * The request was made and the server responded with a
+                 * status code that falls out of the range of 2xx
+                 */
+                Logger.error(`${JSON.stringify(error.response.data)}`);
+                return error.response.data;
+            }
+            Logger.error(`${ErrorCodes.GENERIC_ERROR}: ${error.message}`);
+            return genericErrorMessage(error.message);
         }
     }
 }
