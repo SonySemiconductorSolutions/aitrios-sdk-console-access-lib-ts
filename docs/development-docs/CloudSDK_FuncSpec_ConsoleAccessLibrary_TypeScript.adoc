@@ -174,6 +174,7 @@ API without a timeout parameter will not timeout
 
 |DEBUG
 |Use when outputting detailed debugging information, such as how the Console Access Library is working
+
 |OFF
 |Turn off all logging
 |===
@@ -350,6 +351,7 @@ If not specified, read from environment variable
 +
 |===
 |Return value|Meaning
+
 |Client instance
 |Client that can execute API wrapped around Low Level SDK API, and functional complex API (High Level API) instance
 |===
@@ -880,8 +882,7 @@ If not specified, no notification by the callback function
 
 |appName
 |Name of the DeviceApp
-|The maximum character limit is "appName + 
-versionNumber <=31" +
+|The maximum character limit is "appName + versionNumber <=31" +
 Forbidden characters except for the following +
 ・Alphanumeric characters +
 ・Underbar +
@@ -889,8 +890,7 @@ Forbidden characters except for the following +
 
 |versionNumber
 |DeviceApp version
-|The maximum character limit is "appName + 
-versionNumber <=31" +
+|The maximum character limit is "appName + versionNumber <=31" +
 Forbidden characters except for the following +
 ・Alphanumeric characters +
 ・Underbar +
