@@ -1,5 +1,9 @@
 node_modules
 dist
-.eslintignore
-.prettierrc
-.eslintrc
+.vscode
+__pycache__
+tests/unit/reports/
+*.log
+tests/unit/*.log
+samples/demo-console/console_access_settings.yaml
+src/newRulereport.html

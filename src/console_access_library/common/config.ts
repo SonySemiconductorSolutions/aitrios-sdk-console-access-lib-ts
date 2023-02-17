@@ -1,175 +1,282 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable eqeqeq */
+/* eslint-disable no-unused-vars */
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import axios from 'axios';
-import Ajv from "ajv";
-import { Logger } from './logger';
-import ValidationError from 'ajv/dist/runtime/validation_error';
+import Ajv from 'ajv';
+import * as Logger from './logger/logger';
 import { Configuration } from 'js-client';
-import { ErrorCodes } from './errorCodes';
 import ajvErrors from 'ajv-errors';
-import { HttpsProxyAgent } from "https-proxy-agent"
-import url from "url"
+import { ErrorCodes } from '../common/errorCodes';
+import jwt_decode, { JwtPayload } from 'jwt-decode';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import url from 'url';
 
-const ajv = new Ajv({allErrors: true});
+const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
 
-export interface SettingFileSchema {
-    baseUrl: string;
-    tokenUrl: string;
-    clientSecret: string;
-    clientId: string;
+/**
+ * Access Token Validation Status Enum Value
+ */
+enum TokenValidationEnum {
+    VALID_TOKEN = '00',
+    TOKEN_EXPIRED = '01',
+    INVALID_TOKEN = '02',
 }
 
 export class Config {
-    baseUrl: string;
+    consoleEndpoint: string;
     configuration: Configuration;
-    tokenUrl: string;
+    portalAuthorizationEndpoint: string;
     clientSecret: string;
     clientId: string;
-    settingsFilePath: any;
-    constructor(settingsFilePath:any){
-        this.baseUrl = '';
+    saveLastAccessToken: string;
+
+    /**
+     * Constructor Method for the class Config
+     *  @params
+     * - 'consoleEndpoint' (str, optional): Console access URL. \
+     *      If not specified, read from environment variables.
+     * - 'portalAuthorizationEndpoint' (str, optional): Access token issuance URL \
+     *      required for console access.
+     *       If not specified, read from environment variables.
+     * - 'clientId' (str, optional): Client ID required to issue an access token. \
+     *       If not specified, read from environment variables.
+     * - 'clientSecret' (str, optional): Client Secret required to issue an access token. \
+     *       If not specified, read from environment variables.
+     */
+    constructor(
+        consoleEndpoint: string,
+        portalAuthorizationEndpoint: string,
+        clientId: string,
+        clientSecret: string
+    ) {
+        this.consoleEndpoint = consoleEndpoint;
+        this.portalAuthorizationEndpoint = portalAuthorizationEndpoint;
+        this.clientSecret = clientSecret;
+        this.clientId = clientId;
+        //Check if console access settings data is null or blank then read from evnironment varriable
+        if (!consoleEndpoint) {
+            this.consoleEndpoint = process.env.CONSOLE_ENDPOINT;
+        }
+        if (!portalAuthorizationEndpoint) {
+            this.portalAuthorizationEndpoint =
+                process.env.PORTAL_AUTHORIZATION_ENDPOINT;
+        }
+        if (!clientSecret) {
+            this.clientSecret = process.env.CLIENT_SECRET;
+        }
+        if (!clientId) {
+            this.clientId = process.env.CLIENT_ID;
+        }
+
+        const validate = ajv.compile(this.schema);
+        this.saveLastAccessToken = undefined;
+        const valid = validate({
+            consoleEndpoint: this.consoleEndpoint,
+            portalAuthorizationEndpoint: this.portalAuthorizationEndpoint,
+            clientId: this.clientId,
+            clientSecret: this.clientSecret,
+        });
+
+        if (!valid) {
+            Logger.error(JSON.stringify(validate.errors));
+            throw validate.errors;
+        }
+
         this.configuration = new Configuration();
-        this.tokenUrl = '';
-        this.clientSecret = '';
-        this.clientId = '';
-        this.settingsFilePath = settingsFilePath;
+        this.configuration.basePath = this.consoleEndpoint;
     }
 
     schema = {
-        type: "object",
+        type: 'object',
         properties: {
-            baseUrl: {
-                type: "string",
+            consoleEndpoint: {
+                type: 'string',
                 nullable: true,
                 errorMessage: {
-                    type: 'Invalid string for baseUrl',
-                }
+                    type: 'Invalid string for consoleEndpoint',
+                },
             },
-            tokenUrl: {
-                type: "string",
+            portalAuthorizationEndpoint: {
+                type: 'string',
                 nullable: true,
                 errorMessage: {
-                    type: 'Invalid string for tokenUrl',
-                }
+                    type: 'Invalid string for portalAuthorizationEndpoint',
+                },
             },
             clientSecret: {
-                type: "string",
+                type: 'string',
                 nullable: true,
                 errorMessage: {
                     type: 'Invalid string for clientSecret',
-                }
+                },
             },
             clientId: {
-                type: "string",
+                type: 'string',
                 nullable: true,
                 errorMessage: {
                     type: 'Invalid string for clientId',
-                }
-            }
+                },
+            },
         },
-        required: ['baseUrl', 'tokenUrl', 'clientSecret', 'clientId'],
+        required: [
+            'consoleEndpoint',
+            'portalAuthorizationEndpoint',
+            'clientSecret',
+        ],
         additionalProperties: false,
         errorMessage: {
             required: {
-                baseUrl: 'baseUrl is required',
-                tokenUrl: 'tokenUrl is required',
+                consoleEndpoint: 'consoleEndpoint is required',
+                portalAuthorizationEndpoint:
+                    'portalAuthorizationEndpoint is required',
                 clientSecret: 'clientSecret is required',
-                clientId: 'clientId is required'
-            }
-        }
+                clientId: 'clientId is required',
+            },
+        },
     };
 
-    async readSettingsFile() {
+    /**
+     *
+     * Get Access Token from Token Server needed for API.
+     * @returns
+     * - 'On Success Response' :
+     *        access_token_str
+     * - 'On Error Response' :
+     *        Throw exception on event of error occur
+     */
+    async generateAccessToken() {
         try {
-            const data:SettingFileSchema = this.settingsFilePath;
-            const validate = ajv.compile(this.schema);
-            const valid = validate(data);
-            if (!valid){
-                Logger.error(validate.errors);
-                throw validate.errors;
-            }
-            this.baseUrl = data['baseUrl'];
-            this.tokenUrl = data['tokenUrl'];
-            this.clientSecret = data['clientSecret'];
-            this.clientId = data['clientId'];
-            this.configuration.basePath = this.baseUrl;
-            return ErrorCodes.SUCCESS; 
-        }
-        catch(error){
-            if(error instanceof ValidationError){
-                Logger.error(error.message);
-                Logger.error("Configuration not loaded!!")
-                return ErrorCodes.GENERIC_ERROR;
-            }
-            return error;
-        }
-    }
+            let httpsAgent;
+            const proxy = this.getProxyEnv();
+            if (proxy != null) {
+                const proxyHostname = url.parse(proxy).hostname;
+                const proxyPort = url.parse(proxy).port;
+                const auth = url.parse(proxy).auth;
 
-    async getAccessToken(){
-        try {
-            let httpsAgent
-            if(process.env.https_proxy != null){
-                const proxyHostname = url.parse(process.env.https_proxy).hostname
-                const proxyPort = url.parse(process.env.https_proxy).port
-                const auth = url.parse(process.env.https_proxy).auth
-                
-                httpsAgent = new HttpsProxyAgent({ host: proxyHostname, port: proxyPort, auth: auth });
+                httpsAgent = new HttpsProxyAgent({
+                    host: proxyHostname,
+                    port: proxyPort,
+                    auth: auth,
+                });
             }
-            
             const { data } = await axios.post(
-                this.tokenUrl,
+                this.portalAuthorizationEndpoint,
                 {
-                    grant_type: "client_credentials",
+                    grant_type: 'client_credentials',
                     client_secret: this.clientSecret,
-                    scope: "system",
+                    scope: 'system',
                     client_id: this.clientId,
                 },
                 {
-                  headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                  },
-                  httpsAgent: httpsAgent?httpsAgent:null,
-                  proxy: false
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    httpsAgent: httpsAgent ? httpsAgent : null,
+                    proxy: false,
                 }
             );
             const { access_token } = data || {};
             return access_token;
+        } catch (error) {
+            Logger.error(`${ErrorCodes.GENERIC_ERROR}: ${error.message}`);
+            throw error;
         }
-        catch(error){
-            Logger.error(error.message);
-            return "error in get token"+ error.message;
-        }
-    
     }
 
-    async setOption(){
-        let baseOptions
-        if(process.env.https_proxy != null){
-            const proxyHostname = url.parse(process.env.https_proxy).hostname
-            const proxyPort = url.parse(process.env.https_proxy).port
-            const auth = url.parse(process.env.https_proxy).auth
+    /**
+     * Function to Validate Access Token
+     * @params
+     * - accessToken (str, required):  Access Token for Authentication
+     * @returns
+     * - "00" for Valid Token
+     * - "01" for Token expired
+     * - "02" for Invalid token.
+     */
 
-            const httpsAgent = new HttpsProxyAgent({ host: proxyHostname, port: proxyPort, auth: auth });
+    validateAccessToken(accessToken: string) {
+        try {
+            const decoded: JwtPayload = jwt_decode<JwtPayload>(accessToken);
+            const exp = decoded.exp;
+            const currenctTime = Math.round(new Date().getTime()) / 1000;
+            const remainingTokenLife = exp - currenctTime;
+            if (remainingTokenLife <= 180) {
+                //Logger.debug("Less than 3 mins for Token Expiry or Token Already expired");
+                return TokenValidationEnum.TOKEN_EXPIRED;
+            }
+            return TokenValidationEnum.VALID_TOKEN;
+        } catch (e) {
+            return TokenValidationEnum.INVALID_TOKEN;
+        }
+    }
+
+    /**
+     * Check if access token is available or not, and check its validity.
+     * @returns
+     * - 'On Success Response' :
+     *        access_token_str
+     * - 'On Error Response' :
+     *        Throw exception on event of error occur
+     **/
+    async getAccessToken() {
+        const validationCode = this.validateAccessToken(
+            this.saveLastAccessToken
+        );
+
+        // If the Access token variable has a token, check the validity of the token,
+        // if expired or invalid token found generate new access token
+
+        if (validationCode != TokenValidationEnum.VALID_TOKEN) {
+            this.saveLastAccessToken = await this.generateAccessToken();
+        }
+
+        //  Return the access token stored the Access token variable
+        return this.saveLastAccessToken;
+    }
+
+    async setOption() {
+        let baseOptions;
+        const proxy = this.getProxyEnv();
+        if (proxy != null) {
+            const proxyHostname = url.parse(proxy).hostname;
+            const proxyPort = url.parse(proxy).port;
+            const auth = url.parse(proxy).auth;
+
+            const httpsAgent = new HttpsProxyAgent({
+                host: proxyHostname,
+                port: proxyPort,
+                auth: auth,
+            });
             baseOptions = {
-                httpsAgent, 
-                proxy: false
+                httpsAgent,
+                proxy: false,
             };
         }
-        return baseOptions
+        return baseOptions;
+    }
+    getProxyEnv() {
+        const envKeys = ['https_proxy', 'HTTPS_PROXY'];
+        for (const key of envKeys) {
+            const val = process.env[key];
+            if (val) {
+                return val;
+            }
+        }
     }
 }

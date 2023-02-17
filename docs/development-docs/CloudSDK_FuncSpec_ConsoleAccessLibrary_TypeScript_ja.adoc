@@ -1,39 +1,45 @@
 = Cloud SDK pass:[<br/>] Console Access Library pass:[<br/>] TypeScript版 pass:[<br/>] 機能仕様書 pass:[<br/>]
-:title-page-background-image: image:../../../images/Trademark.png[fit=none,pdfwidth=50%,position=bottom center]
 :sectnums:
-:sectnumlevels: 4
-:chapter-label:
-:author: Copyright 2022 Sony Semiconductor Solutions Corporation
-:revdate: 2022 - xx - xx
-:revnumber: 0.0.x
+:sectnumlevels: 1
+:author: Copyright 2023 Sony Semiconductor Solutions Corporation
+:version-label: Version 
+:revnumber: x.x.x
+:revdate: YYYY - MM - DD
+:trademark-desc: AITRIOS™、およびそのロゴは、ソニーグループ株式会社またはその関連会社の登録商標または商標です。
 :toc:
 :toc-title: 目次
-:toclevels: 4
+:toclevels: 1
 :chapter-label:
-:document-title-header:
 :lang: ja
 
 == 更新履歴
 
 |===
-|Date |What/Why
+|Date |What/Why 
 
 |2022/11/16
 |初版作成
+
+|2023/1/30
+|version 0.2.0 修正対応 +
+表現統一 +
+PDFビルド環境更新
+
+
 
 |===
 
 == はじめに
 
-* 本書は、Consoleへのアクセスを提供するConsole Access Libraryについての機能仕様である
-機能開発言語には、Python/TypeScriptを使用する
+* 本書は、Consoleへのアクセスを提供するConsole Access Libraryについての機能仕様である。 + 
+機能開発言語には、TypeScriptを使用する。
 
 == 用語・略語
 |===
 |Terms/Abbreviations |Meaning 
 
 |Console for AITRIOS
-|エッジからクラウドを含めたソリューションを効率的に導入するための各種機能（デプロイメント機能、リトレーニング機能、デバイスマネジメント機能など）を提供するクラウドサービス +
+|エッジからクラウドを含めたソリューションを効率的に導入するための各種機能（デプロイメント機能、リトレーニング機能、エッジAIデバイスマネジメント機能など）を提供するクラウドサービス +
 以降、本文中ではConsoleと記載する
 
 |Low Level SDK
@@ -42,22 +48,30 @@
 |Cloud App
 |Console Access Libraryを使用するアプリケーション
 
-|===
+|SAS
+|Shared Access Signatures +
+Azure Storage リソースへの制限付きアクセス権を付与する URI
 
-== 参照資料
-* 無し
+|===
 
 == 想定ユースケース
 * Console Access Libraryを使用して、下記を実施する
 ** エッジAIデバイスの情報を取得
 ** エッジAIデバイスに推論開始（推論結果アップロード開始）、推論停止（推論結果アップロード停止）
 ** エッジAIデバイスの出力結果（画像、推論結果）の取得
+** ユーザーが自分で作成したAI ModelをConsoleにアップロード
+*** アップロードしたAI Modelの確認と削除
+** AI ModelをエッジAIデバイスにデプロイ可能な形式に変換
+** AI ModelをエッジAIデバイスにデプロイ
+** ユーザーが自分で作成したDeviceAppをConsoleにアップロード
+*** アップロードしたDeviceAppの確認と削除
+** DeviceAppをエッジAIデバイスにデプロイ
 
 == 機能概要、アルゴリズム
 [#_Functional-Overview]
 === Functional Overview
 * Consoleにアクセス可能なClientを生成する
-** Consoleアクセスに必要な設定ファイルを作成し、設定ファイルをClientに設定する
+** Consoleアクセスに必要な情報をConfigに設定し、ConfigをClientに設定する
 +
 Consoleアクセスに必要な情報は下記である
 +
@@ -85,15 +99,53 @@ Consoleアクセスに必要な情報は下記である
 機能毎の分類は、Consoleが提供するLow Level SDKのAPIの分類に従います。 +
 Consoleアクセスに必要なアクセストークンの取得と更新をします。（Wrap）
 ====
-** Device Management
-*** get_devices / エッジAIデバイスの情報一覧取得
-*** start_upload_inference_result / 推論結果メタデータ取得開始
-*** stop_upload_inference_result / 推論結果メタデータ取得停止
-*** get_command_parameter_file / Consoleに登録されたCommandParameterFileの一覧取得
++
+[TIP]
+====
+APIにtimeoutの引数がない場合にはtimeoutしない。
+====
+** DeviceManagement
+*** getDevices / エッジAIデバイスの情報一覧取得
+*** startUploadInferenceResult / 推論結果メタデータ取得開始
+*** stopUploadInferenceResult / 推論結果メタデータ取得停止
+*** getCommandParameterFile / Consoleに登録されたcommand parameter fileの一覧取得
+** AI Model
+*** importBaseModel / ベースモデルのインポート
+*** getModels / モデル情報一覧取得
+*** getBaseModelStatus / ベースモデル情報取得
+*** deleteModel / モデル削除
+*** publishModel / モデル発行
+** Deployment
+*** importDeviceApp / DeviceAppインポート
+*** getDeviceApps / DeviceApp情報一覧取得
+*** deleteDeviceApp / DeviceApp削除
+*** getDeployConfigurations / デプロイconfig情報一覧取得
+*** createDeployConfiguration / デプロイconfig情報登録
+*** deployByConfiguration / デプロイ
+*** getDeployHistory / デプロイ履歴取得
+*** deleteDeployConfiguration / デプロイconfig情報削除
+*** cancelDeployment / デプロイ状態強制キャンセル
+*** deployDeviceApp / DeviceAppデプロイ
+*** undeployDeviceApp / DeviceAppアンデプロイ
+*** getDeviceAppDeploys / DeviceAppデプロイ履歴取得
 ** Insight
-*** get_image_directories / 画像保存ディレクトリ一覧取得
-*** get_images / 保存済画像取得
-*** get_inferenceresults / 保存済推論結果メタデータ一覧取得
+*** getImageDirectories / 画像保存ディレクトリ一覧取得
+*** getImages / 保存済み画像取得
+*** getInferenceResults / 保存済み推論結果メタデータ一覧取得
+*** exportImages / 保存済み画像エクスポート
+
+* Low Level SDKのAPIをユースケースでまとめたHigh Level APIを実行することができます。
+** AI Model
+*** publishModelWaitResponse / モデル発行し、完了待ち
+** Deployment
+*** deployByConfigurationWaitResponse / デプロイし、完了待ち
+*** deployDeviceAppWaitResponse / DeviceAppデプロイし、完了待ち
+** Insight
+*** getImageData / 保存済み画像取得
+**** getImagesは、最大256件取得のため、本APIはgetImagesを複数回呼び出し、制限を隠蔽
+*** getLastInferenceData / 保存済み推論結果の最新データ取得
+*** getLastInferenceAndImageData / 保存済み推論結果と画像の最新データ取得
+**** Dateの最も新しい画像を取得し、画像に紐づく推論結果を探して返却
 
 * Console Access Libraryの実行時、コンソールにログの出力を行う
 ** ログフォーマットは下記の通りに定義する
@@ -133,61 +185,104 @@ Consoleアクセスに必要なアクセストークンの取得と更新をし�
 +
 [%header]
 |===
-|Pythonでの指定例
+|TypeScriptでの指定例
 a|
-[source,python]
+[source,TypeScript]
 ----
-import console_access_library
+import { Logger } from 'consoleaccesslibrary';
 
 # Set the desired logging level
-console_access_library.set_logger(level=logging.WARNING)
+Logger.setLogLevel("warning")
 ----
 |===
 
 * Console Access Libraryの実行時、エラー条件の確認を行う
-** 以下の条件でエラーと判断する
+** 下記の条件でエラーと判断する
 *** APIの入力パラメータが不適
 *** APIの入力パラメータは適切だが、 Console Low Level SDKからの応答が期待通りではない(Timeout/Errorなど)
 *** Consoleに正常に接続できない(認証エラー、URL誤り、など)
 
 === Algorithm
 * Console Access Library使用開始
-. Cloud AppでConsoleアクセスに必要な設定ファイルを作成
+. Cloud AppでConfigを作成
 +
 . Cloud AppからのClientを作成
 +
-Client生成時には、設定ファイルの読み込み、アクセストークンの取得、Low Level SDKの生成
-. Client instanceからLow Level SDKのAPIをWrapしたAPIを利用
+Client生成時には、アクセストークンの取得、Low Level SDKの生成
+. Client instanceからLow Level SDKのAPIをWrapしたAPI、機能複合したAPI（High Level API）を利用
 +
 Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なアクセストークンの取得、更新
++
+- アクセストークンの有効期限は1時間となっており、有効期限が残り180秒以下の場合、アクセストークンの更新
 
 * 推論結果メタデータ取得開始 - 停止
-. get_devices APIで、デバイスのIDを確認
-. start_upload_inference_result APIで推論結果メタデータ取得開始
+. getDevices APIで、デバイスのIDを確認
+. startUploadInferenceResult APIで推論結果メタデータ取得開始
 . InsightのAPIを使用して、推論結果、画像の取得
-. stop_upload_inference_result APIで推論結果メタデータ取得停止
+. stopUploadInferenceResult APIで推論結果メタデータ取得停止
 
 
 === Under what condition
 * ConsoleのAPIへのアクセスはLow Level SDKを使用すること
 
 === API
+* Config
+** constructor(consoleEndpoint: string, portalAuthorizationEndpoint: string, clientId: string, clientSecret: string)
 
 * Client
-** constructor(setting_file)
-** get_device_management()
-** get_insight()
+** constructor(configuration: Config)
+** deviceManagement()
+** aiModel()
+** deployment()
+** insight()
 
 * DeviceManagement
-** get_devices(device_id: str, device_name: str, connection_state: str, device_group_id: str)
-** start_upload_inference_result(device_id: str)
-** stop_upload_inference_result(device_id: str)
-** get_command_parameter_file()
+** getDevices(deviceId?: string, deviceName?: string, connectionState?: string, deviceGroupId?: string)
+** startUploadInferenceResult(deviceId: string)
+** stopUploadInferenceResult(deviceId: string)
+** getCommandParameterFile()
+
+* AI Model
+** importBaseModel(modelId: string, model: string, converted?: boolean, vendorName?: string, comment?: string, inputFormatParam?: string, networkConfig?: string, networkType?: string, labels?: Array<string>)
+** getModels(modelId?: string, comment?: string, projectName?: string, modelPlatform?: string, projectType?: string, deviceId?: string, latestType?: string)
+** getBaseModelStatus(modelId: string, latestType?: string)
+** deleteModel(modelId: string)
+** publishModel(modelId: string, deviceId?: string)
+
+* AI Model High Level API
+** publishModelWaitResponse(modelId: string, deviceId?: string, callback?: publishModelWaitResponseCallback)
+*** publishModelWaitResponseCallback(status: string)
+
+* Deployment
+** importDeviceApp(compiledFlg: string, appName: string, versionNumber: string, fileName: string, fileContent: string, entryPoint?: string, comment?: string)
+** getDeviceApps()
+** deleteDeviceApp(appName: string, versionNumber: string)
+** getDeployConfigurations()
+** createDeployConfiguration(configId: string, comment?: string, sensorLoaderVersionNumber?: string, sensorVersionNumber?: string, modelId?: string, modelVersionNumber?: string, apFwVersionNumber?: string)
+** deployByConfiguration(configId: string, deviceIds: string, replaceModelId?: string, comment?: string)
+** getDeployHistory(deviceId: string)
+** deleteDeployConfiguration(configId: string)
+** cancelDeployment(deviceId: string, deployId: number)
+** deployDeviceApp(appName: string, versionNumber: string, deviceIds: string, deployParameter?: string, comment?: string)
+** undeployDeviceApp(deviceIds: string)
+** getDeviceAppDeploys(appName: string, versionNumber: string)
+
+* Deployment High Level API
+** deployByConfigurationWaitResponse(configId: string, deviceIds: string, replaceModelId?: string, comment?: string, timeout?: number, callback?: deployByConfigurationWaitResponseCallback)
+*** deployByConfigurationWaitResponseCallback(deviceStatusArray: object)
+** deployDeviceAppWaitResponse(appName: string, versionNumber: string, deviceIds: string, deployParameter?: string, comment?: string, callback?: deployDeviceAppWaitResponseCallback)
+*** deployDeviceAppWaitResponseCallback(deviceStatusArray: object)
 
 * Insight
-** get_image_directories(device_id: str)
-** get_images(device_id: str, sub_directory_name: str, number_of_images: int, skip: int, order_by: str)
-** get_inference_results(device_id: str, filter: str, number_of_inference_results: int, raw: int, time: str)
+** getImageDirectories(deviceId?: string)
+** getImages(deviceId: string, subDirectoryName: string, numberOfImages?: number, skip?: number, orderBy?: string)
+** getInferenceResults(deviceId: string, filter?: string, numberOfInferenceResults?: number, raw?: number, time?: string)
+** exportImages(key: string, fromDatetime?: string, toDatetime?: string, deviceId?: string, fileFormat?: string)
+
+* Insight High Level API
+** getImageData(deviceId: string, subDirectoryName: string, numberOfImages?: number, skip?: number, orderBy?: string)
+** getLastInferenceData(deviceId: string)
+** getLastInferenceAndImageData(deviceId: string, subDirectoryName: string)
 
 === Others Exclusive conditions / specifications
 * command parameter fileをエッジAIデバイスに適用済みであること
@@ -196,24 +291,59 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 * なし
 
 == 各BlockでのAPIパラメータ
-各エラーメッセージは、関数名が言語によって異なる（この資料では代表してPythonでのエラーメッセージを記載）
+各エラーメッセージは、関数名が言語によって異なる（この資料では代表してTypeScriptでのエラーメッセージを記載）
 
-* Client
+* Config
 ** constructor: コンストラクタ
 +
-【Error：設定ファイル読み込みにてErrorが発生した場合】Errorを発生させる
+【Error：consoleEndpointが空の場合】E001 : consoleEndpoint is required.
 +
-【Error：アクセストークン取得にてErrorが発生した場合】Errorを発生させる
+【Error：portalAuthorizationEndpointが空の場合】E001 : portalAuthorizationEndpoint is required.
 +
-【Error：Low Level SDKにてErrorが発生した場合】Errorを発生させる
+【Error：clientIdが空の場合】E001 : clientId is required.
 +
-【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Errorを発生させる
+【Error：clientSecretが空の場合】E001 : clientSecret is required.
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
 
-|setting_file
-|Consoleアクセスに必要な情報を記述した設定ファイルへのパス
+|consoleEndpoint
+|Consoleのアクセス先URL
+|なし +
+指定なしの場合、環境変数から読み出す
+
+|portalAuthorizationEndpoint
+|Consoleアクセスに必要なアクセストークン発行先URL
+|なし +
+指定なしの場合、環境変数から読み出す
+
+|clientId
+|アクセストークン発行に必要なClient ID
+|なし +
+指定なしの場合、環境変数から読み出す
+
+|clientSecret
+|アクセストークン発行に必要なClient Secret
+|なし +
+指定なしの場合、環境変数から読み出す
+
+|===
++
+|===
+|Return value|Meaning
+
+|Config instance
+|Consoleアクセスに必要な情報を保持したconfig instance
+|===
+
+* Client
+** constructor: コンストラクタ
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|configuration
+|Consoleアクセスに必要な情報を保持したconfig instance
 |なし
 
 |===
@@ -222,13 +352,17 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 |Return value|Meaning
 
 |Client instance
-|Low Level SDKのAPIをWrapしたAPIを実行可能なclient instance
+|Low Level SDKのAPIをWrapしたAPI、機能複合したAPI（High Level API）を実行可能なclient instance
 |===
 
-** get_device_management: DeviceManagement APIを提供するInstanceの取得
+** deviceManagement: DeviceManagement APIを提供するInstanceの取得
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
+
+|-
+|-
+|-
 
 |===
 +
@@ -239,10 +373,50 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 |DeviceManagement APIを提供するInstance
 |===
 
-** get_insight: Insight APIを提供するInstanceの取得
+** aiModel: AI Model APIを提供するInstanceの取得
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
+
+|-
+|-
+|-
+
+|===
++
+|===
+|Return value|Meaning
+
+|AI Model instance
+|AI Model APIを提供するInstance
+|===
+
+** deployment: Deployment APIを提供するInstanceの取得
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|-
+|-
+|-
+
+|===
++
+|===
+|Return value|Meaning
+
+|Deployment instance
+|Deployment APIを提供するInstance
+|===
+
+** insight: Insight APIを提供するInstanceの取得
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|-
+|-
+|-
 
 |===
 +
@@ -254,63 +428,60 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 |===
 
 * DeviceManagement
-** get_devices: Deviceの情報取得
+** getDevices: エッジAIデバイスの情報一覧取得
 +
-【Error：Low Level SDKにてErrorが発生した場合】Errorを発生させる
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
 +
-【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Errorを発生させる
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
 
-|device_id
+|deviceId
 |エッジAIデバイスのID
 |部分検索、大文字小文字は区別しない +
-指定なしの場合、全device_id検索
+指定なしの場合、全deviceId検索
 
-|device_name
+|deviceName
 |エッジAIデバイスの名前
 |部分検索、大文字小文字は区別しない +
-指定なしの場合、全device_name検索
+指定なしの場合、全deviceName検索
 
-|connection_state
+|connectionState
 |接続状態
 |接続状態の場合: Connected +
 切断状態の場合: Disconnected +
 完全一致検索、大文字小文字は区別しない +
-指定なしの場合、全connection_state検索
+指定なしの場合、全connectionState検索
 
-|device_group_id
+|deviceGroupId
 |エッジAIデバイスの所属グループ
 |完全一致検索、大文字小文字は区別しない +
-指定なしの場合、全device_group_id検索
+指定なしの場合、全deviceGroupId検索
 
 |===
 +
 |===
 |Return value|Meaning
 
-|result
-|実行結果
-
 |Device information
 |エッジAIデバイスの情報
 |===
 
-** start_upload_inference_result: 推論結果メタデータ取得開始
+** startUploadInferenceResult: 推論結果メタデータ取得開始
 +
-【Error：device_idが空の場合】E001 : device_id is required.
+【Error：deviceIdが空の場合】E001 : deviceId is required.
 +
-【Error：Low Level SDKにてErrorが発生した場合】Errorを発生させる
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
 +
-【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Errorを発生させる
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
 
-|device_id
+|deviceId
 |エッジAIデバイスのID
-|なし
+|大文字小文字を区別する
 
 |===
 +
@@ -325,20 +496,20 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 
 |===
 
-** stop_upload_inference_result: 推論結果メタデータ取得停止
+** stopUploadInferenceResult: 推論結果メタデータ取得停止
 +
-【Error：device_idが空の場合】E001 : device_id is required.
+【Error：deviceIdが空の場合】E001 : deviceId is required.
 +
-【Error：Low Level SDKにてErrorが発生した場合】Errorを発生させる
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
 +
-【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Errorを発生させる
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
 
-|device_id
+|deviceId
 |エッジAIデバイスのID
-|なし
+|大文字小文字を区別する
 
 |===
 +
@@ -350,14 +521,18 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 
 |===
 
-** get_command_parameter_file:  Consoleに登録されたCommandParameterFileの一覧取得
+** getCommandParameterFile:  Consoleに登録されたcommand parameter fileの一覧取得
 +
-【Error：Low Level SDKにてErrorが発生した場合】Errorを発生させる
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
 +
-【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Errorを発生させる
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
+
+|-
+|-
+|-
 
 |===
 +
@@ -369,20 +544,86 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 
 |===
 
-* Insight
-** get_image_directories: 画像保存ディレクトリ一覧取得
+* AI Model
+** importBaseModel: ベースモデルのインポート
 +
-【Error：Low Level SDKにてErrorが発生した場合】Errorを発生させる
+【Error：modelIdが空の場合】E001 : modelId is required.
 +
-【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Errorを発生させる
+【Error：modelが空の場合】E001 : model is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
 
-|device_id
-|エッジAIデバイスのID
-|なし +
-指定なしの場合、全てのdevice_idの情報を返す
+|modelId
+|モデルID(新規保存またはバージョンアップ対象のモデルID)
+|100文字以内 +
+下記以外は禁則文字 +
+半角英数字 +
+- ハイフン +
+_ アンダーバー +
+() 小括弧 +
+. ドット
+
+|model
+|モデルファイル  SAS URI
+|なし
+
+|converted
+|変換済みフラグ
+|True: 変換後モデル +
+False: 変換前モデル +
+指定なしの場合、False
+
+|vendorName
+|ベンダー名（新規保存の場合に指定）
+|100文字以内 +
+バージョンアップの場合指定しない +
+指定なしの場合、ベンダー名なし
+
+|comment
+|モデルを新規登録する際に入力するモデルに関する説明 +
+新規保存時はモデルとバージョンの説明として設定される +
+バージョンアップ時はバージョンの説明として設定される
+|100文字以内
+指定なしの場合、モデルを新規登録する際に入力するモデルに関する説明なし
+
+|inputFormatParam
+|input format paramファイル（json形式）のURI +
+下記について評価を実施 +
+ Azure：SAS URI +
+ AWS：  Presigned URI +
+用途：Packagerの変換情報(image format情報)
+|SAS URI形式以外は禁則文字 +
+jsonの形式はオブジェクトの配列(各オブジェクトは下記値を含む) +
+例 +
+ordinal: コンバータへのDNN入力の順序（値範囲：0～2） +
+format: フォーマット（"RGB" or "BGR"） +
+指定なしの場合、評価しない
+
+|networkConfig
+|network config ファイル（json形式）のURI +
+下記について評価を実施 +
+ Azure：SAS URI +
+ AWS：  Presigned URI +
+変換前モデルの場合、指定する(=変換後モデルの場合、無視する) +
+用途：model converterの変換パラメータ情報
+|SAS URI形式以外は禁則文字 +
+指定なしの場合、評価しない
+
+|networkType
+|ネットワーク種別(モデル新規登録の場合のみ有効)
+|0：Custom Vision +
+1：Non Custom Vision +
+指定なしの場合、1
+
+
+|labels
+|ラベル名
+|例: ["label01","label02","label03"]
 
 |===
 +
@@ -392,33 +633,896 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 |result
 |実行結果
 
-|Image save directory information
-|画像保存ディレクトリ情報
 |===
 
-** get_images: (保存済)画像取得
+** getModels: モデル情報一覧取得
 +
-【Error：device_idが空の場合】E001 : device_id is required.
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
 +
-【Error：sub_directory_nameが空の場合】E001 : sub_directory_name is required.
-+
-【Error：Low Level SDKにてErrorが発生した場合】Errorを発生させる
-+
-【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Errorを発生させる
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
 
-|device_id
-|エッジAIデバイスのID
+|modelId
+|モデルID
+|部分検索 +
+指定なしの場合、全modelId検索
+
+|comment
+|モデル説明
+|部分検索 +
+指定なしの場合、全comment検索
+
+|projectName
+|プロジェクト名
+|部分検索 +
+指定なしの場合、全projectName検索
+
+|modelPlatform
+|モデルプラットフォーム
+|0 : Custom Vision +
+1 : Non Custom Vision +
+2 : Model Retrainer +
+完全一致検索 +
+指定なしの場合、全modelPlatform検索
+
+|projectType
+|プロジェクト種別
+|0 : ベース +
+1 : デバイス +
+完全一致検索 +
+指定なしの場合、全projectType検索
+
+|deviceId
+|エッジAIデバイスのID(デバイスモデルを検索したい場合に指定)
+|完全一致検索 +
+大文字小文字を区別する +
+指定なしの場合、全deviceId検索
+
+|latestType
+|最新バージョン種別
+|0 : 発行済み最新バージョン +
+1 : 最新バージョン(変換/発行処理中モデルバージョンも含めた最新) +
+完全一致検索 +
+指定なしの場合、1
+
+|===
++
+|===
+|Return value|Meaning
+
+|Model information
+|モデル情報
+
+|===
+
+** getBaseModelStatus: ベースモデル情報取得
++
+【Error：modelIdが空の場合】E001 : modelId is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|modelId
+|モデルID
 |なし
 
-|sub_directory_name
+|latestType
+|最新バージョン種別
+|0 : 発行済み最新バージョン +
+1 : 最新バージョン(変換/発行処理中モデルバージョンも含めた最新) +
+完全一致検索 +
+指定なしの場合、1
+
+|===
++
+|===
+|Return value|Meaning
+
+|Base Model information
+|ベースモデル情報
+
+|===
+
+** deleteModel: モデル削除
++
+【Error：modelIdが空の場合】E001 : modelId is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|modelId
+|モデルID
+|なし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|===
+
+** publishModel: モデル発行
++
+【Error：modelIdが空の場合】E001 : modelId is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|modelId
+|モデルID
+|なし
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する +
+デバイスモデルが対象の場合に指定する +
+ベースモデルが対象の場合、指定しない
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|importId
+|インポートID
+
+|===
+
+** publishModelWaitResponse: モデル発行し、完了待ち
++
+【Error：modelIdが空の場合】E001 : modelId is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|modelId
+|モデルID
+|なし
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する +
+デバイスモデルが対象の場合に指定する +
+ベースモデルが対象の場合、指定しない
+
+|callback
+|コールバック関数
+|getBaseModelStatusで処理結果確認し、コールバック関数を呼び出して処理状況通知 +
+指定なしの場合、コールバック通知なし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|process time
+|処理時間
+
+|===
+
+** publishModelWaitResponseCallback: publishModelWaitResponseの状態通知Callback
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|status
+|Publish状態
+|'01': 'Before conversion' +
+'02': 'Converting' +
+'03': 'Conversion failed' +
+'04': 'Conversion complete' +
+'05': 'Adding to configuration' +
+'06': 'Add to configuration failed' +
+'07': 'Add to configuration complete' +
+'11': 'Saving'(Model Retrainerの場合のモデル保存中ステータス)
+
+|===
++
+|===
+|Return value|Meaning
+
+|-
+|-
+
+|===
+
+* Deployment
+** importDeviceApp: DeviceAppインポート
++
+【Error：compiledFlgが空の場合】E001 : compiledFlg is required.
++
+【Error：appNameが空の場合】E001 : appName is required.
++
+【Error：versionNumberが空の場合】E001 : versionNumber is required.
++
+【Error：fileNameが空の場合】E001 : fileName is required.
++
+【Error：fileContentが空の場合】E001 : fileContent is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|compiledFlg
+|コンパイルフラグ
+|0:未コンパイル(コンパイル処理を行う) +
+1:コンパイル済み(コンパイル処理を行わない)
+
+|appName
+|DeviceApp名
+|文字数上限は、appName + versionNumber <=31 とする +
+下記以外は禁則文字 +
+・英数字 +
+・アンダーバー +
+・ドット
+
+|versionNumber
+|DeviceAppバージョン
+|文字数上限は、appName + versionNumber <=31 とする +
+下記以外は禁則文字 +
+・英数字 +
+・アンダーバー +
+・ドット
+
+|fileName
+|DeviceAppファイル名
+|なし
+
+|fileContent
+|DeviceAppファイル内容
+|Base64 Encodeされた文字列
+
+|entryPoint
+|EVPモジュールのエントリポイント
+|なし +
+指定なしの場合、"ppl"
+
+|comment
+|DeviceApp説明
+|100文字以内 +
+指定なしの場合、コメントなし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|===
+
+** getDeviceApps: DeviceApp情報一覧取得
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|-
+|-
+|-
+
+|===
++
+|===
+|Return value|Meaning
+
+|DeviceApp information
+|DeviceApp情報
+
+|===
+
+** deleteDeviceApp: DeviceApp削除
++
+【Error：appNameが空の場合】E001 : appName is required.
++
+【Error：versionNumberが空の場合】E001 : versionNumber is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|appName
+|DeviceApp名
+|なし
+
+|versionNumber
+|DeviceAppバージョン
+|なし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|===
+
+** getDeployConfigurations: デプロイconfig情報一覧取得
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|-
+|-
+|-
+
+|===
++
+|===
+|Return value|Meaning
+
+|DeployConfiguration information
+|DeployConfiguration情報
+
+|===
+
+** createDeployConfiguration: デプロイconfig情報登録
++
+【Error：configIdが空の場合】E001 : configId is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|configId
+|config ID
+|20文字以内 +
+下記以外は禁則文字 +
+半角英数字 +
+- ハイフン +
+_ アンダーバー +
+() 小括弧 +
+. ドット
+
+|comment
+|Config説明
+|100文字以内 +
+指定なしの場合、コメントなし
+
+|sensorLoaderVersionNumber
+|SensorLoaderバージョン番号
+|-1を指定した場合、デフォルトバージョン(システム設定「DVC0017」)を適用 +
+指定なしの場合SensorLoaderデプロイなし
+
+|sensorVersionNumber
+|Sensorバージョン番号
+|-1を指定した場合、デフォルトバージョン(システム設定「DVC0018」)を適用 +
+指定なしの場合Sensorデプロイなし
+
+|modelId
+|モデルID
+|指定なしの場合、モデルデプロイなし
+
+|modelVersionNumber
+|モデルバージョン番号
+|指定なしの場合、最新のVersionを適用
+
+|apFwVersionNumber
+|ApFwバージョン番号
+|指定なしの場合、ファームウェアデプロイなし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|===
+
+** deployByConfiguration: デプロイ
++
+【Error：configIdが空の場合】E001 : configId is required.
++
+【Error：deviceIdsが空の場合】E001 : deviceIds is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|configId
+|config ID
+|なし
+
+|deviceIds
+|エッジAIデバイスのIDs
+|カンマ区切りで複数のエッジAIデバイスのIDを指定 +
+大文字小文字を区別する
+
+|replaceModelId
+|入替対象モデルID
+|「modelId」または「networkId」を指定 +
+指定されたモデルIDのものがDBに存在しない場合、入力された値をnetworkId(Consoleの内部管理ID)としてみなし、処理を行う +
+指定なしの場合、入替しない.
+
+|comment
+|デプロイコメント
+|100文字以内 +
+指定なしの場合、コメントなし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|===
+
+** getDeployHistory: デプロイ履歴取得
++
+【Error：deviceIdが空の場合】E001 : deviceId is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する
+
+|===
++
+|===
+|Return value|Meaning
+
+|deploy history
+|デプロイ履歴
+
+|===
+
+** deleteDeployConfiguration: デプロイconfig情報削除
++
+【Error：configIdが空の場合】E001 : configId is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|configId
+|config ID
+|なし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|===
+
+** cancelDeployment: デプロイ状態強制キャンセル
++
+【Error：deviceIdが空の場合】E001 : deviceId is required.
++
+【Error：deployIdが空の場合】E001 : deployId is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する
+
+|deployId
+|デプロイID
+|getDeployHistoryで取得出来るid
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|===
+
+** deployDeviceApp: DeviceAppデプロイ
++
+【Error：appNameが空の場合】E001 : appName is required.
++
+【Error：versionNumberが空の場合】E001 : versionNumber is required.
++
+【Error：deviceIdsが空の場合】E001 : deviceIds is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|appName
+|App名
+|なし
+
+|versionNumber
+|Appバージョン
+|なし
+
+|deviceIds
+|エッジAIデバイスのIDs
+|カンマ区切りで複数のエッジAIデバイスのIDを指定 +
+大文字小文字を区別する
+
+|deployParameter
+|デプロイパラメータ
+|JsonフォーマットをBase64 Encodeされた文字列 +
+指定なしの場合、パラメータなし
+
+|comment
+|デプロイコメント
+|100文字以内 +
+指定なしの場合、コメントなし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|===
+
+** undeployDeviceApp: DeviceAppアンデプロイ
++
+【Error：deviceIdsが空の場合】E001 : deviceIds is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceIds
+|エッジAIデバイスのID
+|カンマ区切りで複数のエッジAIデバイスのIDを指定 +
+大文字小文字を区別する
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|===
+
+** getDeviceAppDeploys: DeviceAppデプロイ履歴取得
++
+【Error：appNameが空の場合】E001 : appName is required.
++
+【Error：versionNumberが空の場合】E001 : versionNumber is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|appName
+|App名
+|なし
+
+|versionNumber
+|Appバージョン
+|なし
+
+|===
++
+|===
+|Return value|Meaning
+
+|DeviceApp deploy history
+|DeviceAppデプロイ履歴
+
+|===
+
+** deployByConfigurationWaitResponse: デプロイし、完了待ち
++
+【Error：configIdが空の場合】E001 : configId is required.
++
+【Error：deviceIdsが空の場合】E001 : deviceIds is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|configId
+|config ID
+|なし
+
+|deviceIds
+|エッジAIデバイスのIDs
+|カンマ区切りで複数のエッジAIデバイスのIDを指定 +
+大文字小文字を区別する
+
+|replaceModelId
+|入替対象モデルID
+|「modelId」または「networkId」を指定 +
+指定されたモデルIDのものがDBに存在しない場合、入力された値をnetworkId(Consoleの内部管理ID)としてみなし、処理を行う +
+指定なしの場合、入替しない.
+
+|comment
+|デプロイコメント
+|100文字以内 +
+指定なしの場合、コメントなし
+
+|timeout
+|完了待ちのtimeout時間 +
+デプロイ処理でエッジAIデバイスがハングアップするなどで、処理中のままとなるケースがあるため、処理を抜けるtimeout
+|なし +
+指定なしの場合、3600秒
+
+|callback
+|コールバック関数 +
+getDeployHistoryで処理結果確認し、コールバック関数を呼び出して処理状況通知
+|指定なしの場合、コールバック通知なし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|process time
+|処理時間
+
+|===
+
+** deployByConfigurationWaitResponseCallback: deployByConfigurationWaitResponseの状態通知Callback
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceStatusArray
+|エッジAIデバイスのDeploy状態リスト
+|下記形式 +
+[ +
+　{ +
+　　<deviceId>: { +
+　　　"status":<status> +
+　　} +
+　}, +
+] +
+
+deployByConfigurationWaitResponseのdeviceIdsで指定したdeviceId分のデータが入る +
+
+<deviceId>: エッジAIデバイスのID +
+<status>: 下記のデプロイ状態を格納 +
+　0：デプロイ中 +
+　1：正常終了 +
+　2：失敗 +
+　3：キャンセル +
+　9：DeviceAppアンデプロイ
+
+|===
++
+|===
+|Return value|Meaning
+
+|-
+|-
+
+|===
+
+** deployDeviceAppWaitResponse: DeviceAppデプロイし、完了待ち
++
+【Error：appNameが空の場合】E001 : appName is required.
++
+【Error：versionNumberが空の場合】E001 : versionNumber is required.
++
+【Error：deviceIdsが空の場合】E001 : deviceIds is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|appName
+|App名
+|なし
+
+|versionNumber
+|Appバージョン
+|なし
+
+|deviceIds
+|エッジAIデバイスのIDs
+|カンマ区切りで複数のエッジAIデバイスのIDを指定 +
+大文字小文字を区別する
+
+|deployParameter
+|デプロイパラメータ
+|JsonフォーマットをBase64 Encodeされた文字列 +
+指定なしの場合、パラメータなし
+
+|comment
+|デプロイコメント
+|100文字以内 +
+指定なしの場合、コメントなし
+
+|callback
+|コールバック関数 +
+getDeviceAppDeploysで処理結果確認し、コールバック関数を呼び出して処理状況通知
+|指定なしの場合、コールバック通知なし
+
+|===
++
+|===
+|Return value|Meaning
+
+|result
+|実行結果
+
+|process time
+|処理時間
+
+|===
+
+** deployDeviceAppWaitResponseCallback: deployDeviceAppWaitResponseの状態通知Callback
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceStatusArray
+|エッジAIデバイスのDeploy状態リスト
+|下記形式 +
+[ +
+　{ +
+　　<deviceId>: { +
+　　　"status":<status>, +
+　　　"found_position":<found_position>, +
+　　　"skip":<skip> +
+　　} +
+　}, +
+] +
+
+deployDeviceAppWaitResponseのdeviceIdsで指定したdeviceId分のデータが入る +
+
+<deviceId>: エッジAIデバイスのID +
+<found_position>: getDeviceAppDeploysレスポンスに格納されるdeviceIdのindex +
+<skip>: 下記の値を格納 +
+　0: getDeviceAppDeploysレスポンスに格納される最新のstatusの場合 +
+　1: getDeviceAppDeploysレスポンスに格納される最新以外のstatusの場合 +
+<status>: 下記のデプロイ状態を格納 +
+　0：デプロイ中 +
+　1：正常終了 +
+　2：失敗 +
+　3：キャンセル +
+
+|===
++
+|===
+|Return value|Meaning
+
+|-
+|-
+
+|===
+
+* Insight
+** getImageDirectories: 画像保存ディレクトリ一覧取得
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する +
+指定なしの場合、全てのdeviceIdの情報を返す
+
+|===
++
+|===
+|Return value|Meaning
+
+|Image save directory information
+|画像保存ディレクトリ情報
+|===
+
+** getImages: 保存済み画像取得
++
+【Error：deviceIdが空の場合】E001 : deviceId is required.
++
+【Error：subDirectoryNameが空の場合】E001 : subDirectoryName is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する
+
+|subDirectoryName
 |画像保存のサブディレクトリ
 |なし +
-サブディレクトリは、start_upload_inference_resultの応答で通知されるdirectory、または、get_image_directoriesで取得したdirectory
+サブディレクトリは、startUploadInferenceResultの応答で通知されるdirectory、または、getImageDirectoriesで取得したdirectory
 
-|number_of_images
+|numberOfImages
 |画像の取得数
 |0-256 +
 指定なしの場合:50
@@ -428,7 +1532,7 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 |なし +
 指定なしの場合:0
 
-|order_by
+|orderBy
 |ソート順：画像の作成された日時によるソート順
 |DESC、ASC、desc、asc +
 指定なしの場合:ASC
@@ -438,35 +1542,35 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 |===
 |Return value|Meaning
 
-|result
-|実行結果
+|Total image count
+|全画像数
 
 |Image filename and image content
-|画像ファイル名と、画像ファイルデータ（base64 encode済みデータ）
+|画像ファイル名と、画像ファイルデータ（Base64 Encode済みデータ）
 |===
 
-** get_inference_results: (保存済)推論結果メタデータ一覧取得
+** getInferenceResults: 保存済み推論結果メタデータ一覧取得
 +
-【Error：device_idが空の場合】E001 : device_id is required.
+【Error：deviceIdが空の場合】E001 : deviceId is required.
 +
-【Error：Low Level SDKにてErrorが発生した場合】Errorを発生させる
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
 +
-【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Errorを発生させる
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
 
-|device_id
+|deviceId
 |エッジAIデバイスのID
-|なし
+|大文字小文字を区別する
 
 |filter
 |検索フィルタ(AzureポータルのCosmos DB UIと下記以外は同じ仕様) +
 - where文字列を先頭に付加する必要はない +
-- deviceIDを付加する必要はない
+- deviceIdを付加する必要はない
 |なし
 
-|NumberOfInferenceresults
+|numberOfInferenceResults
 |取得件数
 |なし +
 指定なしの場合:20
@@ -475,7 +1579,7 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 |推論結果のデータ形式
 |1:Cosmos DBに格納されたままのレコードを付加 +
 0:付与しない +
-指定なしの場合:0
+指定なしの場合:1
 
 |time
 |Cosmos DBに格納された推論結果データのタイムスタンプ
@@ -493,21 +1597,185 @@ Low Level SDKのAPIをWrapしたAPI内で、Consoleアクセスに必要なア�
 |===
 |Return value|Meaning
 
-|result
-|実行結果
+|inference data
+|推論結果
+|===
+
+** exportImages: 保存済み画像エクスポート
++
+【Error：keyが空の場合】E001 : key is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|key
+|RSA公開鍵
+|Base64 Encodeされた文字列
+
+|fromDatetime
+|日時(From)
+|yyyyMMddhhmm形式 +
+指定なしの場合、Fromの範囲設定なし
+
+|toDatetime
+|日時(To)
+|yyyyMMddhhmm形式 +
+指定なしの場合、Toの範囲設定なし
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する +
+指定なしの場合、全deviceId指定
+
+|fileFormat
+|画像ファイルフォーマット
+|JPG、BMP、RAW +
+指定しない場合、絞り込みなし
+
+|===
++
+|===
+|Return value|Meaning
+
+|key
+|共通鍵 +
+公開鍵で暗号化された画像復号化用の共通鍵
+
+|url
+|ダウンロード用のSUS URI
+
+|===
+
+** getImageData: 保存済み画像取得
++
+【Error：deviceIdが空の場合】E001 : deviceId is required.
++
+【Error：subDirectoryNameが空の場合】E001 : subDirectoryName is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する
+
+|subDirectoryName
+|画像保存のサブディレクトリ
+|なし +
+サブディレクトリは、startUploadInferenceResultの応答で通知されるdirectory、または、getImageDirectoriesで取得したdirectory
+
+|numberOfImages
+|画像の取得数
+|なし +
+指定なしの場合:50
+
+|skip
+|取得をスキップする画像の数
+|なし +
+指定なしの場合:0
+
+|orderBy
+|ソート順：画像の作成された日時によるソート順
+|DESC、ASC、desc、asc +
+指定なしの場合:ASC
+
+|===
++
+|===
+|Return value|Meaning
+
+|Total image count
+|全画像数
+
+|Image filename and image content
+|画像ファイル名と、画像ファイルデータ（Base64 Encode済みデータ）
+|===
+
+** getLastInferenceData: 保存済み推論結果の最新データ取得
++
+【Error：deviceIdが空の場合】E001 : deviceId is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する
+
+|===
++
+|===
+|Return value|Meaning
 
 |inference data
 |推論結果
 |===
 
+** getLastInferenceAndImageData(): 保存済み推論結果と画像の最新データ取得
++
+【Error：deviceIdが空の場合】E001 : deviceId is required.
++
+【Error：subDirectoryNameが空の場合】E001 : subDirectoryName is required.
++
+【Error：Low Level SDKにてErrorが発生した場合】Console Access Libraryで定義したErrorを発生させる
++
+【Error：Low Level SDKのAPIから返却されたhttp_statusが200以外の場合】Console Access Libraryで定義したErrorを発生させる
++
+|===
+|Parameter’s name|Meaning|Range of parameter
+
+|deviceId
+|エッジAIデバイスのID
+|大文字小文字を区別する
+
+|subDirectoryName
+|画像保存のサブディレクトリ
+|なし +
+サブディレクトリは、startUploadInferenceResultの応答で通知されるdirectory、または、getImageDirectoriesで取得したdirectory
+
+|===
++
+|===
+|Return value|Meaning
+
+|inference data and image data
+|推論結果と画像データ（Base64 Encode済みデータ）
+|===
+
 == ログ出力メッセージ
-各レベル毎に表示するメッセージは下記の通り定義する
+レベル毎に表示するメッセージは下記の通り定義する
 
 === ERRORレベル
-T.B.D.
+[%header%autowidth]
+|===
+|MessageID |Conditions |Message |Parameter
+|E001
+|必要な引数が渡されなかった際に出力される
+|{0} is required.
+|{0}:渡されなかった引数名
+|===
 
 === WARNINGレベル
-T.B.D.
+[%header%autowidth]
+|===
+|MessageID |Conditions |Message |Parameter
+|W001
+|非推奨になったクラスや関数を呼び出した際に出力される
+|{0} has been deprecated.
+|{0}:呼び出されたクラスや関数名
+|===
 
 === INFOレベル
 T.B.D.
@@ -516,13 +1784,13 @@ T.B.D.
 T.B.D.
 
 == 目標性能
-* 無し
+* なし
 
 == 制限事項
-* 無し
+* なし
 
 == その他特記事項
-* 無し
+* なし
 
 == 未決定事項
-* 無し
+* なし
