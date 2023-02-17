@@ -11,3 +11,5 @@ cd demo-console
 npm install
 npx ts-node index.ts
 ```
+`*Note`: In case of any issue with consoleaccessliberary package, please uninstall consoleaccessliberary and install it again.
+ 

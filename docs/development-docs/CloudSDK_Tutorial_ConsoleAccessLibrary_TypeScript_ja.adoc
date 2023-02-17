@@ -1,0 +1,135 @@
+= Cloud SDK pass:[<br/>] Console Access Library pass:[<br/>] TypeScript版 pass:[<br/>] チュートリアル pass:[<br/>]
+:sectnums:
+:sectnumlevels: 1
+:author: Copyright 2023 Sony Semiconductor Solutions Corporation
+:version-label: Version 
+:revnumber: x.x.x
+:revdate: YYYY - MM - DD
+:trademark-desc: AITRIOS™、およびそのロゴは、ソニーグループ株式会社またはその関連会社の登録商標または商標です。
+:toc:
+:toc-title: 目次
+:toclevels: 1
+:chapter-label:
+:lang: ja
+
+== 目的
+このチュートリアルではConsole Access Libraryが公開する各種APIについて解説します。本書を通じてLibraryをビルドして使用できるようになります。
+
+== 前提条件
+下記はシステムにインストールする必要がある必須ソフトウェアです。
+
+* VS Code
+* Node >=v14.16.0
+* TypeScriptをグローバルインストール
+** npm install -g typescript
+
+=== Console Access Library API仕様
+https://verbose-eureka-5eb00fd5.pages.github.io/api-reference/[Console Access Library API Specification]
+
+== 使用法
+
+=== インストールとセットアップ
+下記がConsole Access Libraryサンプルアプリケーションをインストールおよびセットアップする手順です。
+
+1. リポジトリをクローンします
+    ** https://github.com/SonySemiconductorSolutions/aitrios-sdk-console-access-lib-ts.git
+2. ターミナルを開いて `**lib**` パスに移動し、次のコマンドを実行します
++ 
+```
+    npm install
+    tsc -b
+    npm pack
+```
+
+3. ターミナルを開いて `**src**` パスに移動し、次のコマンドを実行します
++ 
+```
+    npm install
+    tsc -b
+    npm pack
+```
+
+4. ターミナルを開いて `**samples/demo-console**` パスに移動し、次のコマンドを実行します
++ 
+```
+    npm install
+```
+
+=== Console Access Libraryサンプルアプリケーション開始用のパラメータ設定
+
+* 下記の設定ファイルを作成し、パラメータに適切な値を設定します。
++
+`aitrios-sdk-console-access-lib-ts/samples/demo-console/console_access_settings.yaml`
+
+----
+   console_access_settings:
+     console_endpoint: "__console_endpoint__"
+     portal_authorization_endpoint: "__portal_authorization_endpoint__"
+     client_secret: "__client_secret__"
+     client_id: "__client_id__"
+----
+
+* 下記のファイルを開きパラメータを適切な値に変更します。
++
+`aitrios-sdk-console-access-lib-ts/samples/demo-console/demo_config.yaml`
+
+----
+  demo_configuration:
+    device_id: "__device_id__"
+    number_of_images: __number_of_images__
+    skip: __skip__
+    sub_directory_name: "__sub_directory_name__"
+    number_of_inference_results: __number_of_inference_results__
+    filter: "__filter__"
+    raw: __raw__
+    time: "__time__"
+    converted: "__converted__"
+    vendor_name: "__vendor_name__"
+    get_images_order_by: "__get_images_order_by__"
+    get_last_inference_and_image_data_order_by: "__get_last_inference_and_image_data_order_by__"
+    key: "__key__"
+    app_name: "__app_name__"
+    version_number: "__version_number__"
+    model: "__model__"
+    model_id: "__model_id__"
+    file_content: "__file_content__"
+    compiled_flg: "__compiled_flg__"
+    file_name: "__file_name__"
+    comment: "__comment__"
+    input_format_param: "__input_format_param__"
+    network_config: "__network_config__"
+    network_type: "__network_type__"
+    labels: "__labels__"
+    config_id: "__config_id__"
+    sensor_loader_version_number: "__sensor_loader_version_number__"
+    sensor_version_number: "__sensor_version_number__"
+    model_version_number: "__model_version_number__"
+    ap_fw_version_number: "__ap_fw_version_number__"
+    device_ids: "__device_ids__"
+    deploy_parameter: "__deploy_parameter__"
+    replace_model_id: "__replace_model_id__"
+    deploy_id: "__deploy_id__"
+    timeout: __timeout__
+    from_datetime: "__from_datetime__"
+    to_datetime: "__to_datetime__"
+    file_format: "__file_format__"
+    entry_point: "__entry_point__"
+    get_model_id: "__model_id__"
+    device_id_for_get_model: "__device_id__"
+----
+
+=== ネットワークProxy設定
+
+プロキシ環境でConsole Access Libraryを使用するには `**https_proxy**` 環境変数を設定します。
+
+```
+export https_proxy=http://username:password@proxyhost:port
+```
+
+=== アプリケーション開始
+
+CLIデモを実行するにはrootフォルダからcmdターミナルを開き、次のコマンドを実行します。
+
+```
+npx ts-node index.ts
+```

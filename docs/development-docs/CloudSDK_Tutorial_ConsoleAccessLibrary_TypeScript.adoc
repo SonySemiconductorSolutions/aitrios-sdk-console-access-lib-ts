@@ -1,45 +1,40 @@
 = Cloud SDK pass:[<br/>] Console Access Library pass:[<br/>] TypeScript pass:[<br/>] Tutorial pass:[<br/>]
-:title-page-background-image: image:../../../images/Trademark_en.png[fit=none,pdfwidth=50%,position=bottom center]
 :sectnums:
-:sectnumlevels: 4
-:chapter-label:
-:author: Copyright 2022 Sony Semiconductor Solutions Corporation
-:revdate: 2022 - xx - xx
-:revnumber: 0.0.x
+:sectnumlevels: 1
+:author: Copyright 2023 Sony Semiconductor Solutions Corporation
+:version-label: Version 
+:revnumber: x.x.x
+:revdate: YYYY - MM - DD
+:trademark-desc1: AITRIOS? and AITRIOS logos are the registered trademarks or trademarks
+:trademark-desc2: of Sony Group Corporation or its affiliated companies.
 :toc:
 :toc-title: TOC
-:toclevels: 4
+:toclevels: 1
 :chapter-label:
-:document-title-header:
 :lang: en
 
 == Objective
 To explain the various APIs exposed by Console Access Library and help the user to build and use the library.
 
 == Prerequisites
-The following is the required software you need to install in your system
+The following is the required software you need to install in your system.
 
-* vscode
+* VS Code
 * Node >=v14.16.0
-* install typescript globally
+* Install TypeScript globally
 ** npm install -g typescript
+
+=== Console Access Library API Specification
+https://verbose-eureka-5eb00fd5.pages.github.io/api-reference/[Console Access Library API Specification]
 
 == Usage
 
 === Installation and Setup
-The following is a step for installing and setting up Console Access Library Sample Application
+The following is a step for installing and setting up Console Access Library sample application.
 
 1. Clone the repository
     ** https://github.com/SonySemiconductorSolutions/aitrios-sdk-console-access-lib-ts.git
-2. Open terminal and go to the lib path and run the following command
-+ 
-```
-    tsc
-    tsc -b
-    npm pack
-```
-
-3. Open terminal and go to the src path and run the following command
+2. Open terminal and go to the `**lib**` path and run the following command
 + 
 ```
     npm install
@@ -47,36 +42,90 @@ The following is a step for installing and setting up Console Access Library Sam
     npm pack
 ```
 
-4. Open terminal and go to the samples/demo-console path and run the following command
+3. Open terminal and go to the `**src**` path and run the following command
++ 
+```
+    npm install
+    tsc -b
+    npm pack
+```
+
+4. Open terminal and go to the `**samples/demo-console**` path and run the following command
 + 
 ```
     npm install
 ```
 
-=== Set Configuration Parameter to start Console Access Library Sample Application
+=== Set configuration parameter to start Console Access Library sample application
 
-aitrios-sdk-console-access-lib-ts\samples\demo-console\src\controller\config.ts
+* Create the following configuration file and set the parameters:
++
+`aitrios-sdk-console-access-lib-ts/samples/demo-console/console_access_settings.yaml`
 
 ----
-DemoConfiguration= {
-    deviceId : '__deviceId__',
-    subDirectoryName : "__subDirectoryName__",
-    numberOfImages: numberOfImages,
-    skip: skip,
-    numberOfInferenceresults: numberOfInferenceresults,
-    filter: "__filter__",
-    raw: raw,
-    time: "__time__",
-    getImagesOrderBy: "__getImagesOrderBy__"
-}
-
-ConsoleAccessSettings= {
-    baseUrl: "__baseUrl__",
-    tokenUrl: "__tokenUrl__",
-    clientSecret: "__clientSecret__",
-    clientId: "__clientId__"
-}
+   console_access_settings:
+     console_endpoint: "__console_endpoint__"
+     portal_authorization_endpoint: "__portal_authorization_endpoint__"
+     client_secret: "__client_secret__"
+     client_id: "__client_id__"
 ----
+
+* Open the following file and change the parameters:
++
+`aitrios-sdk-console-access-lib-ts/samples/demo-console/demo_config.yaml`
+
+----
+  demo_configuration:
+    device_id: "__device_id__"
+    number_of_images: __number_of_images__
+    skip: __skip__
+    sub_directory_name: "__sub_directory_name__"
+    number_of_inference_results: __number_of_inference_results__
+    filter: "__filter__"
+    raw: __raw__
+    time: "__time__"
+    converted: "__converted__"
+    vendor_name: "__vendor_name__"
+    get_images_order_by: "__get_images_order_by__"
+    get_last_inference_and_image_data_order_by: "__get_last_inference_and_image_data_order_by__"
+    key: "__key__"
+    app_name: "__app_name__"
+    version_number: "__version_number__"
+    model: "__model__"
+    model_id: "__model_id__"
+    file_content: "__file_content__"
+    compiled_flg: "__compiled_flg__"
+    file_name: "__file_name__"
+    comment: "__comment__"
+    input_format_param: "__input_format_param__"
+    network_config: "__network_config__"
+    network_type: "__network_type__"
+    labels: "__labels__"
+    config_id: "__config_id__"
+    sensor_loader_version_number: "__sensor_loader_version_number__"
+    sensor_version_number: "__sensor_version_number__"
+    model_version_number: "__model_version_number__"
+    ap_fw_version_number: "__ap_fw_version_number__"
+    device_ids: "__device_ids__"
+    deploy_parameter: "__deploy_parameter__"
+    replace_model_id: "__replace_model_id__"
+    deploy_id: "__deploy_id__"
+    timeout: __timeout__
+    from_datetime: "__from_datetime__"
+    to_datetime: "__to_datetime__"
+    file_format: "__file_format__"
+    entry_point: "__entry_point__"
+    get_model_id: "__model_id__"
+    device_id_for_get_model: "__device_id__"
+----
+
+=== Network proxy setting
+
+To use the Console Access Library in a proxy environment, set the `**https_proxy**` environment variable.
+
+```
+export https_proxy=http://username:password@proxyhost:port
+```
 
 === Starting the App
 
