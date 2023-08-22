@@ -13,7 +13,7 @@
 :lang: ja
 
 == 目的
-このチュートリアルではConsole Access Libraryが公開する各種APIについて解説します。本書を通じてLibraryをビルドして使用できるようになります。
+このチュートリアルでは「**Console Access Library**」が公開する各種APIについて解説します。本書を通じてLibraryをビルドして使用できるようになります。
 
 == 前提条件
 下記はシステムにインストールする必要がある必須ソフトウェアです。
@@ -23,17 +23,22 @@
 * TypeScriptをグローバルインストール
 ** npm install -g typescript
 
-=== Console Access Library API仕様
-https://verbose-eureka-5eb00fd5.pages.github.io/api-reference/[Console Access Library API Specification]
+=== 「**Console Access Library**」 API仕様
+「**Console Access Library**」のAPI仕様を参照する方法は、下記の手順を参照してください。
+
+1. リポジトリをクローンします
+    ** https://github.com/SonySemiconductorSolutions/aitrios-sdk-console-access-lib-ts
+
+2. クローンしたディレクトリ内に存在する `**docs/api-reference/index.html**` をウェブブラウザで開きます
 
 == 使用法
 
 === インストールとセットアップ
-下記がConsole Access Libraryサンプルアプリケーションをインストールおよびセットアップする手順です。
+下記が「**Console Access Library**」のサンプルアプリケーションをインストールおよびセットアップする手順です。
 
 1. リポジトリをクローンします
     ** https://github.com/SonySemiconductorSolutions/aitrios-sdk-console-access-lib-ts.git
-2. ターミナルを開いて `**lib**` パスに移動し、次のコマンドを実行します
+2. ターミナルを開いて `**lib/js-client**` パスに移動し、次のコマンドを実行します
 + 
 ```
     npm install
@@ -55,7 +60,7 @@ https://verbose-eureka-5eb00fd5.pages.github.io/api-reference/[Console Access Li
     npm install
 ```
 
-=== Console Access Libraryサンプルアプリケーション開始用のパラメータ設定
+=== 「**Console Access Library**」のサンプルアプリケーション開始用のパラメータ設定
 
 * 下記の設定ファイルを作成し、パラメータに適切な値を設定します。
 +
@@ -120,7 +125,7 @@ https://verbose-eureka-5eb00fd5.pages.github.io/api-reference/[Console Access Li
 
 === ネットワークProxy設定
 
-プロキシ環境でConsole Access Libraryを使用するには `**https_proxy**` 環境変数を設定します。
+プロキシ環境で「**Console Access Library**」を使用するには `**https_proxy**` 環境変数を設定します。
 
 ```
 export https_proxy=http://username:password@proxyhost:port
@@ -128,7 +133,7 @@ export https_proxy=http://username:password@proxyhost:port
 
 === アプリケーション開始
 
-CLIデモを実行するにはrootフォルダからcmdターミナルを開き、次のコマンドを実行します。
+CLIデモを実行するには `**samples/demo-console**` フォルダからcmdターミナルを開き、次のコマンドを実行します。
 
 ```
 npx ts-node index.ts

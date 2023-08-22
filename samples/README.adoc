@@ -1,15 +1,15 @@
-== Samples to demonstrate Console Access Library
+== Samples to demonstrate "Console Access Library"
 
-=== demo-console
+=== "**demo-console**"
 
-It is provides testing interface with console
+It is provides testing interface with "**console**"
 
-## Run the demo-console
+## Run the "**demo-console**"
 
 ```
 cd demo-console
 npm install
 npx ts-node index.ts
 ```
-`*Note`: In case of any issue with consoleaccessliberary package, please uninstall consoleaccessliberary and install it again.
+`*Note`: In case of any issue with "**Console Access Liberary**" package, please uninstall "**Console Access Liberary**" and install it again.
  

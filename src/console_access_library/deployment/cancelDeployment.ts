@@ -72,12 +72,11 @@ export class CancelDeployment {
                 },
             },
             deployId: {
-                type: 'number',
-                minimum: 0,
+                type: 'string',
+                isNotEmpty: true,
                 errorMessage: {
                     type: 'Invalid string for deployId',
-                    minimum:
-                        'numberOfInferenceResults is required or can\'t be negative',
+                    isNotEmpty: 'deployId required or can\'t be empty string',
                 },
             },
         },
@@ -97,7 +96,7 @@ export class CancelDeployment {
         Used when edge AI device deployment fails and there is a deviation from the state of the database.
      *  @params
      * - deviceId (str, required) - Device ID. Case-sensitive.
-     * - deployId (int, required) - The Deployment id. \
+     * - deployId (str, required) - The Deployment id. \
      *           Id that can be obtained with getDeployHistory.
      * @returns
      * - Object: table:: Success Response
@@ -118,9 +117,7 @@ export class CancelDeployment {
      * 
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
-     *   if any input string parameter found empty OR
-     *   if any input integer parameter found negative OR
-     *   if any input non integer parameter found.
+     *   if any input string parameter found empty.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -150,7 +147,7 @@ export class CancelDeployment {
      *    const deployId = '__deployId__';
      *    const response= await client.deployment.cancelDeployment(deviceId, deployId);
     */
-    async cancelDeployment(deviceId: string, deployId: number) {
+    async cancelDeployment(deviceId: string, deployId: string) {
         Logger.info('cancelDeployment');
         let valid = true;
         try {
@@ -169,7 +166,7 @@ export class CancelDeployment {
                 baseOptions
             });
             this.api = new DeployApi(apiConfig);
-            const res = await this.api.cancelDeployment(deviceId, deployId+'');
+            const res = await this.api.cancelDeployment(deviceId, deployId);
             return res;
         } catch (error) {
             if (!valid) {

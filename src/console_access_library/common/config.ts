@@ -24,6 +24,7 @@ import { Configuration } from 'js-client';
 import ajvErrors from 'ajv-errors';
 import { ErrorCodes } from '../common/errorCodes';
 import jwt_decode, { JwtPayload } from 'jwt-decode';
+import { getOCSPStatus } from '../thirdParty/ocspChecker';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import url from 'url';
 
@@ -227,25 +228,70 @@ export class Config {
     }
 
     /**
+     * Function to get the OCSP status of SSL certificate from CA (Certification Authority)
+     * @params
+     * - url (str, required):  Server access URL
+     * @returns
+     * - true for Valid SSL
+     *   Throw exception on event of error occur
+     */
+
+    async getOcspStatus(url: string) {
+        try {
+            const proxy = this.getProxyEnv();
+            const response: any = await getOCSPStatus(url, proxy, {
+                port: 443,
+                method: 'GET',
+            });
+            const { status = 'unknown' } = response || {};
+            if ('good' === status.toLowerCase()) {
+                Logger.info(`OCSP Status: ${status}`);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (e) {
+            Logger.error('Certificate Expired or Invalid certificate');
+            return false;
+        }
+    }
+
+    /**
      * Check if access token is available or not, and check its validity.
      * @returns
-     * - 'On Success Response' :
-     *        access_token_str
-     * - 'On Error Response' :
-     *        Throw exception on event of error occur
-     **/
+     * - accessToken (str): On Success
+     * - Generic Error: If an error occurs when obtaining an access token
+     * - Throws error if OCSP status "is not good" for any of the URLs(consoleEndpoint or
+     *   portalAuthorizationEndpoint)
+     *
+     */
     async getAccessToken() {
         const validationCode = this.validateAccessToken(
             this.saveLastAccessToken
         );
-
         // If the Access token variable has a token, check the validity of the token,
         // if expired or invalid token found generate new access token
-
         if (validationCode != TokenValidationEnum.VALID_TOKEN) {
+            // To avoid multiple OCSP request, check OCSP status for consoleEndpoint
+            // and portalAuthorizationEndpoint when requesting for access token
+            // verify revocation of certificate
+            const consoleEndpointOcspStatus = await this.getOcspStatus(
+                this.consoleEndpoint
+            );
+            const portalAuthorizationEndpointOcspStatus =
+                await this.getOcspStatus(this.portalAuthorizationEndpoint);
+            if (!consoleEndpointOcspStatus) {
+                throw new Error(
+                    `OCSP Status of URL ${this.consoleEndpoint} is not good`
+                );
+            }
+            if (!portalAuthorizationEndpointOcspStatus) {
+                throw new Error(
+                    `OCSP Status of URL ${this.portalAuthorizationEndpoint} is not good`
+                );
+            }
             this.saveLastAccessToken = await this.generateAccessToken();
         }
-
         //  Return the access token stored the Access token variable
         return this.saveLastAccessToken;
     }

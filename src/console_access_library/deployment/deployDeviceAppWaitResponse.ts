@@ -29,6 +29,15 @@ import { GetDeviceAppDeploys } from './getDeviceAppDeploys';
 
 const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
+ajv.addKeyword('isNotEmpty', {
+    type: 'string',
+    validate: (schema: any, data: string) => {
+        if (schema) {
+            return typeof data === 'string' && data.trim() !== '';
+        } else return true;
+    },
+    keyword: '',
+});
 
 /**
  * Deploy Device App Enum Status
@@ -121,14 +130,14 @@ export class DeployDeviceAppWaitResponse {
                     type: 'Invalid return for callback ',
                 },
             },
-            required: ['appName', 'versionNumber', 'deviceIds'],
-            additionalProperties: false,
-            errorMessage: {
-                required: {
-                    appName: 'appName is required',
-                    versionNumber: 'versionNumber is required',
-                    deviceIds: 'deviceIds is required',
-                },
+        },
+        required: ['appName', 'versionNumber', 'deviceIds'],
+        additionalProperties: false,
+        errorMessage: {
+            required: {
+                appName: 'appName is required',
+                versionNumber: 'versionNumber is required',
+                deviceIds: 'deviceIds is required',
             },
         },
     };
@@ -286,8 +295,28 @@ export class DeployDeviceAppWaitResponse {
         // eslint-disable-next-line @typescript-eslint/ban-types
         callback?: Function
     ) {
-        const valid = true;
+        let valid = true;
         try {
+            const validate = ajv.compile(this.schema);
+            valid = validate({
+                appName,
+                versionNumber,
+                deviceIds,
+                deployParameter,
+                comment,
+            });
+            if (!valid) {
+                Logger.error(`${validate.errors}`);
+                throw validate.errors;
+            }
+            if (callback && typeof callback !== 'function') {
+                valid = false;
+                const errorMessage = 'Invalid return for callback';
+                Logger.error(getMessage(ErrorCodes.ERROR, errorMessage));
+                return validationErrorMessage(
+                    getMessage(ErrorCodes.ERROR, errorMessage)
+                );
+            }
             this.deployDeviceAppObj = new DeployDeviceApp(this.config);
             this.getDeviceAppDeployStatusObj = new GetDeviceAppDeploys(
                 this.config
@@ -393,7 +422,8 @@ export class DeployDeviceAppWaitResponse {
                                                  */
 
                                                 if (
-                                                    index === foundPosition &&
+                                                    index + 1 ===
+                                                        foundPosition &&
                                                     skip === 0
                                                 ) {
                                                     this.setValues(
@@ -486,9 +516,9 @@ export class DeployDeviceAppWaitResponse {
                                                             totalDeployDeviceAppTimeStr;
                                                         /**
                                                          * append the respective device_id's
-                                                         * deploy_by_configuration_wait_response
+                                                         * deployDeviceAppWaitResponse
                                                          * to the array
-                                                         * _return_deploy_device_app_wait_response_all_device_ids
+                                                         * returnDeployDeviceAppWaitResponseAllDeviceIds
                                                          */
                                                         returnDeployDeviceAppWaitResponseAllDeviceIds.push(
                                                             returnDeployDeviceAppWaitResponse

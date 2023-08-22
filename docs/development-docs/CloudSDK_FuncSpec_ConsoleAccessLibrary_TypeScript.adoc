@@ -22,64 +22,68 @@
 |Initial draft
 
 |2023/1/30
-|Changed for Cloud SDK 0.2.0 +
+|Changed for "**Cloud SDK**" 0.2.0 +
 Unified the swinging of expressions +
 Updated the PDF build environment
 
-
+|2023/5/26
+|Fixed parenthesis notation for tool names
 
 |===
 
 == Introduction
 
-* This book is functional specifications for the Console Access Library that provides access to the Console. + 
+* This book is functional specifications for the "**Console Access Library**" that provides access to the "**Console**". + 
 Use TypeScript for feature development language.
 
 == Terms/Abbreviations
 |===
 |Terms/Abbreviations |Meaning 
 
-|Console for AITRIOS
+|"**Console for AITRIOS**"
 |A cloud service that provides various functions (Deployment, Retraining, Edge AI Device Management etc.) to efficiently implement solutions from edge to cloud +
-Hereafter referred to as Console in the text
+Hereafter referred to as "**Console**" in the text
 
-|Low Level SDK
-|Client generated automatically by OpenAPI Generator from the API specification (yaml) of the Console REST API
+|"**Low Level SDK**"
+|Client generated automatically by OpenAPI Generator from the API specification (yaml) of the "**Console REST API**"
 
-|Cloud App
-|Applications that use the Console Access Library
+|"**Cloud App**"
+|Applications that use the "**Console Access Library**"
 
 |SAS
 |Shared Access Signatures +
 URI that grant limited access to Azure storage resources
 
+|
+|
+
 |===
 
 == Expected use case
-* Use the Console Access Library to:
+* Use the "**Console Access Library**" to:
 ** Get information about edge AI devices
 ** Start inference (Start to upload inference results), stop inference (stop to upload inference results) of edge AI devices
 ** Get edge AI device output results (images, inference results)
-** Upload AI models created by users to the Console
+** Upload AI models created by users to the "**Console**"
 *** Review and delete uploaded AI models
 ** Convert AI models to a format deployable to edge AI devices
 ** Deploy AI models to edge AI devices
-** Upload DeviceApps created by users to the Console
-*** Review and delete uploaded DeviceApps
-** Deploy DeviceApps to edge AI devices
+** Upload "**DeviceApps**" created by users to the "**Console**"
+*** Review and delete uploaded "**DeviceApps**"
+** Deploy "**DeviceApps**" to edge AI devices
 
 == Functional overview/Algorithm
 [#_Functional-Overview]
 === Functional overview
-* Generate a Client accessible to the Console
-** Set the information needed to access the Console in a Config, and set the Config to the Client
+* Generate a Client accessible to the "**Console**"
+** Set the information needed to access the "**Console**" in a Config, and set the Config to the Client
 +
-The information needed to access the Console is as follows
+The information needed to access the "**Console**" is as follows
 +
 |===
 |Name |Description
 
-|Console endpoint
+|"**Console**" endpoint
 |API server/base URL
 
 |Authorization endpoint
@@ -93,12 +97,12 @@ The information needed to access the Console is as follows
 
 |===
 
-* Execute Console REST API classified by function from the Client
+* Execute "**Console REST API**" classified by function from the Client
 +
 [TIP]
 ====
-The functional classification follows the API classification of the Low Level SDK provided by the Console. + 
-Get and update an access token needed to access the Console.（Wrap）
+The functional classification follows the API classification of the "**Low Level SDK**" provided by the "**Console**". + 
+Get and update an access token needed to access the "**Console**".（Wrap）
 ====
 +
 [TIP]
@@ -109,7 +113,7 @@ API without a timeout parameter will not timeout
 *** getDevices / Get edge AI device info list
 *** startUploadInferenceResult / Start to upload inference results
 *** stopUploadInferenceResult / Stop to upload inference results
-*** getCommandParameterFile / Get list of command parameter files registered in the Console
+*** getCommandParameterFile / Get list of command parameter files registered in the "**Console**"
 ** AI Model
 *** importBaseModel / Import base model
 *** getModels / Get model info list
@@ -117,30 +121,30 @@ API without a timeout parameter will not timeout
 *** deleteModel / Delete model
 *** publishModel / Publish model
 ** Deployment
-*** importDeviceApp / Import DeviceApp
-*** getDeviceApps / Get DeviceApp info list
-*** deleteDeviceApp / Delete DeviceApp
+*** importDeviceApp / Import "**DeviceApp**"
+*** getDeviceApps / Get "**DeviceApp**" info list
+*** deleteDeviceApp / Delete "**DeviceApp**"
 *** getDeployConfigurations / Get deployment configuration list
 *** createDeployConfiguration / Create deployment configuration
 *** deployByConfiguration / Deploy
 *** getDeployHistory / Get deployment history
 *** deleteDeployConfiguration / Delete deployment configuration
 *** cancelDeployment / Force cancel deployment state
-*** deployDeviceApp / Deploy DeviceApp
-*** undeployDeviceApp / Undeploy DeviceApp
-*** getDeviceAppDeploys / Get DeviceApp deployment history
+*** deployDeviceApp / Deploy "**DeviceApp**"
+*** undeployDeviceApp / Undeploy "**DeviceApp**"
+*** getDeviceAppDeploys / Get "**DeviceApp**" deployment history
 ** Insight
 *** getImageDirectories / Get image save directory list
 *** getImages / Get saved images
 *** getInferenceResults / Get list of saved inference result metadata
 *** exportImages / Export saved images
 
-* High Level API that combine Low Level SDK API for each use case can be executed.
+* High Level API that combine "**Low Level SDK**" API for each use case can be executed.
 ** AI Model
 *** publishModelWaitResponse / Publish model and wait for response
 ** Deployment
 *** deployByConfigurationWaitResponse / Deploy and wait for response
-*** deployDeviceAppWaitResponse / Deploy DeviceApp and wait for response
+*** deployDeviceAppWaitResponse / Deploy "**DeviceApp**" and wait for response
 ** Insight
 *** getImageData / Get saved images
 **** Because the getImages gets up to 256 images, this API calls the getImages multiple times to cover up the restriction
@@ -148,7 +152,7 @@ API without a timeout parameter will not timeout
 *** getLastInferenceAndImageData / Get the latest saved inference results and images
 **** Get images with the most recent date, find and return inference results tied to images
 
-* Log to the console when the Console Access Library is running
+* Log to the console when the "**Console Access Library**" is running
 ** The log format is defined as follows
 *** [Log time] [Log level] [Client name] : Message body
 *** Log time uses the system time of user environment
@@ -164,16 +168,16 @@ API without a timeout parameter will not timeout
 |Level |Summary 
 
 |ERROR
-|Use when the Console Access Library can't finish processing successfully
+|Use when the "**Console Access Library**" can't finish processing successfully
 
 |WARNING
 |Use when some unexpected problem occurs that is not necessarily an error but is also not normal
 
 |INFO
-|Use when the Console Access Library executes events
+|Use when the "**Console Access Library**" executes events
 
 |DEBUG
-|Use when outputting detailed debugging information, such as how the Console Access Library is working
+|Use when outputting detailed debugging information, such as how the "**Console Access Library**" is working
 
 |OFF
 |Turn off all logging
@@ -197,22 +201,22 @@ Logger.setLogLevel("warning")
 ----
 |===
 
-* Check for error conditions when running the Console Access Library
+* Check for error conditions when running the "**Console Access Library**"
 ** Judge as an error under the following conditions
 *** Bad API input parameters
-*** The API input parameters are good, but the response from the Console Low Level SDK is not as expected (such as timeout/error)
-*** Unable to connect to the Console successfully (authentication error, wrong URL, etc.)
+*** The API input parameters are good, but the response from the "**Low Level SDK**" is not as expected (such as timeout/error)
+*** Unable to connect to the "**Console**" successfully (authentication error, wrong URL, etc.)
 
 === Algorithm
-* Start to use the Console Access Library
-. Cloud App creates a Config
+* Start to use the "**Console Access Library**"
+. "**Cloud App**" creates a Config
 +
-. Cloud App creates a Client
+. "**Cloud App**" creates a Client
 +
-Get an access token and generate the Low Level SDK during Client generation
-. From the Client instance, use API wrapped around Low Level SDK API, and functional complex API (High Level API) 
+Get an access token and generate the "**Low Level SDK**" during Client generation
+. From the Client instance, use API wrapped around "**Low Level SDK**" API, and functional complex API (High Level API) 
 +
-Get and update an access token needed to access the Console using an API wrapped around Low Level SDK API
+Get and update an access token needed to access the "**Console**" using an API wrapped around "**Low Level SDK**" API
 +
 - The access token expires in 1 hour and is renewed if it expires in less than 180 seconds.
 
@@ -224,7 +228,7 @@ Get and update an access token needed to access the Console using an API wrapped
 
 
 === Under what condition
-* Use the Low Level SDK to access the Console REST API
+* Use the "**Low Level SDK**" to access the "**Console REST API**"
 
 === API
 * Config
@@ -263,7 +267,7 @@ Get and update an access token needed to access the Console using an API wrapped
 ** deployByConfiguration(configId: string, deviceIds: string, replaceModelId?: string, comment?: string)
 ** getDeployHistory(deviceId: string)
 ** deleteDeployConfiguration(configId: string)
-** cancelDeployment(deviceId: string, deployId: number)
+** cancelDeployment(deviceId: string, deployId: string)
 ** deployDeviceApp(appName: string, versionNumber: string, deviceIds: string, deployParameter?: string, comment?: string)
 ** undeployDeviceApp(deviceIds: string)
 ** getDeviceAppDeploys(appName: string, versionNumber: string)
@@ -309,12 +313,12 @@ Each error message has a different function name depending on the language (repr
 |Parameter’s name|Meaning|Range of parameter
 
 |consoleEndpoint
-|URL to access the Console
+|URL to access the "**Console**"
 |None +
 If not specified, read from environment variable
 
 |portalAuthorizationEndpoint
-|URL to issue an access token needed to access the Console
+|URL to issue an access token needed to access the "**Console**"
 |None +
 If not specified, read from environment variable
 
@@ -334,7 +338,7 @@ If not specified, read from environment variable
 |Return value|Meaning
 
 |Config instance
-|Config instance with information needed to access the Console
+|Config instance with information needed to access the "**Console**"
 |===
 
 * Client
@@ -344,7 +348,7 @@ If not specified, read from environment variable
 |Parameter’s name|Meaning|Range of parameter
 
 |configuration
-|Config instance with information needed to access the Console
+|Config instance with information needed to access the "**Console**"
 |None
 
 |===
@@ -353,7 +357,7 @@ If not specified, read from environment variable
 |Return value|Meaning
 
 |Client instance
-|Client that can execute API wrapped around Low Level SDK API, and functional complex API (High Level API) instance
+|Client that can execute API wrapped around "**Low Level SDK**" API, and functional complex API (High Level API) instance
 |===
 
 ** deviceManagement: Get the instance that provides DeviceManagement API
@@ -431,9 +435,9 @@ If not specified, read from environment variable
 * DeviceManagement
 ** getDevices: Get edge AI device info list
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -473,9 +477,9 @@ If not specified, search all deviceGroupId
 +
 【Error: deviceId is empty】E001 : deviceId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -501,9 +505,9 @@ If not specified, search all deviceGroupId
 +
 【Error: deviceId is empty】E001 : deviceId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -522,11 +526,11 @@ If not specified, search all deviceGroupId
 
 |===
 
-** getCommandParameterFile: Get list of command parameter files registered in the Console
+** getCommandParameterFile: Get list of command parameter files registered in the "**Console**"
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -541,7 +545,7 @@ If not specified, search all deviceGroupId
 |Return value|Meaning
 
 |result
-|List of command parameter files registered in the Console
+|List of command parameter files registered in the "**Console**"
 
 |===
 
@@ -552,11 +556,10 @@ If not specified, search all deviceGroupId
 +
 【Error: model is empty】E001 : model is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
-[cols="1,2,2"]
 |===
 |Parameter’s name|Meaning|Range of parameter
 
@@ -639,9 +642,9 @@ If not specified, 1
 
 ** getModels: Get model info list
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -703,9 +706,9 @@ If not specified, 1
 +
 【Error: modelId is empty】E001 : modelId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -735,9 +738,9 @@ If not specified, 1
 +
 【Error: modelId is empty】E001 : modelId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -760,9 +763,9 @@ If not specified, 1
 +
 【Error: modelId is empty】E001 : modelId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -794,9 +797,9 @@ If the base model is the target, do not specify
 +
 【Error: modelId is empty】E001 : modelId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -844,6 +847,7 @@ If not specified, no notification by the callback function
 '06': 'Add to configuration failed' +
 '07': 'Add to configuration complete' +
 '11': 'Saving'(Model saving status for Model Retainer)
+
 |===
 +
 |===
@@ -855,7 +859,7 @@ If not specified, no notification by the callback function
 |===
 
 * Deployment
-** importDeviceApp: Import DeviceApp
+** importDeviceApp: Import "**DeviceApp**"
 +
 【Error: compiledFlg is empty】E001 : compiledFlg is required.
 +
@@ -867,11 +871,10 @@ If not specified, no notification by the callback function
 +
 【Error: fileContent is empty】E001 : fileContent is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
-[cols="1,2,2"]
 |===
 |Parameter’s name|Meaning|Range of parameter
 
@@ -881,7 +884,7 @@ If not specified, no notification by the callback function
 1:Compiled(will not be compiled)
 
 |appName
-|Name of the DeviceApp
+|Name of the "**DeviceApp**"
 |The maximum character limit is "appName + versionNumber <=31" +
 Forbidden characters except for the following +
 ・Alphanumeric characters +
@@ -889,7 +892,7 @@ Forbidden characters except for the following +
 ・Dot
 
 |versionNumber
-|DeviceApp version
+|"**DeviceApp**" version
 |The maximum character limit is "appName + versionNumber <=31" +
 Forbidden characters except for the following +
 ・Alphanumeric characters +
@@ -897,20 +900,20 @@ Forbidden characters except for the following +
 ・Dot
 
 |fileName
-|Name of the DeviceApp file
+|Name of the "**DeviceApp**" file
 |None
 
 |fileContent
-|File contents of the DeviceApp
+|File contents of the "**DeviceApp**"
 |Base64 encoded string
 
 |entryPoint
-|EVP module entry point
+|"**EVP module**" entry point
 |None +
 If not specified, "ppl"
 
 |comment
-|Description of the DeviceApp
+|Description of the "**DeviceApp**"
 |100 characters or less +
 If not specified, no comment
 
@@ -924,11 +927,11 @@ If not specified, no comment
 
 |===
 
-** getDeviceApps: Get DeviceApp info list
+** getDeviceApps: Get "**DeviceApp**" info list
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -942,30 +945,30 @@ If not specified, no comment
 |===
 |Return value|Meaning
 
-|DeviceApp information
+|"**DeviceApp**" information
 |Same as return value name
 
 |===
 
-** deleteDeviceApp: Delete DeviceApp
+** deleteDeviceApp: Delete "**DeviceApp**"
 +
 【Error: appName is empty】E001 : appName is required.
 +
 【Error: versionNumber is empty】E001 : versionNumber is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
 
 |appName
-|Name of the DeviceApp
+|Name of the "**DeviceApp**"
 |None
 
 |versionNumber
-|DeviceApp version
+|"**DeviceApp**" version
 |None
 
 |===
@@ -980,9 +983,9 @@ If not specified, no comment
 
 ** getDeployConfigurations: Get deployment configuration list
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1005,9 +1008,9 @@ If not specified, no comment
 +
 【Error: configId is empty】E001 : configId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1065,9 +1068,9 @@ If not specified, no Sensor deployment
 +
 【Error: deviceIds is empty】E001 : deviceIds is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1084,7 +1087,7 @@ Case sensitive
 |replaceModelId
 |ID of the model being replaced
 |Specify the modelId or networkId +
-If the specified model ID is not in the DB, treat the input value as networkId (Console internal management ID) +
+If the specified model ID is not in the DB, treat the input value as networkId ("**Console**" internal management ID) +
 If not specified, do not replace.
 
 |comment
@@ -1106,9 +1109,9 @@ If not specified, no comment
 +
 【Error: deviceId is empty】E001 : deviceId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1131,9 +1134,9 @@ If not specified, no comment
 +
 【Error: configId is empty】E001 : configId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1158,9 +1161,9 @@ If not specified, no comment
 +
 【Error: deployId is empty】E001 : deployId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1183,7 +1186,7 @@ If not specified, no comment
 
 |===
 
-** deployDeviceApp: Deploy DeviceApp
+** deployDeviceApp: Deploy "**DeviceApp**"
 +
 【Error: appName is empty】E001 : appName is required.
 +
@@ -1191,9 +1194,9 @@ If not specified, no comment
 +
 【Error: deviceIds is empty】E001 : deviceIds is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1231,13 +1234,13 @@ If not specified, no comment
 
 |===
 
-** undeployDeviceApp: Undeploy DeviceApp
+** undeployDeviceApp: Undeploy "**DeviceApp**"
 +
 【Error: deviceIds is empty】E001 : deviceIds is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1257,15 +1260,15 @@ Case sensitive
 
 |===
 
-** getDeviceAppDeploys: Get DeviceApp deployment history
+** getDeviceAppDeploys: Get "**DeviceApp**" deployment history
 +
 【Error: appName is empty】E001 : appName is required.
 +
 【Error: versionNumber is empty】E001 : versionNumber is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1283,7 +1286,7 @@ Case sensitive
 |===
 |Return value|Meaning
 
-|DeviceApp deployment history
+|"**DeviceApp**" deployment history
 |Same as return value name
 
 |===
@@ -1294,9 +1297,9 @@ Case sensitive
 +
 【Error: deviceIds is empty】E001 : deviceIds is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1313,7 +1316,7 @@ Case sensitive
 |replaceModelId
 |ID of the model being replaced
 |Specify the modelId or networkId +
-If the specified model ID is not in the DB, treat the input value as networkId (Console internal management ID) +
+If the specified model ID is not in the DB, treat the input value as networkId ("**Console**" internal management ID) +
 If not specified, do not replace.
 
 |comment
@@ -1347,7 +1350,6 @@ Check the processing result with the getDeployHistory and call the callback func
 
 ** deployByConfigurationWaitResponseCallback: Status notification callback function for the deployByConfigurationWaitResponse
 +
-[cols="1,1,2"]
 |===
 |Parameter’s name|Meaning|Range of parameter
 
@@ -1370,7 +1372,7 @@ Fill in data for deviceId specified by deviceIds in devloyByConfigurationWaitRes
 　1: Success +
 　2: Failure +
 　3: Cancel +
-　9: DeviceApp is undeployed
+　9: "**DeviceApp**" is undeployed
 
 |===
 +
@@ -1382,7 +1384,7 @@ Fill in data for deviceId specified by deviceIds in devloyByConfigurationWaitRes
 
 |===
 
-** deployDeviceAppWaitResponse: Deploy DeviceApp and wait for response
+** deployDeviceAppWaitResponse: Deploy "**DeviceApp**" and wait for response
 +
 【Error: appName is empty】E001 : appName is required.
 +
@@ -1390,9 +1392,9 @@ Fill in data for deviceId specified by deviceIds in devloyByConfigurationWaitRes
 +
 【Error: deviceIds is empty】E001 : deviceIds is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1440,7 +1442,6 @@ Check the processing result with the getDeviceAppDeploys and call the callback f
 
 ** deployDeviceAppWaitResponseCallback: Status notification callback function for the deployDeviceAppWaitResponse
 +
-[cols="1,1,2"]
 |===
 |Parameter’s name|Meaning|Range of parameter
 
@@ -1483,9 +1484,9 @@ Fill in data for deviceId specified by deviceIds in deployDeviceAppWaitResponse 
 * Insight
 ** getImageDirectories: Get image save directory list
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1510,9 +1511,9 @@ If not specified, return information for all deviceIds
 +
 【Error: subDirectoryName is empty】E001 : subDirectoryName is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1557,11 +1558,10 @@ If not specified:ASC
 +
 【Error: deviceId is empty】E001 : deviceId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
-[cols="1,2,2"]
 |===
 |Parameter’s name|Meaning|Range of parameter
 
@@ -1610,9 +1610,9 @@ If not specified:1
 +
 【Error: key is empty】E001 : key is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1661,9 +1661,9 @@ A common key for decrypting images encrypted with a public key
 +
 【Error: subDirectoryName is empty】E001 : subDirectoryName is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1708,9 +1708,9 @@ If not specified:ASC
 +
 【Error: deviceId is empty】E001 : deviceId is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -1734,9 +1734,9 @@ If not specified:ASC
 +
 【Error: subDirectoryName is empty】E001 : subDirectoryName is required.
 +
-【Error: When an error occurs in the Low Level SDK】Raise an error defined in the Console Access Library
+【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
-【Error: When http_status returned from Low Level SDK API is not 200】Raise an error defined in the Console Access Library
+【Error: When http_status returned from "**Low Level SDK**" API is not 200】Raise an error defined in the "**Console Access Library**"
 +
 |===
 |Parameter’s name|Meaning|Range of parameter

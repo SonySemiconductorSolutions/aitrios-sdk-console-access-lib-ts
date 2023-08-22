@@ -309,17 +309,25 @@ export class DeployByConfigurationWaitResponse {
                 throw validate.errors;
             }
 
+            if (callback && typeof callback !== 'function') {
+                valid = false;
+                const errorMessage = 'Invalid return for callback';
+                Logger.error(getMessage(ErrorCodes.ERROR, errorMessage));
+                return validationErrorMessage(
+                    getMessage(ErrorCodes.ERROR, errorMessage)
+                );
+            }
             const loopTimeOut = new Date();
             loopTimeOut.setHours(loopTimeOut.getHours() + timeout);
             const returnDeployByConfigurationWaitResponseAllDeviceIds: any = [];
             const deviceIdList = !deviceIds
                 ? []
                 : deviceIds
-                      // eslint-disable-next-line indent
+                // eslint-disable-next-line indent
                       .trim()
-                      .replace(/,$/, '')
-                      .split(',')
-                      .map((item: string) => item.trim());
+                    .replace(/,$/, '')
+                    .split(',')
+                    .map((item: string) => item.trim());
             let returnDeployByConfigurationWaitResponse = {};
             this.getDeployHistoryObj = new GetDeployHistory(this.config);
             this.deployByConfigObj = new DeployByConfiguration(this.config);

@@ -297,16 +297,6 @@ export class ImportDeviceApp {
                 throw validate.errors;
             }
 
-            if (appName.length + versionNumber.length > 32) {
-                valid = false;
-                const errorMessage =
-                    'Exceed the maximum number of characters is appName + versionNumber ⇐31';
-                Logger.error(getMessage(ErrorCodes.ERROR, errorMessage));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, errorMessage)
-                );
-            }
-
             const accessToken = await this.config.getAccessToken();
             const baseOptions = await this.config.setOption();
 

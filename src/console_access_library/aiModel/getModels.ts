@@ -339,7 +339,7 @@ export class GetModels {
         modelPlatform?: string,
         projectType?: string,
         deviceId?: string,
-        latestType?: string
+        latestType = '1'
     ) {
         Logger.info('getModels');
         let valid = true;
