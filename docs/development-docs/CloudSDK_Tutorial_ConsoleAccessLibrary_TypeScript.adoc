@@ -5,7 +5,7 @@
 :version-label: Version 
 :revnumber: x.x.x
 :revdate: YYYY - MM - DD
-:trademark-desc1: AITRIOS? and AITRIOS logos are the registered trademarks or trademarks
+:trademark-desc1: AITRIOS™ and AITRIOS logos are the registered trademarks or trademarks
 :trademark-desc2: of Sony Group Corporation or its affiliated companies.
 :toc:
 :toc-title: TOC
@@ -14,7 +14,7 @@
 :lang: en
 
 == Objective
-To explain the various APIs exposed by Console Access Library and help the user to build and use the library.
+To explain the various APIs exposed by "**Console Access Library**" and help the user to build and use the library.
 
 == Prerequisites
 The following is the required software you need to install in your system.
@@ -24,17 +24,22 @@ The following is the required software you need to install in your system.
 * Install TypeScript globally
 ** npm install -g typescript
 
-=== Console Access Library API Specification
-https://verbose-eureka-5eb00fd5.pages.github.io/api-reference/[Console Access Library API Specification]
+=== "**Console Access Library**" API Specification
+Please refer the below procedure regarding how to refer the "**Console Access Library**" API specifications. 
+
+1. Clone the repository
+    ** https://github.com/SonySemiconductorSolutions/aitrios-sdk-console-access-lib-ts
+
+2.  Open `**docs/api-reference/index.html**` available in the cloned directory via browser
 
 == Usage
 
 === Installation and Setup
-The following is a step for installing and setting up Console Access Library sample application.
+The following is a step for installing and setting up "**Console Access Library**" sample application.
 
 1. Clone the repository
     ** https://github.com/SonySemiconductorSolutions/aitrios-sdk-console-access-lib-ts.git
-2. Open terminal and go to the `**lib**` path and run the following command
+2. Open terminal and go to the `**lib/js-client**` path and run the following command
 + 
 ```
     npm install
@@ -56,7 +61,7 @@ The following is a step for installing and setting up Console Access Library sam
     npm install
 ```
 
-=== Set configuration parameter to start Console Access Library sample application
+=== Set configuration parameter to start "**Console Access Library**" sample application
 
 * Create the following configuration file and set the parameters:
 +
@@ -121,7 +126,7 @@ The following is a step for installing and setting up Console Access Library sam
 
 === Network proxy setting
 
-To use the Console Access Library in a proxy environment, set the `**https_proxy**` environment variable.
+To use the "**Console Access Library**" in a proxy environment, set the `**https_proxy**` environment variable.
 
 ```
 export https_proxy=http://username:password@proxyhost:port
@@ -129,7 +134,7 @@ export https_proxy=http://username:password@proxyhost:port
 
 === Starting the App
 
-To run the CLI demo, open cmd terminal from the root folder, and run the following command.
+To run the CLI demo, open cmd terminal from the  `**samples/demo-console**` folder, and run the following command.
 
 ```
 npx ts-node index.ts

@@ -210,6 +210,14 @@ export class PublishModelWaitResponse {
                 throw validate.errors;
             }
 
+            if (callback && typeof callback !== 'function') {
+                valid = false;
+                const errorMessage = 'Invalid return for callback';
+                Logger.error(getMessage(ErrorCodes.ERROR, errorMessage));
+                return validationErrorMessage(
+                    getMessage(ErrorCodes.ERROR, errorMessage)
+                );
+            }
             this.publishModelObj = new PublishModel(this.config);
             this.getBaseModelStatusObj = new GetBaseModelStatus(this.config);
             let returnPublishModelWaitResponse: any = {}; 
