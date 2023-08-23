@@ -1048,7 +1048,7 @@ export class Deployment {
         Used when edge AI device deployment fails and there is a deviation from the state of the database.
      *  @params
      * - deviceId (str, required) - Device ID. Case-sensitive
-     * - deployId (int, required) - The Deployment id. \
+     * - deployId (str, required) - The Deployment id. \
      *          Id that can be obtained with getDeployHistory.
      * @returns 
      * - Object: table:: Success Response
@@ -1069,9 +1069,7 @@ export class Deployment {
      * 
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
-     *   if any input string parameter found empty OR \
-     *   if any input integer parameter found negative OR \
-     *   if any input non integer parameter found.
+     *   if any input string parameter found empty.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -1087,7 +1085,7 @@ export class Deployment {
      *      - 'datetime' (str) : Time
      */
 
-    cancelDeployment(deviceId: string, deployId: number) {
+    cancelDeployment(deviceId: string, deployId: string) {
         const response = this.cancelDeploymentObj.cancelDeployment(
             deviceId,
             deployId
