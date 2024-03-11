@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,28 +20,14 @@ import { InsightApi, Configuration } from 'js-client';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 
 const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
 
-ajv.addKeyword('isNotEmpty', {
-    type: 'string',
-    validate: (schema: any, data: string) => {
-        if (schema) {
-            return typeof data === 'string' && data.trim() !== '';
-        } else return true;
-    },
-    keyword: '',
-});
-
 /**
- * This class implements API for each device group, a list of image storage \
- *      directories for each device is acquired.
+ * This class implements API to get the image save directory list of the devices for each device
+ * group.
  */
 export class GetImageDirectories {
     config: Config;
@@ -60,62 +46,57 @@ export class GetImageDirectories {
         properties: {
             deviceId: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
                     type: 'Invalid string for deviceId',
-                    isNotEmpty: 'deviceId required or can\'t be empty string',
                 },
             },
         },
-        required: ['deviceId'],
         additionalProperties: false,
-        errorMessage: {
-            required: {
-                deviceId: 'deviceId is required',
-            },
-        },
     };
 
     /**
-     * getImageDirectories- Image storage directory list retrieval API. For each device group, a list of image \
-            storage directories for each device is acquired.
+     * getImageDirectories- Get the image save directory list of the devices for each device \
+        group.
      *  @params 
-     * - deviceId(str, optional):  Device ID \
-                If specified, the image directory list associated with the specified \
-                device ID is returned. Case-sensitive 
+     * - deviceId(str, optional):  Device ID. \
+            If this is specified, return an image directory list linked to the specified device ID.
      * @returns
      * - Object: table:: Success Response
 
             +------------------+------------+------------+-------------------------------+
-            |  Level1          |  Level2    |  Type      |  Description                  |
+            | *Level1*         | *Level2*   | *Type*     | *Description*                 |
+            +==================+============+============+===============================+
+            | ``No_item_name`` |            | ``array``  |                               |
             +------------------+------------+------------+-------------------------------+
-            |  `No_item_name`  |            |            | Device Affiliation Group Array|
+            |                  |``group_id``| ``string`` | Set the device group ID.      |
             +------------------+------------+------------+-------------------------------+
-            |                  | `group_id` |   `string` | Set the device group ID.      |
-            +------------------+------------+------------+-------------------------------+
-            |                  |  `devices` |  `array`   | Refer : Table : 1.0           |
+            |                  | ``devices``| ``array``  | Refer : Table : 1.0           |
             |                  |            |            | for more details              |
             +------------------+------------+------------+-------------------------------+
-            
-        @Table : 1.0 - devices schema details
+
+            @Table : 1.0 - devices schema details
 
             +-------------------+--------------------+------------+--------------------------+
-            |  Level1           |  Level2            |  Type      |  Description             |
+            | *Level1*          | *Level2*           | *Type*     | *Description*            |
+            +===================+====================+============+==========================+
+            | ``devices``       |  ``array``         |            |                          |
             +-------------------+--------------------+------------+--------------------------+
-            |  `devices`        |   `array`          |            | Device Array.            |
-            |                   |                    |            | The subordinate          |
-            |                   |                    |            | elements are listed      |
-            |                   |                    |            | in ascending order       |
-            |                   |                    |            | by device ID             |   
+            |                   |``device_id``       | ``string`` | Set the device ID.       |
             +-------------------+--------------------+------------+--------------------------+
-            |                   | `device_id`        |   `string` | Device ID.               |
+            |                   |``device_name``     | ``string`` | Set the device name.     |
             +-------------------+--------------------+------------+--------------------------+
-            |                   | `device_name`      |   `string` | Device name at the time  |
-            |                   |                    |            | of registration          | 
+            |                   |``Image``           | ``array``  | Refer : Table : 1.1      |
+            |                   |                    |            | for more details         |
             +-------------------+--------------------+------------+--------------------------+
-            |                   | `Image`            |  `array`   | The descendant elements  |
-            |                   |                    |            | are listed in ascending  | 
-            |                   |                    |            | order by directory name. | 
+
+            @Table : 1.1 - Image schema details
+
+            +-------------------+--------------------+------------+--------------------------+
+            | *Level1*          | *Level2*           | *Type*     | *Description*            |
+            +===================+====================+============+==========================+
+            | ``Image``         |  ``array``         |            |                          |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   |  ``No_item_name``  | ``string`` | Set the directory name.  |
             +-------------------+--------------------+------------+--------------------------+
 
      * - 'Generic Error Response' :
@@ -151,8 +132,10 @@ export class GetImageDirectories {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
-     *  
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
+     *
      *    const client = await Client.createInstance(config);
      *    const deviceId = '__deviceId__';
      *    const response= await client.insight.getImageDirectories(deviceId);
@@ -168,8 +151,8 @@ export class GetImageDirectories {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -177,14 +160,18 @@ export class GetImageDirectories {
                 baseOptions
             });
             this.api = new InsightApi(apiConfig);
-            const res = await this.api.getImageDirectories(deviceId);
+
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.getImageDirectories('client_credentials', deviceId);
+            } else {
+                res = await this.api.getImageDirectories(undefined, deviceId);
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

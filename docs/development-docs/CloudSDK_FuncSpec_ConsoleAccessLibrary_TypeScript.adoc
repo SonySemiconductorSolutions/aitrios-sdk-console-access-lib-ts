@@ -29,6 +29,10 @@ Updated the PDF build environment
 |2023/5/26
 |Fixed parenthesis notation for tool names
 
+|2023/12/22
+|Changed for "**Cloud SDK**" 1.1.0 +
+Console Enterprise Edition support
+
 |===
 
 == Introduction
@@ -94,6 +98,10 @@ The information needed to access the "**Console**" is as follows
 
 |Client Secret
 |Client secret needed to issue an access token
+
+|Application ID +
+(Required during "**Console Enterprise Edition**" )
+|Application ID required for issuing the access token
 
 |===
 
@@ -218,6 +226,8 @@ Get an access token and generate the "**Low Level SDK**" during Client generatio
 +
 Get and update an access token needed to access the "**Console**" using an API wrapped around "**Low Level SDK**" API
 +
+When the Application ID is passed to Config, the token is obtained and updated by Microsoft Authentication Library
++
 - The access token expires in 1 hour and is renewed if it expires in less than 180 seconds.
 
 * Start to get inference result metadata - Stop
@@ -232,7 +242,7 @@ Get and update an access token needed to access the "**Console**" using an API w
 
 === API
 * Config
-** constructor(consoleEndpoint: string, portalAuthorizationEndpoint: string, clientId: string, clientSecret: string)
+** constructor(consoleEndpoint: string, portalAuthorizationEndpoint: string, clientId: string, clientSecret: string, applicationId: string)
 
 * Client
 ** constructor(configuration: Config)
@@ -242,13 +252,13 @@ Get and update an access token needed to access the "**Console**" using an API w
 ** insight()
 
 * DeviceManagement
-** getDevices(deviceId?: string, deviceName?: string, connectionState?: string, deviceGroupId?: string)
+** getDevices(deviceId?: string, deviceName?: string, connectionState?: string, deviceGroupId?: string, deviceIds?: string, scope?: string ) 
 ** startUploadInferenceResult(deviceId: string)
 ** stopUploadInferenceResult(deviceId: string)
 ** getCommandParameterFile()
 
 * AI Model
-** importBaseModel(modelId: string, model: string, converted?: boolean, vendorName?: string, comment?: string, inputFormatParam?: string, networkConfig?: string, networkType?: string, labels?: Array<string>)
+** importBaseModel(modelId: string, model: string, converted?: boolean, vendorName?: string, comment?: string, inputFormatParam?: string, networkConfig?: string, networkType?: string, metadataFormatId?: string)
 ** getModels(modelId?: string, comment?: string, projectName?: string, modelPlatform?: string, projectType?: string, deviceId?: string, latestType?: string)
 ** getBaseModelStatus(modelId: string, latestType?: string)
 ** deleteModel(modelId: string)
@@ -259,7 +269,7 @@ Get and update an access token needed to access the "**Console**" using an API w
 *** publishModelWaitResponseCallback(status: string)
 
 * Deployment
-** importDeviceApp(compiledFlg: string, appName: string, versionNumber: string, fileName: string, fileContent: string, entryPoint?: string, comment?: string)
+** importDeviceApp(compiledFlg: string, appName: string, versionNumber: string, fileName: string, fileContent: string, entryPoint?: string, comment?: string, schemaInfo?: object)
 ** getDeviceApps()
 ** deleteDeviceApp(appName: string, versionNumber: string)
 ** getDeployConfigurations()
@@ -268,14 +278,14 @@ Get and update an access token needed to access the "**Console**" using an API w
 ** getDeployHistory(deviceId: string)
 ** deleteDeployConfiguration(configId: string)
 ** cancelDeployment(deviceId: string, deployId: string)
-** deployDeviceApp(appName: string, versionNumber: string, deviceIds: string, deployParameter?: string, comment?: string)
+** deployDeviceApp(appName: string, versionNumber: string, deviceIds: string, comment?: string)
 ** undeployDeviceApp(deviceIds: string)
 ** getDeviceAppDeploys(appName: string, versionNumber: string)
 
 * Deployment High Level API
 ** deployByConfigurationWaitResponse(configId: string, deviceIds: string, replaceModelId?: string, comment?: string, timeout?: number, callback?: deployByConfigurationWaitResponseCallback)
 *** deployByConfigurationWaitResponseCallback(deviceStatusArray: object)
-** deployDeviceAppWaitResponse(appName: string, versionNumber: string, deviceIds: string, deployParameter?: string, comment?: string, callback?: deployDeviceAppWaitResponseCallback)
+** deployDeviceAppWaitResponse(appName: string, versionNumber: string, deviceIds: string, comment?: string, callback?: deployDeviceAppWaitResponseCallback)
 *** deployDeviceAppWaitResponseCallback(deviceStatusArray: object)
 
 * Insight
@@ -331,6 +341,12 @@ If not specified, read from environment variable
 |Client secret needed to issue an access token
 |None +
 If not specified, read from environment variable
+
+|applicationId
+|Application ID required to issue the access token
+|None +
+In case it is not specified, load it from the environment
+variables
 
 |===
 +
@@ -464,6 +480,19 @@ If not specified, search all connectionState
 |Exact match search, case insensitive +
 If not specified, search all deviceGroupId
 
+|deviceIds
+|Group that belongs to edge AI devices
+|Specify multiple Device ID separated by comma. +
+If not specified, search all device IDs
+
+|scope
+|Group that belongs to edge AI devices 
+|Specifies the range of response parameters. +
+Setting value: +
+full: Return complete parameters. +
+minimal: Return minimum parameters (response speed is high) +
+If not specified, search entire scope
+
 |===
 +
 |===
@@ -498,6 +527,9 @@ If not specified, search all deviceGroupId
 
 |outputSubDirectory
 |Input image save path、UploadMethod:Blob Storage only
+
+|outputSubDirectoryIR
+|Input inference save path、UploadMethod:Blob Storage only
 
 |===
 
@@ -629,6 +661,10 @@ If not specified, 1
 |labels
 |Label name
 |Example: ["label01","label02","label03"]
+
+|metadataFormatId
+|Metadata format ID
+|Within 100 characters
 
 |===
 +
@@ -916,6 +952,12 @@ If not specified, "ppl"
 |Description of the "**DeviceApp**"
 |100 characters or less +
 If not specified, no comment
+
+|schemaInfo
+|Schema information
+|Format: +
+const schemaInfo = +
+{ interfaces: { in: [{ metadataFormatId: 'formatId' }] } }
 
 |===
 +
@@ -1214,11 +1256,6 @@ If not specified, no comment
 |Specify multiple edge AI device IDs separated by commas +
 Case sensitive
 
-|deployParameter
-|Deploy parameters
-|A Base64 encoded string in Json format +
-If not specified, no parameter
-
 |comment
 |Deployment comment
 |100 characters or less +
@@ -1411,11 +1448,6 @@ Fill in data for deviceId specified by deviceIds in devloyByConfigurationWaitRes
 |Edge AI device IDs
 |Specify multiple edge AI device IDs separated by commas +
 Case sensitive
-
-|deployParameter
-|Deploy parameters
-|A Base64 encoded string in Json format +
-If not specified, no parameter
 
 |comment
 |Deployment comment

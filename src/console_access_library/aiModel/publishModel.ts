@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,7 @@ import ajvErrors from 'ajv-errors';
 import { Configuration, TrainModelApi } from 'js-client';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 
 const ajv = new Ajv({ allErrors: true });
@@ -71,10 +67,8 @@ export class PublishModel {
             },
             deviceId: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
-                    type: 'Invalid string for deviceId',
-                    isNotEmpty: 'deviceId required or can\'t be empty string',
+                    type: 'Invalid string for deviceId'
                 },
             },
         },
@@ -89,23 +83,25 @@ export class PublishModel {
 
     /**
      *
-     * publishModel - Provide the ability to publish transformation models. \
-        Since model import takes time, asynchronous execution is performed.
+     * publishModel - Provide a function to publish a conversion model. \
+        As model publishing takes time, this is performed asynchronously. \
+        *Check the processing status in the result of the GetBaseModelStatus API \
+        or GetDeviceModelStatus API response. If the result is 'Import completed', \
+        the process is completed.
      * @params
-     * - modelId (str, required) - The model Id.
-     * - deviceId (str, optional) - Device ID Specify when the device model is eligible.\
-                Not specified if the base model is the target. Case-sensitive.
+     * - modelId (str, required) - Model ID.
+     * - deviceId (str, optional) - Device ID \
+            *Specify this when the device model is the target. \
+            Do not specify this when the base model is the target.
      * @returns
      * - Object: table:: Success Response
                 
             +----------------+------------+-------------------------------+
-            |  Level1        |  Type      |  Description                  |
+            | *Level1*       | *Type*     | *Description*                 |
+            +================+============+===============================+
+            | ``result``     | ``string`` | Set "SUCCESS" fixing          |
             +----------------+------------+-------------------------------+
-            |  `result`      |  `string`  | Set "SUCCESS" pinning         |
-            +----------------+------------+-------------------------------+
-            |  `import_id`   |  `string`  | Set the import_id of          |
-            |                |            | Model Import Rest API         |
-            |                |            | (model-import) response       |
+            | ``import_id``  | ``string`` | Set the conv id               |
             +----------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -142,7 +138,9 @@ export class PublishModel {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const modelId = '__modelId__';
@@ -160,8 +158,8 @@ export class PublishModel {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -170,7 +168,12 @@ export class PublishModel {
             });
             this.api = new TrainModelApi(apiConfig);
 
-            const res = await this.api.publishModel(modelId, deviceId);
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.publishModel(modelId, 'client_credentials', deviceId);
+            } else {
+                res = await this.api.publishModel(modelId, undefined, deviceId);
+            }
             return res;
         } catch (error) {
             if (!valid) {

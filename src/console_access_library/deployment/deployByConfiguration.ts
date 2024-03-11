@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,7 @@ import ajvErrors from 'ajv-errors';
 import { DeployApi, Configuration } from 'js-client';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { getMessage } from '../common/logger/getMessage';
 
 const ajv = new Ajv({ allErrors: true });
@@ -69,7 +65,7 @@ export class DeployByConfiguration {
                 isNotEmpty: true,
                 errorMessage: {
                     type: 'Invalid string for configId',
-                    isNotEmpty: 'configId required or can\'t be empty string',
+                    isNotEmpty: 'configId required or can\'t be empty string'
                 },
             },
             deviceIds: {
@@ -77,24 +73,21 @@ export class DeployByConfiguration {
                 isNotEmpty: true,
                 errorMessage: {
                     type: 'Invalid string for deviceIds',
-                    isNotEmpty: 'deviceIds required or can\'t be empty string',
+                    isNotEmpty: 'deviceIds required or can\'t be empty string'
                 },
             },
             replaceModelId: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for replaceModelId',
-                    isNotEmpty:
-                        'replaceModelId required or can\'t be empty string',
+                    type: 'Invalid string for replaceModelId'
                 },
             },
             comment: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for comment',
-                    isNotEmpty: 'comment required or can\'t be empty string',
+                    type: 'Invalid string for comment'
                 },
             },
         },
@@ -109,26 +102,25 @@ export class DeployByConfiguration {
     };
 
     /**
-     *  deployByConfiguration - Provides a function to deploy the following to the device specified from the \
-     *   deployment config. Firmware, AIModel.
+     *  deployByConfiguration - Provide a function for deploying the following to devices \
+     *                          specified with deploy config. \
+     *                          - Firmware \
+     *                          - AIModel
      *  @params
-     * - configId (str, required) : Configuration ID.
-     * - deviceIds (str, required) : Specify multiple device IDs separated by commas. \
-                Case-sensitive
-     * - replaceModelId (str, optional) : Replacement target model ID \
-     *           Specify "model_id" or "network_id" If the specified model ID does \
-     *           not exist in the DB, treat the input value as network_id \
-     *           (console internal management ID) and perform processing \
-     *           If not specified, do not replace.
-     * - comment (str, optional) : deploy comment \
-     *           up to 100 characters No comment if not specified
+     * - configId (str, required) : Setting ID.
+     * - deviceIds (str, required) : Specify multiple device IDs separated by commas.
+     * - replaceModelId (str, optional) : Specify the model ID or network_id. \
+     *           If the model with the specified model ID does not exist in the database, \
+     *           treat the entered value as the network_id and process it. \
+     *           Default: ''
+     * - comment (str, optional) : Max. 100 characters. Default: ''
      * @returns
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -140,8 +132,8 @@ export class DeployByConfiguration {
      * 
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
-          if any input string parameter found empty OR \
-          Then, Object with below key and value pairs.
+         if any input string parameter found empty.
+     *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
@@ -164,7 +156,9 @@ export class DeployByConfiguration {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const configId = '__config_id__';
@@ -188,8 +182,8 @@ export class DeployByConfiguration {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -198,19 +192,29 @@ export class DeployByConfiguration {
             });
             this.api = new DeployApi(apiConfig);
 
-            const res = await this.api.deployByConfiguration(
-                configId,
-                deviceIds,
-                replaceModelId,
-                comment
-            );
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.deployByConfiguration(
+                    configId,
+                    deviceIds,
+                    'client_credentials',
+                    replaceModelId,
+                    comment
+                );
+            } else {
+                res = await this.api.deployByConfiguration(
+                    configId,
+                    deviceIds,
+                    undefined,
+                    replaceModelId,
+                    comment
+                );
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

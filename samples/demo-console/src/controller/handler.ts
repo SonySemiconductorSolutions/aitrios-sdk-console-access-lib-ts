@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ export class APIHandler{
 
     async handleRequest(data: { apiEnum?: any; apiParams?: any; apiRequestBody?: any; }, callbackListener: { (response: any): void; (arg0: { response: string; }): void; }) {
         // for console based demo app all input parameters will pick form config file to execute the apis
-       new APIExecutor().excecute().then((rs)=> {
+       new APIExecutor().execute().then((rs)=> {
         const responseData= rs;
         callbackListener(responseData);
       

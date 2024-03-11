@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,7 @@ import ajvErrors from 'ajv-errors';
 import { Configuration, TrainModelApi } from 'js-client';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 
 const ajv = new Ajv({ allErrors: true });
@@ -63,59 +59,45 @@ export class GetModels {
         properties: {
             modelId: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
-                    type: 'Invalid string for modelId',
-                    isNotEmpty: 'modelId required or can\'t be empty string',
+                    type: 'Invalid string for modelId'
                 },
             },
             comment: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
-                    type: 'Invalid string for comment',
-                    isNotEmpty: 'comment required or can\'t be empty string',
+                    type: 'Invalid string for comment'
                 },
             },
             projectName: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
                     type: 'Invalid string for projectName',
-                    isNotEmpty: 'projectName required or can\'t be empty string',
                 },
             },
             modelPlatform: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
-                    type: 'Invalid string for modelPlatform',
-                    isNotEmpty:
-                        'modelPlatform required or can\'t be empty string',
+                    type: 'Invalid string for modelPlatform'
                 },
             },
             projectType: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
-                    type: 'Invalid string for projectType',
-                    isNotEmpty: 'projectType required or can\'t be empty string',
+                    type: 'Invalid string for projectType'
                 },
             },
             deviceId: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
-                    type: 'Invalid string for deviceId',
-                    isNotEmpty: 'deviceId required or can\'t be empty string',
+                    type: 'Invalid string for deviceId'
                 },
             },
             latestType: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '1',
                 errorMessage: {
                     type: 'Invalid string for latestType',
-                    isNotEmpty: 'latestType required or can\'t be empty string',
                 },
             },
         },
@@ -123,107 +105,112 @@ export class GetModels {
     };
 
     /**
-     * getModels - Get model information list
+     * getModels - Get the model list information.
      * @params
-     * - modelId (str, optional) -  Model ID. Partial search \
-                If not specified, all model_id searches.
-     * - comment (str, optional) - Model Description. Partial search \
-                If not specified, search all comments.
-     * - projectName (str, optional) - Project Name. Partial search \
-                Search all project_name if not specified.
-     * - modelPlatform (str, optional) - Model platform \
-                - 0 : Custom Vision(Third party trademark)\
-                - 1 : Non Custom Vision \
-                - 2 : Model Retrainer \
-                Exact search, If not specified, search all model_platforms.
-     * - projectType (str, optional) - The project Type. \
-                - 0 : Base \
-                - 1 : Device \
-                Exact search, Search all project_types if not specified.
-     * - deviceId (str, optional)- Device Id. \
-                Specify when you want to search for device models. \
-                Exact match search criteria. Case-sensitive.
-     * - latestType (str, optional) - Latest version type. \
-                - 0 : latest published version \
-                - 1 : Latest version (latest including model version in process of \
-                conversion/publishing) \
-                Exact search, 1 if not specified.
+     * - modelId (str, optional) -  Model ID. *Partial match search
+     * - comment (str, optional) - Model description. *Partial match search
+     * - projectName (str, optional) - Project name. *Partial match search
+     * - modelPlatform (str, optional) - Model Platform. \
+            - Value definition \
+              0 : Custom Vision \
+              1 : Non Custom Vision
+     * - projectType (str, optional) - Project Type. \
+            - Value definition \
+              0 : Base model \
+              1 : Device model
+     * - deviceId (str, optional)- Device Id.
+     * - latestType (str, optional) - Latest version type \
+            - Value definition \
+              0: Latest published version \
+              1: Latest version (latest including model version being converted/published) \
+            Default: '1'
      * @returns
      * - Object: table:: Success Response
 
             +------------+-------------------+------------+-------------------------------+
-            |  Level1    |  Level2           |  Type      |  Description                  |
+            | *Level1*   | *Level2*          | *Type*     | *Description*                 |
+            +============+===================+============+===============================+
+            | ``models`` |                   | ``array``  |                               |
             +------------+-------------------+------------+-------------------------------+
-            |  `models`  |                   |  `array`   | The subordinate elements are  |
-            |            |                   |            | listed in ascending order of  |
-            |            |                   |            | model ID                      |
+            |            | ``model_id``      | ``string`` | Set the model ID              |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `model_id`       |   `string` | Set the model ID              |
+            |            | ``model_type``    | ``string`` | Set the model type            |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `device_type`    |   `string` | Set the model type            |
+            |            | ``functionality`` | ``string`` | Set the feature descriptions  |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `functionality`  |   `string` | Set the feature description   |
+            |            | ``vendor_name``   | ``string`` | Set the vendor name           |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `vendor_name`    |   `string` | Set the vendor name           |
+            |            | ``model_comment`` | ``string`` | Set the description           |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `model_comment`  |   `string` | Set the description           |
+            |            | ``network_type``  | ``string`` | Set the network type.         |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `network_type`   |   `string` | 0: Custom Vision(Third        |
-            |            |                   |            | party trademark)              |
-            |            |                   |            | 1: NonCustomVision            |
+            |            | ``create_by``     | ``string`` | Set the create_by.            |
+            |            |                   |            | - Value definition            |
+            |            |                   |            | Self: Self-training models    |
+            |            |                   |            | Marketplace: Marketplace      |
+            |            |                   |            | purchacing model              |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `projects`       |  `array`   | Refer : Table : 1.0           |
+            |            | ``package_id``    | ``string`` | Set the marketplace package ID|
+            +------------+-------------------+------------+-------------------------------+
+            |            | ``product_id``    | ``string`` | Set the marketplace product ID|
+            +------------+-------------------+------------+-------------------------------+
+            |            |``metadata_format_ | ``string`` | Set the metadata_format_id.   |
+            |            |id``               |            |                               |
+            +------------+-------------------+------------+-------------------------------+
+            |            | ``projects``      | ``array``  | Refer : Table : 1.0           |
             |            |                   |            | for more details              |
             +------------+-------------------+------------+-------------------------------+
-        
-        @Table : 1.0 - projects schema details
- 
+
+            @Table : 1.0 - projects schema details
+
             +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
+            | *Level1*   | *Level2*           | *Type*     | *Description*                     |
+            +============+====================+============+===================================+
+            |``projects``|                    | ``array``  |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            | `projects` |                    |  `array`   |The subordinate elements are listed|
-            |            |                    |            |in ascending order of project type |
-            |            |                    |            |and model project name.            |
+            |            |``model_project_    | ``string`` |Set the model project name         |
+            |            |name``              |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_project_    |   `string` |Set the model project name         |
-            |            |name`               |            |                                   |
+            |            |``model_project_    | ``string`` |Set the model project id           |
+            |            |id``                |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_platform`   |  `string`  |Set up the model platform          |
+            |            |``model_platform``  |``string``  |Set the model platform             |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_type`       |  `string`  |Set the model type                 |
+            |            |``model_type``      |``string``  |Set the model type                 |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `project_type`     |  `string`  |Set the project type               |
+            |            |``project_type``    |``string``  |Set the project type               |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `device_id`        |  `string`  |Set the device ID * This is not an |
-            |            |                    |            |internal ID                        |
+            |            |``device_id``       |``string``  |Set the device ID                  |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `versions`         | `array`    |Refer : Table : 1.1                |
+            |            |``versions``        |``array``   |Refer : Table : 1.1                |
             |            |                    |            |for more details                   |
             +------------+--------------------+------------+-----------------------------------+
 
-        @Table : 1.1 - Versions schema details
-        
+            @Table : 1.1 - versions schema details
+
             +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
+            | *Level1*   | *Level2*           | *Type*     | *Description*                     |
+            +============+====================+============+===================================+
+            |``versions``|                    | ``array``  |There must be one subordinate      |
+            |            |                    |            |element for this API.              |
             +------------+--------------------+------------+-----------------------------------+
-            | `versions` |                    |  `array`   |Although it is a subordinate       |
-            |            |                    |            |element, in the case of this API,  |
-            |            |                    |            |there is always one.               |
+            |            |``version_number``  | ``string`` |Set the version number             |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `version_number`   |   `string` |Set the version number             |
+            |            |``iteration_id``    |``string``  |Set the iteration ID               |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `iteration_id`     |  `string`  |Set the iteration ID               |
+            |            |``iteration_name``  |``string``  |Set the iteration name             |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `iteration_name`   |  `string`  |Set the iteration name             |
+            |            |``accuracy``        |``string``  |Set the accuracy                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `accuracy`         |  `string`  |Set the precision                  |
+            |            |``model_performan   |``object``  |Set the performance information    |
+            |            |ces``               |            |of the model.                      |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `latest_flg`       |  `string`  |Set the latest flag                |
+            |            |``latest_flg``      |``string``  |Set the latest flag                |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_latest    |  `string`  |Set the latest published flag      |
-            |            |_flg`               |            |                                   |
+            |            |``publish_latest    |``string``  |Set the latest published flag      |
+            |            |_flg``              |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `version_status`   |  `string`  |Set your status                    |
+            |            | ``version_status`` | ``string`` |Set your status                    |
             |            |                    |            |                                   |
             |            |                    |            |'01': 'Before conversion'          |
             |            |                    |            |                                   |
@@ -243,46 +230,28 @@ export class GetModels {
             |            |                    |            |'11': 'Saving' Model saving        |
             |            |                    |            |status in Model Retrainer case     |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `org_file_name`    |  `string`  |Set the file name of the model     |
-            |            |                    |            |before conversion                  |
+            |            |``org_file_name``   |``string``  |Set the preconversion model        |
+            |            |                    |            |filename.                          |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `org_file_size`    | `integer`  |Set the publishing model file size |
+            |            |``org_file_size``   |``number``  |Set the publish model file size    |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_file_     |  `string`  |Set the publishing model file name |
-            |            |name`               |            |                                   |
+            |            |``publish_file_     |``string``  |Set the publish model filename     |
+            |            |name``              |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_file_     | `integer`  |Set the publishing model file size |
-            |            |size`               |            |                                   |
+            |            |``publish_file_     |``number``  |Set the publish model file size    |
+            |            |size``              |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_file_size`  | `integer`  |Set the model file size            |
+            |            |``model_file_size`` |``number``  |Set the model file size            |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_framework`  |  `string`  |Set up the model framework         |
+            |            |``model_framework`` |``string``  |Set the model framework            |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `conv_id`          |  `string`  |Set the conversion request ID      |
+            |            |``conv_id``         |``string``  |Set the conversion request ID      |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `labels`           | `string[]` |Set the label array                |
+            |            |``labels``          |``string[]``|Set the label array                |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `stage`            |  `string`  |Set the conversion stage           |
+            |            |``stage``           |``string``  |Set the conversion stage           |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `result`           |  `string`  |Set the conversion result          |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `convert_start_    |  `string`  |Set the conversion start date and  |
-            |            |date`               |            |time                               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `convert_end_date` |  `string`  |Set the conversion end date and    |
-            |            |                    |            |time                               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_start     |  `string`  |Set the publish start date and time|
-            |            |_date`              |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_end_date` |  `string`  |Set the publication end date and   |
-            |            |                    |            |time                               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_comment`  |  `string`  |Set the description                |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_ins_date` | `date`     |Set the version creation time      |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_upd_date` | `date`     |Set the version creation time      |
+            |            |``kpi``             |``array``   |                                   |
             +------------+--------------------+------------+-----------------------------------+
  
      * - 'Generic Error Response' :
@@ -319,8 +288,10 @@ export class GetModels {
      *    const portalAuthorizationEndpoint: "__portalAuthorizationEndpoint__";
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
-     *  
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
+     *
      *    const client = await Client.createInstance(config);
      *    const modelId = '__modelId__';
      *    const comment = '__comment__';
@@ -329,7 +300,8 @@ export class GetModels {
      *    const projectType = '__projectType__';
      *    const deviceId = '__deviceId__';
      *    const latestType = '__latestType__';
-     *    const response= await client.aiModel.getModels(modelId, comment, projectName, modelPlatform, projectType, deviceId, latestType);
+     *    const response= await client.aiModel.getModels(modelId, comment, projectName,
+     *                               modelPlatform, projectType, deviceId, latestType);
      *
      */
     async getModels(
@@ -339,7 +311,7 @@ export class GetModels {
         modelPlatform?: string,
         projectType?: string,
         deviceId?: string,
-        latestType = '1'
+        latestType?: string
     ) {
         Logger.info('getModels');
         let valid = true;
@@ -358,8 +330,8 @@ export class GetModels {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -368,22 +340,35 @@ export class GetModels {
             });
             this.api = new TrainModelApi(apiConfig);
 
-            const res = await this.api.getModels(
-                modelId,
-                comment,
-                projectName,
-                modelPlatform,
-                projectType,
-                deviceId,
-                latestType
-            );
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.getModels(
+                    'client_credentials',
+                    modelId,
+                    comment,
+                    projectName,
+                    modelPlatform,
+                    projectType,
+                    deviceId,
+                    latestType
+                );
+            } else {
+                res = await this.api.getModels(
+                    undefined,
+                    modelId,
+                    comment,
+                    projectName,
+                    modelPlatform,
+                    projectType,
+                    deviceId,
+                    latestType
+                );
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

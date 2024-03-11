@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,7 @@ import { InsightApi, Configuration } from 'js-client';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 
 export interface ResponseSchema {
     total_image_count: number;
@@ -126,32 +122,30 @@ export class GetImageData {
     /**
      * getImageData- Get a (saved) image of the specified device.
      *  @params
-     * - deviceId (str, required) : The Device ID.  Case-sensitive
-     * - subDirectoryName(str, required) : The Sub Directory Name. \
-                The subdirectory will be the directory notified in the response \
-                of startUploadInferenceResult.
-     * - numberOfImages (int, optional)  - The Number Of Images. 0-256. If not specified: 50
-     * - skip (int, optional)- Number of images to skip fetching. If not specified: 0.
-     * - orderBy (str, optional)- The Order By. DESC, ASC, desc, asc. If not specified:ASC
-     *
+     * - deviceId (str, required) : Device ID
+     * - subDirectoryName(str, required) : Directory name
+     * - numberOfImages (number, optional)  - Number of images to fetch. Value range: 0 to 256. \
+                                           Default: 50.
+     * - skip (number, optional)- Number of images to skip fetching. \
+                               Default: 0.
+     * - orderBy (str, optional)- Sort order: Sorted by date image was created. \
+                                  Value range: DESC, ASC \
+                                  Default: ASC.
      * @returns
      * - Object: table:: Success Response
      
             +-----------------------+------------+------------+---------------------------+
-            |  Level1               |  Level2    |  Type      |  Description              |
-            +-----------------------+------------+------------+---------------------------+
-            |  `total_image_count`  |            |   `int`    | Set the total number of   |
+            | *Level1*              | *Level2*   | *Type*     | *Description*             |
+            +=======================+============+============+===========================+
+            | ``total_image_count`` |            | ``number`` | Set the total number of   |
             |                       |            |            | images                    |
             +-----------------------+------------+------------+---------------------------+
-            | `images`              |            |  `array`   | Image file name array     |
-            |                       |            |            | The descendant elements   |
-            |                       |            |            | are listed in ascending   |
-            |                       |            |            | order by image file name. |
+            |``images``             |            | ``array``  |                           |
             +-----------------------+------------+------------+---------------------------+
-            |                       |  `name`    |  `string`  | Set the image file name.  |
+            |                       | ``name``   | ``string`` | Set the image filename.   |
             +-----------------------+------------+------------+---------------------------+
-            |                       | `contents` |  `string`  | Image file contents       |
-            |                       |            |            | \*Base64 encoding         |
+            |                       |``contents``| ``string`` | Images file contents      |
+            |                       |            |            | (BASE64 encoding)         |
             +-----------------------+------------+------------+---------------------------+
 
      * - 'Generic Error Response' :
@@ -164,8 +158,8 @@ export class GetImageData {
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty OR \
-     *   if any input integer parameter found negative OR \
-     *   if any input non integer parameter found.
+     *   if any input number parameter found negative OR \
+     *   if any input non number parameter found.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -189,7 +183,9 @@ export class GetImageData {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *  
      *    const client = await Client.createInstance(config);
      *    const deviceId = '__deviceId__';
@@ -214,11 +210,11 @@ export class GetImageData {
         try {
             const validate = ajv.compile(this.schema);
             valid = validate({
-                deviceId: deviceId,
-                subDirectoryName: subDirectoryName,
-                orderBy: orderBy,
-                numberOfImages: numberOfImages,
-                skip: skip,
+                deviceId,
+                subDirectoryName,
+                orderBy,
+                numberOfImages,
+                skip
             });
             if (!valid) {
                 Logger.error(`${validate.errors}`);
@@ -230,37 +226,43 @@ export class GetImageData {
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
                 accessToken,
-                baseOptions,
+                baseOptions
             });
             this.api = new InsightApi(apiConfig);
             const capacity = 256;
             let requested = numberOfImages;
             let _skip = skip;
             const count = Math.ceil(numberOfImages / capacity);
-            const getImageDataResponse: ResponseSchema = {
-                total_image_count: 0,
-                images: [],
-            };
+            const getImageDataResponse: ResponseSchema = { total_image_count: 0, images: [] };
             for (let i = 1; i < count + 1; i++) {
-                const execNumberOfImages =
-                    requested < capacity ? requested : capacity;
-                response = await this.api.getImages(
-                    deviceId,
-                    subDirectoryName,
-                    orderBy,
-                    execNumberOfImages,
-                    _skip
-                );
+                const execNumberOfImages = requested < capacity ? requested : capacity;
+
+                if (this.config.applicationId) {
+                    response = await this.api.getImages(
+                        deviceId,
+                        subDirectoryName,
+                        'client_credentials',
+                        orderBy,
+                        execNumberOfImages,
+                        _skip
+                    );
+                } else {
+                    response = await this.api.getImages(
+                        deviceId,
+                        subDirectoryName,
+                        undefined,
+                        orderBy,
+                        execNumberOfImages,
+                        _skip
+                    );
+                }
                 if (response.data) {
                     response = response.data;
                     if (response['total_image_count'] > 0) {
                         if (getImageDataResponse['total_image_count'] === 0) {
-                            getImageDataResponse['total_image_count'] =
-                                response['total_image_count'];
+                            getImageDataResponse['total_image_count'] = response['total_image_count'];
                         }
-                        response['images'].forEach((data) => {
-                            getImageDataResponse['images'].push(data);
-                        });
+                        response['images'].forEach((data) => { getImageDataResponse['images'].push(data); });
                     } else {
                         break;
                     }
@@ -277,9 +279,7 @@ export class GetImageData {
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

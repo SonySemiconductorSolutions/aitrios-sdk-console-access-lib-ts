@@ -2,7 +2,7 @@
 /* eslint-disable eqeqeq */
 /* eslint-disable no-unused-vars */
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import jwt_decode, { JwtPayload } from 'jwt-decode';
 import { getOCSPStatus } from '../thirdParty/ocspChecker';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import url from 'url';
+import * as msal from '@azure/msal-node';
+import { INetworkModule, NetworkRequestOptions, NetworkResponse } from '@azure/msal-common';
 
 const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
@@ -40,6 +42,52 @@ enum TokenValidationEnum {
     INVALID_TOKEN = '02',
 }
 
+/**
+ * msal network proxy client
+ */
+class NetworkClient implements INetworkModule {
+    private proxyUrl: string;
+
+    constructor(proxyUrl: string) {
+        this.proxyUrl = proxyUrl;
+    }
+
+    /**
+     * Http Get request
+     * @param url
+     * @param options
+     */
+    async sendGetRequestAsync<T>(url: string, options?: NetworkRequestOptions): Promise<NetworkResponse<T>> {
+        return this.networkRequestViaHttps(url, 'get', options);
+    }
+
+    /**
+     * Http Post request
+     * @param url
+     * @param options
+     */
+    async sendPostRequestAsync<T>(url: string, options?: NetworkRequestOptions, cancellationToken?: number): Promise<NetworkResponse<T>> {
+        return this.networkRequestViaHttps(url, 'post', options, cancellationToken);
+    }
+
+    async networkRequestViaHttps<T>(url: string, method: string, options?: NetworkRequestOptions, timeout?: number): Promise<NetworkResponse<T>> {
+        const { headers, data, status } = await axios.request({
+            method: method,
+            url: url,
+            data: options?.body || '',
+            headers: options?.headers || ({} as Record<string, string>),
+            httpsAgent: new HttpsProxyAgent(this.proxyUrl),
+            proxy: false,
+            timeout: timeout
+        });
+        return {
+            headers: headers as Record<string, string>,
+            body: data as T,
+            status: status,
+        };
+    }
+}
+
 export class Config {
     consoleEndpoint: string;
     configuration: Configuration;
@@ -47,6 +95,7 @@ export class Config {
     clientSecret: string;
     clientId: string;
     saveLastAccessToken: string;
+    applicationId: string;
 
     /**
      * Constructor Method for the class Config
@@ -60,18 +109,27 @@ export class Config {
      *       If not specified, read from environment variables.
      * - 'clientSecret' (str, optional): Client Secret required to issue an access token. \
      *       If not specified, read from environment variables.
+     * - 'applicationId' (str, optional): Application ID required to issue an access token. \
+     *       If not specified, read from environment variables.
      */
     constructor(
         consoleEndpoint: string,
         portalAuthorizationEndpoint: string,
         clientId: string,
-        clientSecret: string
+        clientSecret: string,
+        applicationId?: string
     ) {
         this.consoleEndpoint = consoleEndpoint;
         this.portalAuthorizationEndpoint = portalAuthorizationEndpoint;
         this.clientSecret = clientSecret;
         this.clientId = clientId;
-        //Check if console access settings data is null or blank then read from evnironment varriable
+        if (applicationId) {
+            this.applicationId = applicationId;
+        } else {
+            this.applicationId = undefined;
+        }
+
+        // Check if console access settings data is null or blank then read from evnironment varriable
         if (!consoleEndpoint) {
             this.consoleEndpoint = process.env.CONSOLE_ENDPOINT;
         }
@@ -85,15 +143,29 @@ export class Config {
         if (!clientId) {
             this.clientId = process.env.CLIENT_ID;
         }
+        if (!applicationId) {
+            this.applicationId = process.env.APPLICATION_ID;
+        }
 
         const validate = ajv.compile(this.schema);
         this.saveLastAccessToken = undefined;
-        const valid = validate({
-            consoleEndpoint: this.consoleEndpoint,
-            portalAuthorizationEndpoint: this.portalAuthorizationEndpoint,
-            clientId: this.clientId,
-            clientSecret: this.clientSecret,
-        });
+        let valid;
+        if (applicationId) {
+            valid = validate({
+                consoleEndpoint: this.consoleEndpoint,
+                portalAuthorizationEndpoint: this.portalAuthorizationEndpoint,
+                clientId: this.clientId,
+                clientSecret: this.clientSecret,
+                applicationId: this.applicationId
+            });
+        } else {
+            valid = validate({
+                consoleEndpoint: this.consoleEndpoint,
+                portalAuthorizationEndpoint: this.portalAuthorizationEndpoint,
+                clientId: this.clientId,
+                clientSecret: this.clientSecret
+            });
+        }
 
         if (!valid) {
             Logger.error(JSON.stringify(validate.errors));
@@ -135,13 +207,21 @@ export class Config {
                     type: 'Invalid string for clientId',
                 },
             },
+            applicationId: {
+                type: 'string',
+                nullable: true,
+                errorMessage: {
+                    type: 'Invalid string for applicationId',
+                },
+            }
         },
         required: [
             'consoleEndpoint',
             'portalAuthorizationEndpoint',
             'clientSecret',
+            'clientId',
         ],
-        additionalProperties: false,
+        additionalProperties: true,
         errorMessage: {
             required: {
                 consoleEndpoint: 'consoleEndpoint is required',
@@ -200,6 +280,44 @@ export class Config {
             throw error;
         }
     }
+
+    /**
+     *
+     * Get Access Token from Token Server needed for API.
+     * @returns
+     * - 'On Success Response' :
+     *        access_token_str
+     * - 'On Error Response' :
+     *        Throw exception on event of error occur
+     */
+    async generateAccessTokenAAD() {
+        const clientId = this.clientId;
+        const authority = this.portalAuthorizationEndpoint;
+        const clientSecret = this.clientSecret;
+        const proxy = this.getProxyEnv();
+        const msalConfig = {
+            auth: {
+                clientId,
+                authority,
+                clientSecret
+            },
+            system: proxy != null ? { networkClient: new NetworkClient(proxy) } : {},
+        };
+
+        const silentRequest = {
+            scopes: [`api://${this.applicationId}/.default`]
+        };
+
+        const cca = new msal.ConfidentialClientApplication(msalConfig);
+        try {
+            const tokenResponse = await cca.acquireTokenByClientCredential(silentRequest);
+            return tokenResponse?.accessToken;
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
 
     /**
      * Function to Validate Access Token
@@ -290,9 +408,19 @@ export class Config {
                     `OCSP Status of URL ${this.portalAuthorizationEndpoint} is not good`
                 );
             }
-            this.saveLastAccessToken = await this.generateAccessToken();
+
+            if (this.applicationId) {
+                // Case of Azure API. OCSP check of "login.microsoftonline.com"
+                const url = 'https://login.microsoftonline.com';
+                const ocspStatus = await this.getOcspStatus(url);
+                if (!ocspStatus) {
+                    throw new Error(`OCSP Status of URL ${url} is not good`);
+                }
+                this.saveLastAccessToken = await this.generateAccessTokenAAD();
+            } else {
+                this.saveLastAccessToken = await this.generateAccessToken();
+            }
         }
-        //  Return the access token stored the Access token variable
         return this.saveLastAccessToken;
     }
 

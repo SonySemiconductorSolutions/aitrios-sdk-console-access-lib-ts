@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,7 @@ import Ajv from 'ajv';
 import ajvErrors from 'ajv-errors';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 import { PublishModel } from './publishModel';
 import { GetBaseModelStatus } from './getBaseModelStatus';
@@ -99,18 +95,11 @@ export class PublishModelWaitResponse {
             },
             deviceId: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
                     type: 'Invalid string for deviceId',
                     isNotEmpty: 'deviceId required or can\'t be empty string',
                 },
-            },
-            callback: {
-                type: 'object',
-                errorMessage: {
-                    type: 'Invalid return for callback ',
-                },
-            },
+            }
         },
         required: ['modelId'],
         additionalProperties: false,
@@ -126,10 +115,10 @@ export class PublishModelWaitResponse {
      * publishModelWaitResponse -  Provide the ability to publish transformation models
      *                             and wait for completion.
      * @params
-     * - modelId (str, required) : The model Id.
-     * - deviceId (str, optional) : The ID of edge AI device. \
-                Specify when the device model is the target \
-                If the base model is the target, do not specify.
+     * - modelId (str, required) : Model Id.
+     * - deviceId (str, optional) : Device ID \
+            *Specify this when the device model is the target. \
+            Do not specify this when the base model is the target.
      * - callback (function, optional) : A function handle of the form - \
                 `publishCallback(status)`, where `status` is the notified publish status. \
                 Callback Function to check the publishing status with `getBaseModelStatus`,
@@ -140,10 +129,10 @@ export class PublishModelWaitResponse {
 
             +-------------------+------------+-------------------------------+
             |  Level1           |  Type      |  Description                  |
+            +===================+============+===============================+
+            | ``result``        | ``string`` | "SUCCESS"                     |
             +-------------------+------------+-------------------------------+
-            |  `result`         |  `string`  | "SUCCESS"                     |
-            +-------------------+------------+-------------------------------+
-            |  `process time`   |  `string`  | Processing Time               |
+            | ``process time``  | ``string`` | Processing Time               |
             +-------------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -157,7 +146,7 @@ export class PublishModelWaitResponse {
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty OR \
-     *   if type of callback paramter not a function. \
+     *   if type of callback parameter not a function. \
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -181,7 +170,9 @@ export class PublishModelWaitResponse {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const modelId = '__modelId__';
@@ -210,27 +201,15 @@ export class PublishModelWaitResponse {
                 throw validate.errors;
             }
 
-            if (callback && typeof callback !== 'function') {
-                valid = false;
-                const errorMessage = 'Invalid return for callback';
-                Logger.error(getMessage(ErrorCodes.ERROR, errorMessage));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, errorMessage)
-                );
-            }
             this.publishModelObj = new PublishModel(this.config);
             this.getBaseModelStatusObj = new GetBaseModelStatus(this.config);
-            let returnPublishModelWaitResponse: any = {}; 
+            let returnPublishModelWaitResponse: any = {};
             Logger.info('Publishing... ');
             const publishStartTime = new Date().getTime();
 
-            const returnPublishModel = await this.publishModelObj.publishModel(
-                modelId,
-                deviceId
-            );
+            const returnPublishModel = await this.publishModelObj.publishModel(modelId, deviceId);
             Logger.info(`ReturnPublishModel: ${returnPublishModel}`);
-            if (
-                'data' in returnPublishModel &&
+            if ('data' in returnPublishModel &&
                 'result' in returnPublishModel.data &&
                 returnPublishModel.data.result === 'SUCCESS'
             ) {
@@ -239,15 +218,9 @@ export class PublishModelWaitResponse {
                 while (publishLookup) {
                     const latestType = '1';
                     const modelStatus =
-                        await this.getBaseModelStatusObj.getBaseModelStatus(
-                            modelId,
-                            latestType
-                        );
+                        await this.getBaseModelStatusObj.getBaseModelStatus(modelId, latestType);
                     if ('projects' in modelStatus.data) {
-                        publishStatus =
-                            modelStatus.data['projects'][0]['versions'][0][
-                                'version_status'
-                            ];
+                        publishStatus = modelStatus.data['projects'][0]['versions'][0]['version_status'];
                     }
 
                     // if callback parameter exist then
@@ -256,43 +229,30 @@ export class PublishModelWaitResponse {
                         callback(publishStatus);
                     }
 
-                    if (
-                        publishStatus === PublishModelStatus.CONVERSION_FAILED
-                    ) {
+                    if (publishStatus === PublishModelStatus.CONVERSION_FAILED) {
                         // if `publishStatus` is error, while conversion then
                         // stop polling for model publish status
                         const message = 'Conversion failed';
                         Logger.error(`${ErrorCodes.GENERIC_ERROR}: ${message}`);
-                        returnPublishModelWaitResponse =
-                            genericErrorMessage(message);
+                        returnPublishModelWaitResponse = genericErrorMessage(message);
                         break;
-                    } else if (
-                        publishStatus ===
-                        PublishModelStatus.ADD_TO_CONFIGURATION_FAILED
-                    ) {
+                    } else if (publishStatus === PublishModelStatus.ADD_TO_CONFIGURATION_FAILED) {
                         // if `publishStatus` is error then
                         // stop polling for model publish status
                         const message = 'Add to configuration failed';
                         Logger.error(`${ErrorCodes.GENERIC_ERROR}: ${message}`);
-                        returnPublishModelWaitResponse =
-                            genericErrorMessage(message);
+                        returnPublishModelWaitResponse = genericErrorMessage(message);
                         break;
-                    } else if (
-                        publishStatus ===
-                        PublishModelStatus.ADD_TO_CONFIGURATION_COMPLETE
-                    ) {
+                    } else if (publishStatus === PublishModelStatus.ADD_TO_CONFIGURATION_COMPLETE) {
                         // if `publishStatus` is success then calculate process time and
                         // stop polling for model publish status
                         returnPublishModelWaitResponse['result'] = 'SUCCESS';
                         const publishEndTime = new Date().getTime();
-                        const publishTimeSecond =
-                            publishEndTime - publishStartTime;
+                        const publishTimeSecond = publishEndTime - publishStartTime;
                         //convert seconds to "HH:MM:SS" format
                         const totalPublishTimestr = new Date(publishTimeSecond)
-                            .toISOString()
-                            .substring(11, 8);
-                        returnPublishModelWaitResponse['process_time'] =
-                            totalPublishTimestr;
+                            .toISOString().substring(11, 8);
+                        returnPublishModelWaitResponse['process_time'] = totalPublishTimestr;
                         break;
                     } else {
                         Logger.info(publishStatus);
@@ -305,9 +265,7 @@ export class PublishModelWaitResponse {
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*
