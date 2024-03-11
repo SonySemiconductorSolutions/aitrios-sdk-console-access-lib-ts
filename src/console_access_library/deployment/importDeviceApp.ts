@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,7 @@ import ajvErrors from 'ajv-errors';
 import { DeviceAppApi, Configuration } from 'js-client';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 
 /**
@@ -33,47 +29,93 @@ import { Config } from '../common/config';
  */
 export interface ImportDeviceAppQueryParam {
     /**
-     * Compiled flg(0:not compiled, 1:Compiled)
+     * Set the compiled flg.
+     *  - Value definition \
+     *   0 : Specified App is not compiled \
+     *   1 : Specified App is compiled
      * @type {string}
      * @memberof ImportDeviceAppQueryParam
      */
     compiled_flg: string;
     /**
-     * App entry point
+     * App entry point.
      * @type {string}
      * @memberof ImportDeviceAppQueryParam
      */
     entry_point?: string;
     /**
-     * App name
+     * App name. \
+     * Allow only the following characters.
+     *  - Alphanumeric characters
+     *  - Under bar
+     *  - Dot \
+     * The maximum number of characters is app_name + version_number <=31.
      * @type {string}
      * @memberof ImportDeviceAppQueryParam
      */
     app_name: string;
     /**
-     * App version number123
+     * App version number. \
+     * Allow only the following characters.
+     *  - Alphanumeric characters
+     *  - Under bar
+     *  - Dot \
+     * The maximum number of characters is app_name + version_number <=31.
      * @type {string}
      * @memberof ImportDeviceAppQueryParam
      */
     version_number: string;
     /**
-     * Comment
+     * Comment. *Max. 100 characters.
      * @type {string}
      * @memberof ImportDeviceAppQueryParam
      */
     comment?: string;
     /**
-     * filename
+     * filename.
      * @type {string}
      * @memberof ImportDeviceAppQueryParam
      */
     file_name: string;
     /**
-     * File content
+     * App file content in base64 encoding.
      * @type {string}
      * @memberof ImportDeviceAppQueryParam
      */
     file_content: string;
+    /**
+    * 
+    * @type {SchemaInfo}
+    * @memberof ImportDeviceAppQueryParam
+    */
+    schema_info?: SchemaInfo;
+}
+
+interface SchemaInfo {
+    /**
+     * 
+     * @type {SchemaInfoInterfaces}
+     * @memberof SchemaInfo
+     */
+    'interfaces'?: SchemaInfoInterfaces;
+}
+
+interface SchemaInfoInterfaces {
+    /**
+     * 
+     * @type {Array<SchemaInfoInterfacesInInner>}
+     * @memberof SchemaInfoInterfaces
+     */
+    'in'?: Array<SchemaInfoInterfacesInInner>;
+}
+
+interface SchemaInfoInterfacesInInner {
+    /**
+     * Set the metadata format ID.
+     * @type {string}
+     * @memberof SchemaInfoInterfacesInInner
+     */
+    'metadataFormatId'?: string;
 }
 
 const ajv = new Ajv({ allErrors: true });
@@ -156,20 +198,22 @@ export class ImportDeviceApp {
             entry_point: {
                 type: 'string',
                 default: 'ppl',
-                isNotEmpty: true,
                 errorMessage: {
-                    type: 'Invalid string for entryPoint',
-                    isNotEmpty: 'entryPoint required or can\'t be empty string',
+                    type: 'Invalid string for entryPoint'
                 },
             },
             comment: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
-                    type: 'Invalid string for comment',
-                    isNotEmpty: 'comment required or can\'t be empty string',
+                    type: 'Invalid string for comment'
                 },
             },
+            schema_info: {
+                type: 'object',
+                errorMessage: {
+                    type: 'Invalid object for schemaInfo'
+                },
+            }
         },
         required: [
             'compiled_flg',
@@ -191,36 +235,45 @@ export class ImportDeviceApp {
     };
 
     /**
-     *  importDeviceApp - sign and import device apps API.
+     *  importDeviceApp - Import Device app.
      *  @params
-     * - compiledFlg (str, required): Specify compile FLG Value definition \
-                - 0: Uncompiled (compile process) \
-                - 1: Compiled (no compilation process)
-     * - appName (str, required): DeviceApp name. The maximum number of \
-                characters is app_name + version_number ⇐31. Characters other than the \
-                following are forbidden characters \
-                    - Alphanumeric \
-                    - Underbar \
-                    - Dot
-
-     * - versionNumber (str, required): DeviceApp version. The maximum number of \
-                characters is app_name + version_number ⇐31. Characters other than the \
-                following are forbidden characters \
-                    - Alphanumeric \
-                    - Underbar \
-                    - Dot
-     * - fileName (str, required): DeviceApp file name.
-     * - fileContent (str, required): Contents of DeviceApp file. Base64 encoded string.
-     * - entryPoint (str, optional): EVP module entry point. "ppl" if not specified.
-     * - comment (str, optional): DeviceApp Description. up to 100 characters \
-                No comment if not specified.
+     * - compiledFlg (str, required): Set the compiled flg. \
+            - Value definition \
+              0 : Specified App is not compiled \
+              1 : Specified App is compiled
+     * - appName (str, required): App name. Allow only the following characters. \
+                    - Alphanumeric characters \
+                    - Under bar \
+                    - Dot \
+                    The maximum number of characters is app_name + version_number <=31.
+     * - versionNumber (str, required): App version number. Allow only the following characters. \
+                    - Alphanumeric characters \
+                    - Under bar \
+                    - Dot \
+                    The maximum number of characters is app_name + version_number <=31.
+     * - fileName (str, required): filename.
+     * - fileContent (str, required): App file content in base64 encoding.
+     * - entryPoint (str, optional): App entry point.
+     * - comment (str, optional): Comment. *Max. 100 characters.
+     * - schemaInfo (object, optional): Schema info.
+     * ```ts
+     *                {
+     *                    <interface> : [
+     *                        {
+     *                            "metadataFormatId": <metadataFormatId>
+     *                        }
+     *                    ]
+     *                }
+     * ```
+     *      - `interface`: Set the metadata format IDs.
+     *          - `metadataFormatId`: Set the metadata format ID.
      * @returns
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -256,7 +309,9 @@ export class ImportDeviceApp {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const compiledFlg = '__compiledFlg__';
@@ -266,7 +321,9 @@ export class ImportDeviceApp {
      *    const fileContent = '__fileContent__';
      *    const entryPoint = '__entryPoint__';
      *    const comment = '__comment__';
-     *    const response= await client.deployment.importDeviceApp(compiledFlg, appName, versionNumber, fileName, fileContent, entryPoint, comment);
+     *    const schemaInfo = '__schemaInfo__';
+     *    const response= await client.deployment.importDeviceApp(compiledFlg,
+     *           appName, versionNumber, fileName, fileContent, entryPoint, comment, schemaInfo);
      */
     async importDeviceApp(
         compiledFlg: string,
@@ -274,8 +331,9 @@ export class ImportDeviceApp {
         versionNumber: string,
         fileName: string,
         fileContent: string,
-        entryPoint= 'ppl',
-        comment?: string
+        entryPoint?: string,
+        comment?: string,
+        schemaInfo?: object
     ) {
         Logger.info('importDeviceApp');
         let valid = true;
@@ -287,14 +345,22 @@ export class ImportDeviceApp {
             file_content: fileContent,
             entry_point: entryPoint,
             comment,
+            schema_info: schemaInfo
         };
         try {
             const validate = ajv.compile(this.schema);
-            valid = validate(queryParams);
+            valid = validate({ ...queryParams });
 
             if (!valid) {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
+            }
+
+            if (appName.length + versionNumber.length > 32) {
+                valid = false;
+                const errorMessage = 'Exceed the maximum number of characters is appName + versionNumber ⇐31';
+                Logger.error(getMessage(ErrorCodes.ERROR, errorMessage));
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, errorMessage));
             }
 
             const accessToken = await this.config.getAccessToken();
@@ -307,14 +373,17 @@ export class ImportDeviceApp {
             });
             this.api = new DeviceAppApi(apiConfig);
 
-            const res = await this.api.importDeviceApp(queryParams);
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.importDeviceApp(queryParams, 'client_credentials');
+            } else {
+                res = await this.api.importDeviceApp(queryParams);
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

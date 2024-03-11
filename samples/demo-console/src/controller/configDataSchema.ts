@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- // Schema definitions for demo configurations
+// Schema definitions for demo configurations
 
 export interface DemoConfigDataSchema {
     demo_configuration: DemoConfigurationSchema;
@@ -22,53 +22,47 @@ export interface DemoConfigDataSchema {
 
 export interface DemoConfigurationSchema {
     device_id: string;
-    number_of_images: number;
-    skip: number;
-    sub_directory_name: string;
-    number_of_inference_results: number;
-    filter: string;
-    raw: number;
-    time: string;
-    get_images_order_by: string;
-    get_last_inference_and_image_data_order_by: string;
-    app_name: string;
-    version_number: string;
-    model: string;
+    get_model_device_id: string;
+    publish_model_wait_response_device_id: string;
     model_id: string;
-    get_model_id: string,
-    device_id_for_get_model: string,
-    file_content: string;
-    compiled_flg: string;
-    file_name: string;
-    comment: string;
-    project_name: string;
-    model_platform: string;
-    project_type: string;
-    entry_point: string;
-    device_name: string;
-    connection_state: string;
-    device_group_id: string;
-    latest_type: string;
-    config_id: string;
-    deploy_parameter: string;
-    deploy_id: string;
-    replace_model_id: string;
-    timeout: number;
+    model: string;
     converted: string;
     vendor_name: string;
-    key: string;
-    from_datetime: string;
-    to_datetime: string;
-    file_format: string;
-    device_ids: string;
+    comment: string;
     input_format_param: string;
     network_config: string;
     network_type: string;
-    labels: string;
+    metadata_format_id: string;
+    project_name: string;
+    model_platform: string;
+    project_type: string;
+    latest_type: string;
+    config_id: string;
     sensor_loader_version_number: string;
-    sensor_version_number:  string;
+    sensor_version_number: string;
     model_version_number: string;
-    ap_fw_version_number:  string;
+    ap_fw_version_number: string;
+    device_ids: string;
+    replace_model_id: string;
+    timeout: number;
+    compiled_flg: string;
+    app_name: string;
+    version_number: string
+    file_name: string;
+    entry_point: string;
+    schema_info: object;
+    device_name: string;
+    connection_state: string;
+    device_group_id: string;
+    scope: string;
+    sub_directory_name: string;
+    number_of_images: number;
+    skip: number;
+    order_by: string;
+    number_of_inference_results: number
+    filter: string;
+    raw: number;
+    time: string;
 }
 
 // Schema definitions for console access settings
@@ -81,4 +75,5 @@ export interface ConsoleAccessSettingsSchema {
     portal_authorization_endpoint: string;
     client_secret: string;
     client_id: string;
+    application_id: string;
 }

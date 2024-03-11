@@ -1,28 +1,24 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import Ajv from 'ajv';
 import ajvErrors from 'ajv-errors';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { getMessage } from '../common/logger/getMessage';
 import { GetDeployHistory } from './getDeployHistory';
 import { DeployByConfiguration } from './deployByConfiguration';
@@ -109,16 +105,14 @@ export class DeployByConfigurationWaitResponse {
             },
             replaceModelId: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for replaceModelId',
-                    isNotEmpty:
-                        'replaceModelId required or can\'t be empty string',
+                    type: 'Invalid string for replaceModelId'
                 },
             },
             comment: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
                     type: 'Invalid string for comment',
                     isNotEmpty: 'comment required or can\'t be empty string',
@@ -132,13 +126,7 @@ export class DeployByConfigurationWaitResponse {
                     type: 'Invalid number for timeout',
                     minimum: 'timeout is required or can\'t be negative',
                 },
-            },
-            callback: {
-                type: 'object',
-                errorMessage: {
-                    type: 'Invalid return for callback ',
-                },
-            },
+            }
         },
         required: ['configId', 'deviceIds'],
         additionalProperties: false,
@@ -153,15 +141,13 @@ export class DeployByConfigurationWaitResponse {
     /**
      * Update the device id deploy status information to global array
      * @param
-     * - deviceId (str): Device ID, Case sensitive
+     * - deviceId (str): Device ID
      * - status (str, optional): The notified deployment status for that device_id.
      *
      */
     setValues(deviceId: string, status = '') {
         if (deviceId) {
-            const foundData = this.deployCallbackStatusArray.find(
-                (item) => deviceId in item
-            );
+            const foundData = this.deployCallbackStatusArray.find((item) => deviceId in item);
             if (foundData) {
                 foundData[deviceId]['status'] = status;
             } else {
@@ -173,30 +159,31 @@ export class DeployByConfigurationWaitResponse {
     /**
      * Get device id deploy status information from the global array
      * @param
-     * - deviceId (str): Device ID, Case sensitive
+     * - deviceId (str): Device ID
      * @returns
      * obj: if device ID found.
      * undefined: if device ID not found.
      */
 
     getValues(deviceId: string) {
-        const foundData = this.deployCallbackStatusArray.find(
-            (item) => deviceId in item
-        );
+        const foundData = this.deployCallbackStatusArray.find((item) => deviceId in item);
         return foundData[deviceId];
     }
 
     /**
-     *  deployByConfigurationWaitResponse -Provides a Function to deploy the following to the device specified from the
-        deployment config.
+     *  deployByConfigurationWaitResponse - Provide a function for deploying the following to devices \
+     *                          specified with deploy config. \
+     *                          - Firmware \
+     *                          - AIModel
      *  @params
-     * - configId (str, required) : Configuration ID.
-     * - deviceIds (str, required) : Device ID. Specify multiple device IDs separated by commas.
-     * - replaceModelId (str, optional) : Model ID to be replaced. Specify "Model ID" or \
-                "network_id". If the specified model ID does not exist in the DB, the \
-                entered value is regarded as a network_id and processed is performed.
-     * - comment (str, optional) : The comment. 100 character or less
-     * - timeout (int, optional) : Timeout waiting for completion. There are cases where the \
+     * - configId (str, required) : Setting ID.
+     * - deviceIds (str, required) : Specify multiple device IDs separated by commas.
+     * - replaceModelId (str, optional) : Specify the model ID or network_id. \
+     *           If the model with the specified model ID does not exist in the database, \
+     *           treat the entered value as the network_id and process it. \
+     *           Default: ''
+     * - comment (str, optional) : Max. 100 characters. Default: ''
+     * - timeout (number, optional) : Timeout waiting for completion. There are cases where the \
                 edge AI device hangs up during the deployment process,\
                 so there are cases where the process remains in progress,\
                 so timeout to exit the process, 3600 seconds if not specified.
@@ -222,15 +209,15 @@ export class DeployByConfigurationWaitResponse {
 
             +-------------------+-------------------+------------+----------------------------+
             |  Level1           |  Level2           |  Type      |  Description               |
-            +-------------------+-------------------+------------+----------------------------+
-            |  `No_item_name`   |                   |  `array`   | deploy by configuration    |
+            +===================+===================+============+============================+
+            | ``No_item_name``  |                   | ``array``  | deploy by configuration    |
             |                   |                   |            | wait response array        |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `device_id`      |  `string`  | Set the device id          |
+            |                   | ``device_id``     | ``string`` | Set the device id          |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `result`         |  `string`  | "SUCCESS"                  |
+            |                   | ``result``        | ``string`` | "SUCCESS"                  |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `process_time`   |  `string`  | Processing Time            |
+            |                   | ``process_time``  | ``string`` | Processing Time            |
             +-------------------+-------------------+------------+----------------------------+
 
      * - 'Generic Error Response' :
@@ -243,8 +230,8 @@ export class DeployByConfigurationWaitResponse {
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
            if any input string parameter found empty OR \
-           if any input integer parameter found negative OR \
-           if type of callback paramter not a function. \
+           if any input number parameter found negative OR \
+           if type of callback parameter not a function. \
            Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -268,7 +255,9 @@ export class DeployByConfigurationWaitResponse {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *  
      *    const client = await Client.createInstance(config);
      *    const configId = '__config_id__';
@@ -281,7 +270,8 @@ export class DeployByConfigurationWaitResponse {
      *    // function deployCallback(deployStatusArray):
      *    // Process callback received for the `deviceId` with `status`
      * 
-     *    const response= await client.deployment.deployByConfigurationWaitResponse(configId, deviceIds, replaceModelId, comment, timeout, callback);
+     *    const response= await client.deployment.deployByConfigurationWaitResponse(
+     *              configId, deviceIds, replaceModelId, comment, timeout, callback);
      * ```
     */
     async deployByConfigurationWaitResponse(
@@ -309,22 +299,14 @@ export class DeployByConfigurationWaitResponse {
                 throw validate.errors;
             }
 
-            if (callback && typeof callback !== 'function') {
-                valid = false;
-                const errorMessage = 'Invalid return for callback';
-                Logger.error(getMessage(ErrorCodes.ERROR, errorMessage));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, errorMessage)
-                );
-            }
             const loopTimeOut = new Date();
-            loopTimeOut.setHours(loopTimeOut.getHours() + timeout);
+            loopTimeOut.setSeconds(loopTimeOut.getSeconds() + timeout);
             const returnDeployByConfigurationWaitResponseAllDeviceIds: any = [];
             const deviceIdList = !deviceIds
                 ? []
                 : deviceIds
-                // eslint-disable-next-line indent
-                      .trim()
+                    // eslint-disable-next-line indent
+                    .trim()
                     .replace(/,$/, '')
                     .split(',')
                     .map((item: string) => item.trim());
@@ -341,47 +323,43 @@ export class DeployByConfigurationWaitResponse {
                     replaceModelId,
                     comment
                 );
-            if (
-                'data' in returnDeployByConfiguration &&
+
+            if ('data' in returnDeployByConfiguration &&
                 returnDeployByConfiguration.data['result'] === 'SUCCESS'
             ) {
                 // Wait till deployment status is failed or success
                 while (alwaysTrue) {
                     //  Check deployment status for individual deviceId
+
                     for (const deviceId of deviceIdList) {
                         let deployStatus;
                         // get deploy history for all devices
                         const returnGetDeployHistory: any =
-                            await this.getDeployHistoryObj.getDeployHistory(
-                                deviceId
-                            );
+                            await this.getDeployHistoryObj.getDeployHistory(deviceId);
                         if (returnGetDeployHistory.data) {
                             /**
                              * loop through all deploy configurations to check the deploy status
                              * of `configId` passed as parameter
                              */
-                            for (const deploys of returnGetDeployHistory.data[
-                                'deploys'
-                            ]) {
+                            for (const deploys of returnGetDeployHistory.data['deploys']) {
                                 const getConfigId = deploys['config_id'];
                                 if (getConfigId === configId) {
                                     deployStatus = deploys['total_status'];
 
                                     /**
                                      * Check if the device_id is not present in global array,
-                                     * Then, add the first occurence of device_id to the
+                                     * Then, add the first occurrence of device_id to the
                                      * global array.
                                      */
                                     const foundData =
                                         this.deployCallbackStatusArray.find(
                                             (item) => deviceId in item
                                         );
-
                                     if (!foundData) {
                                         this.setValues(deviceId, deployStatus);
                                     } else {
                                         /**
-                                         * Check whether it's first occurence
+                                         * Check whether it's first occurrence
                                          * Then update status of the added device to
                                          * the global array
                                          */
@@ -401,72 +379,43 @@ export class DeployByConfigurationWaitResponse {
                                             DeployByConfigurationStatus.CANCELED,
                                         ].includes(deployStatus)
                                     ) {
-                                        returnDeployByConfigurationWaitResponse =
-                                            {};
+                                        returnDeployByConfigurationWaitResponse = {};
                                         /**
                                          * deployment status is completed successfully,
                                          * prepare response with required information
                                          */
-                                        if (
-                                            deployStatus ===
-                                            DeployByConfigurationStatus.SUCCESSFUL
-                                        ) {
-                                            returnDeployByConfigurationWaitResponse[
-                                                'result'
-                                            ] = 'SUCCESS';
+                                        if (deployStatus === DeployByConfigurationStatus.SUCCESSFUL) {
+                                            returnDeployByConfigurationWaitResponse['result'] = 'SUCCESS';
                                         }
                                         /**
                                          * deployment status is failed, prepare response
                                          * with required information
                                          */
-                                        if (
-                                            deployStatus ===
-                                            DeployByConfigurationStatus.FAILED
-                                        ) {
-                                            returnDeployByConfigurationWaitResponse[
-                                                'result'
-                                            ] = 'ERROR';
+                                        if (deployStatus === DeployByConfigurationStatus.FAILED) {
+                                            returnDeployByConfigurationWaitResponse['result'] = 'ERROR';
                                         }
                                         /**
                                          * deployment status is failed, prepare response
                                          * with required information
                                          */
-                                        if (
-                                            deployStatus ===
-                                            DeployByConfigurationStatus.CANCELED
-                                        ) {
-                                            returnDeployByConfigurationWaitResponse[
-                                                'result'
-                                            ] = 'ERROR';
+                                        if (deployStatus === DeployByConfigurationStatus.CANCELED) {
+                                            returnDeployByConfigurationWaitResponse['result'] = 'ERROR';
                                         }
                                         /**
                                          * deployment status is failed, prepare response
                                          * with required information
                                          */
-                                        if (
-                                            deployStatus ===
-                                            DeployByConfigurationStatus.DEVICEAPP_UNDEPLOY
-                                        ) {
-                                            returnDeployByConfigurationWaitResponse[
-                                                'result'
-                                            ] = 'ERROR';
+                                        if (deployStatus === DeployByConfigurationStatus.DEVICEAPP_UNDEPLOY) {
+                                            returnDeployByConfigurationWaitResponse['result'] = 'ERROR';
                                         }
-                                        returnDeployByConfigurationWaitResponse[
-                                            'device_id'
-                                        ] = deviceId;
-                                        const deployEndTime =
-                                            new Date().getTime();
-                                        const deployTimeSeconds =
-                                            deployEndTime - deployStartTime;
+                                        returnDeployByConfigurationWaitResponse['device_id'] = deviceId;
+                                        const deployEndTime = new Date().getTime();
+                                        const deployTimeSeconds = deployEndTime - deployStartTime;
                                         // convert seconds to "HH:MM:SS" format
-                                        const totalDeployTimeStr = new Date(
-                                            deployTimeSeconds
-                                        )
+                                        const totalDeployTimeStr = new Date(deployTimeSeconds)
                                             .toISOString()
                                             .substring(11, 8);
-                                        returnDeployByConfigurationWaitResponse[
-                                            'process_time'
-                                        ] = totalDeployTimeStr;
+                                        returnDeployByConfigurationWaitResponse['process_time'] = totalDeployTimeStr;
 
                                         /**
                                          * append the respective deviceId's deployByConfigurationWaitResponse

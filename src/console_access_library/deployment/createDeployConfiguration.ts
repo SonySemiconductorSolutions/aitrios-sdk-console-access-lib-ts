@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,7 @@ import ajvErrors from 'ajv-errors';
 import { Configuration, DeployApi } from 'js-client';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { getMessage } from '../common/logger/getMessage';
 
 const ajv = new Ajv({ allErrors: true });
@@ -76,54 +72,44 @@ export class CreateDeployConfiguration {
             },
             comment: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for comment',
-                    isNotEmpty: 'comment required or can\'t be empty string',
+                    type: 'Invalid string for comment'
                 },
             },
             sensorLoaderVersionNumber: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for sensorLoaderVersionNumber',
-                    isNotEmpty:
-                        'sensorLoaderVersionNumber required or can\'t be empty string',
+                    type: 'Invalid string for sensorLoaderVersionNumber'
                 },
             },
             sensorVersionNumber: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for sensorVersionNumber',
-                    isNotEmpty:
-                        'sensorVersionNumber required or can\'t be empty string',
+                    type: 'Invalid string for sensorVersionNumber'
                 },
             },
             modelId: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for modelId',
-                    isNotEmpty: 'modelId required or can\'t be empty string',
+                    type: 'Invalid string for modelId'
                 },
             },
             modelVersionNumber: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for modelVersionNumber',
-                    isNotEmpty:
-                        'modelVersionNumber required or can\'t be empty string',
+                    type: 'Invalid string for modelVersionNumber'
                 },
             },
             apFwVersionNumber: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for apFwVersionNumber',
-                    isNotEmpty:
-                        'apFwVersionNumber required or can\'t be empty string',
+                    type: 'Invalid string for apFwVersionNumber'
                 },
             },
         },
@@ -137,35 +123,31 @@ export class CreateDeployConfiguration {
     };
 
     /**
-     * createDeployConfiguration - Register the deployment config information to deploy the \
-     *                             following to the device. Firmware, AIModel.
+     * createDeployConfiguration - Register the deploy config information to deploy \
+     *                             to the following devices. \
+     *                              - Firmware \
+     *                              - AIModel.
      * @params
-     * - configId (str, required) : The config ID. Up to 20 characters \
-     *           half-width only. \
+     * - configId (str, required) : Max. 20 single characters, single-byte characters only.\
                 The following characters are allowed \
                 Alphanumeric characters \
                 -hyphen \
                 _ Underscore \
                 () Small parentheses \
                 . dot
-     * - comment (str, optional) : 100 characters or less
-     * - sensorLoaderVersionNumber (str, optional) : If -1 is specified \
-                the default version is applied The default value is system setting "DVC0017"
-     * - sensorVersionNumber (str, optional) : If -1 is specified \
-                the default version is applied The default value is system setting "DVC0018"
-     * - modelId (str, optional) : The model_id. \
-     *           If not specified, no model deployment.
-     * - modelVersionNumber (str, optional) : The Model version number. \
-     *           If not specified, the latest version is applied.
-     * - apFwVersionNumber (str, optional) : The ApFw version number. \
-     *           If not specified, no firmware deployment.
+     * - comment (str, optional) : Max. 100 characters. Default: ''
+     * - sensorLoaderVersionNumber (str, optional) : Sensor loader version number. Default: ''
+     * - sensorVersionNumber (str, optional) : Sensor version number. Default: ''
+     * - modelId (str, optional) : Model ID. Default: ''
+     * - modelVersionNumber (str, optional) : Model version number. Default: ''
+     * - apFwVersionNumber (str, optional) : AppFw version number. Default: ''
      * @returns
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -178,7 +160,7 @@ export class CreateDeployConfiguration {
      * 
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
-     *   if any input string parameter found empty OR.
+     *   if any input string parameter found empty.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -202,7 +184,9 @@ export class CreateDeployConfiguration {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const configId = '__configId__';
@@ -212,7 +196,9 @@ export class CreateDeployConfiguration {
      *    const modelId = '__modelId__';
      *    const modelVersionNumber = '__modelVersionNumber__';
      *    const apFwVersionNumber = '__apFwVersionNumber__';
-     *    const response= await client.deployment.createDeployConfiguration(configId, comment, sensorLoaderVersionNumber, sensorVersionNumber, modelId, modelVersionNumber, apFwVersionNumber);
+     *    const response= await client.deployment.createDeployConfiguration(configId, comment,
+     *                    sensorLoaderVersionNumber, sensorVersionNumber, modelId,
+     *                    modelVersionNumber, apFwVersionNumber);
      */
 
     async createDeployConfiguration(
@@ -241,8 +227,8 @@ export class CreateDeployConfiguration {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -251,22 +237,35 @@ export class CreateDeployConfiguration {
             });
             this.api = new DeployApi(apiConfig);
 
-            const res = await this.api.createDeployConfiguration(
-                configId,
-                comment,
-                sensorLoaderVersionNumber,
-                sensorVersionNumber,
-                modelId,
-                modelVersionNumber,
-                apFwVersionNumber
-            );
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.createDeployConfiguration(
+                    configId,
+                    'client_credentials',
+                    comment,
+                    sensorLoaderVersionNumber,
+                    sensorVersionNumber,
+                    modelId,
+                    modelVersionNumber,
+                    apFwVersionNumber
+                );
+            } else {
+                res = await this.api.createDeployConfiguration(
+                    configId,
+                    undefined,
+                    comment,
+                    sensorLoaderVersionNumber,
+                    sensorVersionNumber,
+                    modelId,
+                    modelVersionNumber,
+                    apFwVersionNumber
+                );
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

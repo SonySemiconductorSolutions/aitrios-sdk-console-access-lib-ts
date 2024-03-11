@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -451,7 +451,7 @@ function getSSLCertificate(hostname: string, proxy?: string): Promise<SSLCertifi
                     for (let i = 1; i <= work.length; i++) {
                         pem.push(work[i - 1]);
                         const mod = i % 64;
-                        if (mod === 0) {
+                        if (mod === 0 && i !== work.length) {
                             pem.push('\n');
                         }
                     }
