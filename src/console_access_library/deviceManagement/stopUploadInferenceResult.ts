@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,7 @@ import { DeviceCommandApi, Configuration } from 'js-client';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 
 const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
@@ -77,17 +73,17 @@ export class StopUploadInferenceResult {
     };
 
     /**
-     * stopUploadInferenceResult- Execute instructions to stop acquiring inference result metadata (Output Tensor) \
-            and image (Input Tensor) to the specified device API
+     * stopUploadInferenceResult- Implement instructions to a specified device to stop getting the\
+             inference result metadata (Output Tensor) and image (Input image).
      * @params
-     * - deviceId (str, required): Device ID. Case-sensitive
+     * - deviceId (str, required): Device ID.
      * @returns
      * - Object: table:: Success Response
             
             +-----------------------+------------+---------------------------+
-            |  Level1               |  Type      |  Description              |
-            +-----------------------+------------+---------------------------+
-            |  `result`             |  `string`  | Set "SUCCESS" pinning     |
+            | *Level1*              | *Type*     | *Description*             |
+            +=======================+============+===========================+
+            | ``result``            | ``string`` | Set "SUCCESS" fixing      |
             +-----------------------+------------+---------------------------+
 
      * - 'Generic Error Response' :
@@ -123,8 +119,10 @@ export class StopUploadInferenceResult {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
-     *  
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
+     *
      *    const client = await Client.createInstance(config);
      *    const deviceId: '__deviceId__';
      *    const response= await client.deviceManagement.stopUploadInferenceResult(deviceId);
@@ -140,8 +138,8 @@ export class StopUploadInferenceResult {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -149,14 +147,18 @@ export class StopUploadInferenceResult {
                 baseOptions
             });
             this.api = new DeviceCommandApi(apiConfig);
-            const res = await this.api.stopUploadInferenceResult(deviceId);
+
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.stopUploadInferenceResult(deviceId, 'client_credentials');
+            } else {
+                res = await this.api.stopUploadInferenceResult(deviceId);
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

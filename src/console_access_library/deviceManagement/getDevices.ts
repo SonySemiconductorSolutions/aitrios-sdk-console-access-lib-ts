@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,15 @@ import ajvErrors from 'ajv-errors';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
 import { Config } from '../common/config';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 
 export interface getDevicesSchema {
     deviceId?: string;
     deviceName?: string;
     connectionState?: string;
     deviceGroupId?: string;
+    deviceIds?: string;
+    scope?: string;
 }
 
 const ajv = new Ajv({ allErrors: true });
@@ -66,36 +64,44 @@ export class GetDevices {
         properties: {
             deviceId: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
                     type: 'Invalid string for deviceId',
-                    isNotEmpty: 'deviceId required or can\'t be empty string',
                 },
             },
             deviceName: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
                     type: 'Invalid string for deviceName',
-                    isNotEmpty: 'deviceName required or can\'t be empty string',
                 },
             },
             connectionState: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for connectionState',
-                    isNotEmpty:
-                        'connectionState required or can\'t be empty string',
+                    type: 'Invalid string for connectionState'
                 },
             },
             deviceGroupId: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for deviceGroupId',
-                    isNotEmpty:
-                        'deviceGroupId required or can\'t be empty string',
+                    type: 'Invalid string for deviceGroupId'
+                },
+            },
+            deviceIds: {
+                type: 'string',
+                default: '',
+                errorMessage: {
+                    type: 'Invalid string for deviceIds'
+                },
+            },
+            scope: {
+                type: 'string',
+                default: 'full',
+                errorMessage: {
+                    type: 'Invalid string for scope'
                 },
             },
         },
@@ -103,115 +109,123 @@ export class GetDevices {
     };
 
     /**
-     * getDevices- Get devices list information API
+     * getDevices- Get the device list information.
      * @params
-     *  - 'deviceId' (str, optional) : Device ID. Partial search, case insensitive
-     *  - 'deviceName' (str, optional) : Edge AI device name. Partial search, case insensitive. \
-                If not specified, search all device_names.
-     *  - 'connectionState' (str, optional) : Connection status. For  \
-                connected state: Connected \
-                Disconnected state: Disconnected \
-                Exact match search, case insensitive. \
-                If not specified, search all connection_states.
-     *  - 'deviceGroupId' (str, optional) : Affiliated Edge AI device group. \
-                Exact match search, case insensitive. \
-                Search all device_group_id if not specified.
+     *  - 'deviceId' (str, optional) : Device ID. Partial match search. Default:""
+     *  - 'deviceName' (str, optional) : Device name. Partial match search. Default:""
+     *  - 'connectionState' (str, optional) :  Connection status. Default:"" \
+                Value definition \
+                    - Connected \
+                    - Disconnected
+     *  - 'deviceGroupId' (str, optional) : Device group ID. Default:""
+     *  - 'device_ids' (str, required) : Specify multiple device IDs separated by commas. Default:""
+     *  - 'scope' (str, optional) : Specify the scope of response parameters to return. Default:'full'\
+                Value definition \
+                    - full : Return full parameters \
+                    - minimal : Return minimal parameters fast response speed
      * @returns
      * - Object: table:: Success Response
-    
+
             +------------+--------------------+-----------+--------------------------------+
-            |  Level1    |  Level2            | Type      |  Description                   |
+            | *Level1*   | *Level2*           |*Type*     | *Description*                  |
+            +============+====================+===========+================================+
+            | ``devices``|                    |``array``  |                                |
             +------------+--------------------+-----------+--------------------------------+
-            |  `devices` |                    | `array`   | The subordinate elements are   |
-            |            |                    |           | listed in ascending order by   |
-            |            |                    |           | device ID                      |
+            |            | ``device_id``      |``string`` | Set the device ID              |
             +------------+--------------------+-----------+--------------------------------+
-            |            |  `device_id`       |  `string` | Set the device ID              |
+            |            | ``place``          |``string`` | Set the location               |
             +------------+--------------------+-----------+--------------------------------+
-            |            |  `place`           |  `string` | Set the location               |
+            |            | ``comment``        |``string`` | Set the device description     |
             +------------+--------------------+-----------+--------------------------------+
-            |            |  `comment`         |  `string` | Set the device description     |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `property`        |  `string` | Set device properties          |
-            |            |                    |           | (device_name, etc.)            |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `ins_id`          |  `string` | Set the creator of the device  |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `ins_date`        |  `string` | Set the date and               |
-            |            |                    |           | time the device was created.   |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `upd_id`          |  `string` | Set up an updater for          |
-            |            |                    |           | your device                    |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `upd_date`        |  `string` | Set the date and time          |
-            |            |                    |           | of the device update.          |
-            +------------+--------------------+-----------+--------------------------------+
-            |            | `connectionState`  |  `string` | Set the connection status      |
-            |            |                    |           | of the device.                 |
-            +------------+--------------------+-----------+--------------------------------+
-            |            | `lastActivityTime` |  `string` | Set the last connection date   |
-            |            |                    |           | and time of the device.        |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `device_groups`   | `array`   | Refer : Table : 1.0            |
+            |            | ``property``       |``array``  | Refer : Table : 1.0            |
             |            |                    |           | for more details               |
             +------------+--------------------+-----------+--------------------------------+
-            |            |  `models`          | `array`   | Refer : Table : 1.1            |
+            |            | ``device_type``    |``string`` | Set the device type.           |
+            +------------+--------------------+-----------+--------------------------------+
+            |            |``display_device_   |``string`` | Set the display device type.   |
+            |            |type``              |           |                                |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``ins_id``         |``string`` | Set the device author.         |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``ins_date``       |``string`` | Set the date                   |
+            |            |                    |           | the device was created.        |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``upd_id``         |``string`` | Set the device updater.        |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``upd_date``       |``string`` | Set the date the device was    |
+            |            |                    |           | updated.                       |
+            +------------+--------------------+-----------+--------------------------------+
+            |            |``connectionState`` |``string`` | Set the device connection state|
+            +------------+--------------------+-----------+--------------------------------+
+            |            |``lastActivityTime``|``string`` | Set the date the device last   |
+            |            |                    |           | connected.                     |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``models``         |``array``  | Refer : Table : 1.1            |
             |            |                    |           | for more details               |
             +------------+--------------------+-----------+--------------------------------+
-            
-            @Table : 1.0 - device_groups schema details
-            
+            |            | ``configuration``  |``array``  |                                |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``state``          |``array``  |                                |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``device_groups``  |``array``  | Refer : Table : 1.2            |
+            |            |                    |           | for more details               |
+            +------------+--------------------+-----------+--------------------------------+
+
+            @Table : 1.0 - property schema details
+
             +-------------------+--------------------+------------+--------------------------+
-            |  Level1           |  Level2            |  Type      |  Description             |
+            | *Level1*          | *Level2*           | *Type*     | *Description*            |
+            +===================+====================+============+==========================+
+            | ``property``      |                    | ``array``  |                          |
             +-------------------+--------------------+------------+--------------------------+
-            |  `device_groups`  |                    |  `array`   | The subordinate          |
-            |                   |                    |            | elements are listed      |
-            |                   |                    |            | in ascending order       |
-            |                   |                    |            | by device group ID       |   
+            |                   |``device_name``     | ``string`` | Set the device name.     |
             +-------------------+--------------------+------------+--------------------------+
-            |                   | `device_group_id`  |   `string` | Set the device group ID  |
+            |                   |``internal_device_  | ``string`` | Set the internal device  |
+            |                   |id``                |            | id.                      |
             +-------------------+--------------------+------------+--------------------------+
-            |                   | `device_type`      |   `string` | Set the device type      |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `comment`         |  `string`  | Set the device           |
-            |                   |                    |            | bdescription             |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `ins_id`          |  `string`  | Set the date and time    |
-            |                   |                    |            | that the device group    |
-            |                   |                    |            | was created.             |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `ins_date`        |  `string`  | Set the creator of the   |
-            |                   |                    |            | device group.            |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `upd_id`          |  `string`  | Set the updater for      |
-            |                   |                    |            | the device group         |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `upd_date`        |  `string`  | Set the date and time of |
-            |                   |                    |            | the device group update. |
-            +-------------------+--------------------+------------+--------------------------+
-          
+
             @Table : 1.1 - models schema details
 
             +-------------------+--------------------+------------+--------------------------+
-            |  Level1           |  Level2            |  Type      |  Description             |
+            | *Level1*          | *Level2*           | *Type*     | *Description*            |
+            +===================+====================+============+==========================+
+            | ``models``        |                    | ``array``  |                          |
             +-------------------+--------------------+------------+--------------------------+
-            |  `models`         |                    |  `array`   | The subordinate          |
-            |                   |                    |            | elements are listed      |
-            |                   |                    |            | in ascending order       |
-            |                   |                    |            | by device group ID       |   
+            |                   |``model_version_id``| ``string`` | Set the model version ID.|
+            |                   |                    |            | Format: modelid:v1.01    |
+            |                   |                    |            | For model that does not  |
+            |                   |                    |            | exist in the system,     |
+            |                   |                    |            | display network_id       |
+            |                   |                    |            | Example: 000237          |
             +-------------------+--------------------+------------+--------------------------+
-            |                   | `model_version_id` |   `string` | Set the model version ID |
-            |                   |                    |            | Format: ModelID:v1.0001  |
-            |                   |                    |            | * If DnnModelVersion does|
-            |                   |                    |            | not exist in the DB, the |
-            |                   |                    |            | network_id is displayed. |
-            |                   |                    |            | Example) 0201020002370200|
-            |                   |                    |            | In the above case, 000237|
-            |                   |                    |            | (7~12 digits) If it is 16|
-            |                   |                    |            | digits,it is displayed   |
-            |                   |                    |            | as is.                   |
+
+            @Table : 1.2 - device_groups schema details
+
             +-------------------+--------------------+------------+--------------------------+
-    
+            | *Level1*          | *Level2*           | *Type*     | *Description*            |
+            +===================+====================+============+==========================+
+            | ``device_groups`` |                    | ``array``  |                          |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   |``device_group_id`` | ``string`` | Set the device group ID  |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   |``device_type``     | ``string`` | Set the device type      |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``comment``        |``string``  | Set the device           |
+            |                   |                    |            | group comment.           |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``ins_id``         |``string``  | Set the date the device  |
+            |                   |                    |            | group was created.       |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``ins_date``       |``string``  | Set the device group     |
+            |                   |                    |            | author.                  |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``upd_id``         |``string``  | Set the device group     |
+            |                   |                    |            | updater                  |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``upd_date``       |``string``  | Set the date the device  |
+            |                   |                    |            | group was updated.       |
+            +-------------------+--------------------+------------+--------------------------+
+
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK.
      *   Object with below key and value pairs.
@@ -219,7 +233,7 @@ export class GetDevices {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -228,7 +242,7 @@ export class GetDevices {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -241,26 +255,33 @@ export class GetDevices {
      * Below is the example of result format.
      * .. code-block:: typescript
      *    import { Client, Config } from 'consoleaccesslibrary'
-     * 
+     *
      *    const consoleEndpoint: "__consoleEndpoint__";
      *    const portalAuthorizationEndpoint: "__portalAuthorizationEndpoint__";
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
-     *  
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
+     *
      *    const client = await Client.createInstance(config);
      *    const deviceId = '__deviceId__';
      *    const deviceName = '__deviceName__';
      *    const connectionState = '__connectionState__';
      *    const deviceGroupId = '__deviceGroupId__';
-     *    const response= await client.deviceManagement.getDevices(deviceId, deviceName, connectionState, deviceGroupId );
+     *    const deviceIds = '__deviceIds__';
+     *    const scope = '__scope__'
+     *    const response= await client.deviceManagement.getDevices(deviceId, deviceName,
+     *                               connectionState, deviceGroupId, deviceIds, scope );
      *
      */
     async getDevices(
         deviceId?: string,
         deviceName?: string,
         connectionState?: string,
-        deviceGroupId?: string
+        deviceGroupId?: string,
+        deviceIds?: string,
+        scope?: string
     ) {
         let valid = true;
         const queryParams = {
@@ -268,6 +289,8 @@ export class GetDevices {
             deviceName,
             connectionState,
             deviceGroupId,
+            deviceIds,
+            scope
         };
         try {
             Logger.info(`getDevices ${queryParams}`);
@@ -286,19 +309,34 @@ export class GetDevices {
                 baseOptions
             });
             this.api = new ManageDevicesApi(apiConfig);
-            const res = await this.api.getDevices(
-                queryParams.connectionState,
-                queryParams.deviceName,
-                queryParams.deviceId,
-                queryParams.deviceGroupId
-            );
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.getDevices(
+                    'client_credentials',
+                    queryParams.connectionState,
+                    queryParams.deviceName,
+                    queryParams.deviceId,
+                    queryParams.deviceGroupId,
+                    queryParams.deviceIds,
+                    queryParams.scope,
+                );
+            } else {
+                res = await this.api.getDevices(
+                    undefined,
+                    queryParams.connectionState,
+                    queryParams.deviceName,
+                    queryParams.deviceId,
+                    queryParams.deviceGroupId,
+                    queryParams.deviceIds,
+                    queryParams.scope,
+                );
+
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,7 @@ import { InsightApi, Configuration } from 'js-client';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 
 const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
@@ -87,94 +83,89 @@ export class GetLastInferenceData {
      * - deviceId (str, required) - The Device Id
      * @returns
      * - Object: table:: Success Response
-    - when time parameter is not specified
          
-            +-------------+-----------+------------------------------------+
-            |  Level1     |    Type   |  Description                       |
-            +-------------+-----------+------------------------------------+
-            | `id`        |  `string` | The ID of the inference            |
-            |             |           | result metadata.                   |
-            +-------------+-----------+------------------------------------+
-            | `device_id` |  `string` | Device ID.                         |
-            +-------------+-----------+------------------------------------+
-            | `model_id`  |  `string` | Model ID.                          |
-            +-------------+-----------+------------------------------------+
-            | `model      | `string`  | Dnn Model Version                  |
-            |_version_id` |           |                                    |
-            +-------------+-----------+------------------------------------+
-            | `model      | `string`  | Model  Type  .                     |
-            |_type`       |           |                                    |
-            |             |           | 00: Image classification           |
-            |             |           |                                    |
-            |             |           | 01: Object detection               |
-            |             |           |                                    |
-            |             |           | * In the case of imported          |
-            |             |           | models, 01 is fixed at the         |
-            |             |           | current level.                     |
-            +-------------+-----------+------------------------------------+
-            | `training   | `string`  | Name of the training_kit           |
-            |_kit_name`   |           |                                    |
-            +-------------+-----------+------------------------------------+
-            | `_ts`       | `string`  | Timestamp. = System                |
-            |             |           | registration date and time         |
-            +-------------+-----------+------------------------------------+
-            | `inference  | `string`  |Refer : Table : 1.0                 |
-            |_result`     |           |for more details                    |
-            +-------------+-----------+------------------------------------+
-            
-    - when time parameter is specified
-            
-            +--------------+-----------+--------------------------------+
-            |  Level1      |    Type   |  Description                   |
-            +--------------+-----------+--------------------------------+
-            | `id`         |  `string` | The ID of the inference result |
-            |              |           | metadata. = GUID automatically |
-            |              |           | fired by CosmosDB              |
-            +--------------+-----------+--------------------------------+
-            | `device_id`  |  `string` | Device ID.                     |
-            +--------------+-----------+--------------------------------+
-            | `model_id`   |  `string` | Model ID.                      |
-            +--------------+-----------+--------------------------------+
-            | `_ts`        | `string`  | Timestamp. = System            |
-            |              |           | registration date and time     |
-            +--------------+-----------+--------------------------------+
-            | `inferences` | `array`   |Refer : Table : 1.1             |
-            |              |           |for more details                |
-            +--------------+-----------+--------------------------------+
+            +------------------+-------------+-----------+------------------------------------+
+            | *Level1*         | *Level2*    | *Type*    | *Description*                      |
+            +==================+============+============+====================================+
+            | ``No_item_name`` |             |           |                                    |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``id``       | ``string``| Inference result metadata ID.      |
+            |                  |             |           | =GUID generated automatically by   |
+            |                  |             |           | CosmosDB                           |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``device_id``| ``string``| Device ID.                         |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``model_id`` | ``string``| Model ID.                          |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``version    | ``string``| Version number.                    |
+            |                  |_number``    |           |                                    |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``model      |``string`` | Model version ID.                  |
+            |                  |_version_id``|           |                                    |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``model      |``string`` | Model type                         |
+            |                  |_type``      |           |                                    |
+            |                  |             |           | 00: Image category                 |
+            |                  |             |           |                                    |
+            |                  |             |           | 01: Object detection               |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``training   |``string`` |                                    |
+            |                  |_kit_name``  |           |                                    |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``_ts``      |``number`` | Timestamp.                         |
+            |                  |             |           | =_ts of CosmosDB                   |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``inference  |``string`` |Refer : Table : 1.0                 |
+            |                  |_result``    |           |for more details                    |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``inferenc   |``array``  |Refer : Table : 1.1                 |
+            |                  |es``         |           |for more details                    |
+            +------------------+-------------+-----------+------------------------------------+
 
-        @Table : 1.0 - inference_result schema details
+            @Table : 1.0 - inference_result schema details
 
             +--------------------+--------------+------------+-------------------------------+
-            |  Level1            |  Level2      |    Type    |  Description                  |
+            | *Level1*           | *Level2*     | *Type*     | *Description*                 |
+            +====================+==============+============+===============================+
+            |``inference_result``|              | ``array``  |                               |
             +--------------------+--------------+------------+-------------------------------+
-            | `inference_result` |              |  `array`   |Raw data for inference result  |
-            |                    |              |            |in ascending order of project  |
-            |                    |              |            |Type and model project name.   |
+            |                    |``DeviceID``  | ``string`` |Device ID                      |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `device_id`  |  `string`  |Device ID                      |
+            |                    |``ModelID``   |``string``  |DnnModelVersion                |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `model_id`   | `string`   |DnnModelVersion                |
+            |                    |``Image``     |``boolean`` |Synchronized to the            |
+            |                    |              |            |InputTensor output.            |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `image`      | `boolean`  |Is it synchronized with        |
-            |                    |              |            |the output of InputTensor?     |
-            +--------------------+--------------+------------+-------------------------------+
-            |                    | `inferences` | `array`    |Refer : Table : 1.1            |
+            |                    |``Inferences``|``array``   |Refer : Table : 1.1            |
             |                    |              |            |for more details               |
             +--------------------+--------------+------------+-------------------------------+
+            |                    |``id``        |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``ttl``       |``number``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_rid``      |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_self``     |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_etag``     |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_attachm    |``string``  |                               |
+            |                    |ents``        |            |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_ts``       |``number``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
 
-           
-        @Table : 1.1 - inferences schema details
+            @Table : 1.1 - inferences schema details
 
             +--------------------+--------------+------------+-------------------------------+
-            |  Level1            |  Level2      |    Type    |  Description                  |
+            | *Level1*           | *Level2*     | *Type*     | *Description*                 |
+            +====================+==============+============+===============================+
+            |``inferences``      |              | ``array``  |                               |
             +--------------------+--------------+------------+-------------------------------+
-            | `inferences`       |              |  `array`   |Inference result Array         |
+            |                    |``T``         | ``string`` |Time when retrieving           |
+            |                    |              |            |data from the sensor.          |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `T`          |  `string`  |The time at which the data     |
-            |                    |              |            |was acquired from the sensor.  |
-            +--------------------+--------------+------------+-------------------------------+
-            |                    | `O`          | `string`   |Outputtensor output without    |
-            |                    |              |            |going through PPL              |
+            |                    |``O``         |``string``  |Output tensor (Encoding format)|
             +--------------------+--------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -210,7 +201,9 @@ export class GetLastInferenceData {
      *    const portalAuthorizationEndpoint: "__portalAuthorizationEndpoint__";
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *  
      *    const client = await Client.createInstance(config);
      *    const deviceId = '__deviceId__';
@@ -227,8 +220,8 @@ export class GetLastInferenceData {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -239,12 +232,25 @@ export class GetLastInferenceData {
             const numberOfInferenceResult = 1;
             const filter = undefined;
             const raw = 1;
-            const res = await this.api.getInferenceResults(
-                deviceId,
-                numberOfInferenceResult,
-                filter,
-                raw
-            );
+
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.getInferenceResults(
+                    deviceId,
+                    'client_credentials',
+                    numberOfInferenceResult,
+                    filter,
+                    raw
+                );
+            } else {
+                res = await this.api.getInferenceResults(
+                    deviceId,
+                    undefined,
+                    numberOfInferenceResult,
+                    filter,
+                    raw
+                );
+            }
             if (res) {
                 return res?.data[0];
             } else {
@@ -253,9 +259,7 @@ export class GetLastInferenceData {
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

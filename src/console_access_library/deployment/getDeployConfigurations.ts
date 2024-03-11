@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,159 +35,105 @@ export class GetDeployConfigurations {
     }
 
     /**
-     * getDeployConfigurations - Get deployment config information list.
+     * getDeployConfigurations - Get the deploy config list.
      * @returns
      * - Object: table:: Success Response
 
-            +-------------------------+------------------+------------+-------------------+
-            |  Level1                 |  Level2          |  Type      |  Description      |
-            +-------------------------+------------------+------------+-------------------+
-            | `deploy_configurations` |                  |  `array`   | Ascending order of|
-            |                         |                  |            | config_id         |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |  `config_id`     |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |  `device_type`   |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `config_comment` |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `running_cnt`  |  `int`     |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `success_cnt`  |  `int`     |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `fail_cnt`     |  `int`     |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `firmware`     |  `array`   |Refer : Table : 1.0|
-            |                         |                  |            | for more details  |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `model`        |  `array`   |Refer : Table : 2.0|
-            |                         |                  |            | for more details  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `custom_setting` |  `array`   |Refer : Table : 3.0|
-            |                         |                  |            | for more details  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `ins_id`         |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `ins_date`       |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `upd_id`         |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `upd_date`       |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
+            +-----------------+------------+------------+---------------------------------+
+            | *Level1*        | *Level2*   | *Type*     | *Description*                   |
+            +=================+============+============+=================================+
+            |``deploy_        |            | ``array``  |                                 |
+            |configurations`` |            |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``config_   | ``string`` | Set the config ID.              |
+            |                 |id``        |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``device_   | ``string`` | Set the device type.            |
+            |                 |type``      |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``config_   | ``string`` | Set the config comment.         |
+            |                 |comment``   |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``running_  | ``number`` | Set the running cnt.            |
+            |                 |cnt``       |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``success_  | ``number`` | Set the success cnt.            |
+            |                 |cnt``       |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``fail_cnt``| ``number`` | Set the fail cnt.               |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``firmware``| ``array``  | Refer : Table : 1.0             |
+            |                 |            |            | for more details                |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``model``   | ``array``  | Refer : Table : 1.1             |
+            |                 |            |            | for more details                |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``ins_id``  | ``string`` | Set the deployment author.      |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``ins_date``| ``string`` | Set the date the deployment     |
+            |                 |            |            | was created.                    |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``upd_id``  | ``string`` | Set the deployment updater.     |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``upd_date``| ``string`` | Set the date the deployment     |
+            |                 |            |            | was updated.                    |
+            +-----------------+------------+------------+---------------------------------+
 
-        @Table : 1.0 - firmware schema details
+            @Table : 1.0 - firmware schema details
 
             +-------------------+--------------------+------------+-------------------+
             | *Level1*          | *Level2*           | *Type*     | *Description*     |
-            +-------------------+--------------------+------------+-------------------+
+            +===================+====================+============+===================+
             | ``firmware``      |                    | ``array``  |                   |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_loader_    | ``string`` |                   |
-            |                   |file_name``         |            |                   |
+            |                   |``sensor_loader_    | ``string`` | Set the sensor    |
+            |                   |file_name``         |            | loader filename.  |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_loader_    | ``string`` |                   |
-            |                   |version_number``    |            |                   |
+            |                   |``sensor_loader_    | ``string`` | Set the sensor    |
+            |                   |version_number``    |            | loader version    |
+            |                   |                    |            | number.           |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_loader_    | ``string`` |                   |
-            |                   |firmware_comment``  |            |                   |
+            |                   |``sensor_loader_    | ``string`` | Set the sensor    |
+            |                   |firmware_comment``  |            | loader firmware   |
+            |                   |                    |            | comment.          |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_file_name``| ``string`` |                   |
+            |                   |``sensor_file_name``| ``string`` | Set the sensor    |
+            |                   |                    |            | filename.         |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_           | ``string`` |                   |
-            |                   |version_number``    |            |                   |
+            |                   |``sensor_           | ``string`` | Set the sensor    |
+            |                   |version_number``    |            | version number.   |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_           |``string``  |                   |
-            |                   |firmware_comment``  |            |                   |
+            |                   |``sensor_           |``string``  | Set the sensor    |
+            |                   |firmware_comment``  |            | firmware comment. |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``apfw_file_name``  |``string``  |                   |
+            |                   |``apfw_file_name``  |``string``  | Set the apfw      |
+            |                   |                    |            | filename.         |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``apfw_version_     |``string``  |                   |
-            |                   |number``            |            |                   |
+            |                   |``apfw_version_     |``string``  | Set the apfw      |
+            |                   |number``            |            | version number.   |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``apfw_firmware_    |``string``  |                   |
-            |                   |comment``           |            |                   |
+            |                   |``apfw_firmware_    |``string``  | Set the apfw      |
+            |                   |comment``           |            | firmware comment. |
             +-------------------+--------------------+------------+-------------------+
 
-        @Table : 2.0 - model schema details
+            @Table : 1.1 - model schema details
 
             +-------------------+--------------------+------------+-------------------+
             | *Level1*          | *Level2*           | *Type*     | *Description*     |
-            +-------------------+--------------------+------------+-------------------+
+            +===================+====================+============+===================+
             | ``model``         |                    | ``array``  |                   |
             +-------------------+--------------------+------------+-------------------+
-            |                   | ``model_id``       | ``string`` |                   |
+            |                   | ``model_id``       | ``string`` | Set the model ID. |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``model_            | ``string`` |                   |
-            |                   |version_number``    |            |                   |
+            |                   |``model_            | ``string`` | Set the model     |
+            |                   |version_number``    |            | version number.   |
             +-------------------+--------------------+------------+-------------------+
-            |                   | ``model_comment``  | ``string`` |                   |
+            |                   | ``model_comment``  | ``string`` | Set the model     |
+            |                   |                    |            | comment.          |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``model_            | ``string`` |                   |
-            |                   |version_comment``   |            |                   |
+            |                   |``model_            | ``string`` | Set the model     |
+            |                   |version_comment``   |            | version comment.  |
             +-------------------+--------------------+------------+-------------------+
-
-        @Table : 3.0 - custom_setting schema details
-
-            +--------------+--------------------+------------+---------------+
-            | *Level1*     | *Level2*           | *Type*     | *Description* |
-            +--------------+--------------------+------------+---------------+
-            |``custom_     |                    | ``array``  |               |
-            |setting``     |                    |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``color_matrix_     |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``color_matrix_     | ``string`` |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``color_matrix_     |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``gamma_            |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``gamma_            |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``gamma_            |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscisp_           |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscisp_           |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscisp_           |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscraw_           |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscraw_           |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscraw_           |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``prewb_            |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``prewb_            |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``prewb_            |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``dewarp_           |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``dewarp_           |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``dewarp_           |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
 
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK.
@@ -223,7 +169,9 @@ export class GetDeployConfigurations {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const response= await client.deployment.getDeployConfigurations();
@@ -232,8 +180,8 @@ export class GetDeployConfigurations {
     async getDeployConfigurations() {
         Logger.info('getDeployConfigurations');
         try {
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -242,7 +190,12 @@ export class GetDeployConfigurations {
             });
             this.api = new DeployApi(apiConfig);
 
-            const res = await this.api.getDeployConfigurations();
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.getDeployConfigurations('client_credentials');
+            } else {
+                res = await this.api.getDeployConfigurations();
+            }
             return res;
         } catch (error) {
             if (error.response) {

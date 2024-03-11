@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,7 @@ import { getMessage } from '../common/logger/getMessage';
 import Ajv from 'ajv';
 import ajvErrors from 'ajv-errors';
 import { Config } from '../common/config';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 
 const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
@@ -77,23 +73,28 @@ export class StartUploadInferenceResult {
     };
 
     /**
-     * startUploadInferenceResult- Execute instructions for starting acquisition of inference result metadata \
-            (Output Tensor) and image (Input Tensor) to the specified device API
+     * startUploadInferenceResult- Implement instructions to a specified device to start to get the\
+             inference result metadata (Output Tensor) and image (Input image).
 
      * @params 
-     * - deviceId (str, required): Device ID. Case-sensitive
+     * - deviceId (str, required): Device ID
      * @returns
      * - Object: table:: Success Response
    
-            +------------------------+------------+---------------------------+
-            |  Level1                |  Type      |  Description              |
-            +------------------------+------------+---------------------------+
-            |  `result`              |  `string`  | Set "SUCCESS" pinning     |
-            +------------------------+------------+---------------------------+
-            |  `outputSubDirectory`  |  `string`  | Input Image storage path  |
-            |                        |            | UploadMethod:BlobStorage  |
-            |                        |            | only                      |
-            +------------------------+------------+---------------------------+
+            +--------------------------+------------+---------------------------+
+            | *Level1*                 | *Type*     | *Description*             |
+            +==========================+============+===========================+
+            | ``result``               | ``string`` | Set "SUCCESS" fixing      |
+            +--------------------------+------------+---------------------------+
+            | ``outputSubDirectory``   | ``string`` | Input Image storage path, |
+            |                          |            | UploadMethod:BlobStorage  |
+            |                          |            | only                      |
+            +--------------------------+------------+---------------------------+
+            | ``outputSubDirectoryIR`` | ``string`` | Input Inference result    |
+            |                          |            | storage path,             |
+            |                          |            | UploadMethodIR:BlobStorage|
+            |                          |            | only                      |
+            +--------------------------+------------+---------------------------+
 
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK.
@@ -128,8 +129,10 @@ export class StartUploadInferenceResult {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
-     *  
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
+     *
      *    const client = await Client.createInstance(config);
      *    const deviceId: '__deviceId__';
      *    const response= await client.deviceManagement.startUploadInferenceResult(deviceId);
@@ -145,8 +148,8 @@ export class StartUploadInferenceResult {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -154,14 +157,17 @@ export class StartUploadInferenceResult {
                 baseOptions
             });
             this.api = new DeviceCommandApi(apiConfig);
-            const res = await this.api.startUploadInferenceResult(deviceId);
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.startUploadInferenceResult(deviceId, 'client_credentials');
+            } else {
+                res = await this.api.startUploadInferenceResult(deviceId);
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

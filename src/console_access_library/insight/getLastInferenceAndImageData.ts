@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,7 @@ import { InsightApi, Configuration } from 'js-client';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 
 const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
@@ -94,190 +90,134 @@ export class GetLastInferenceAndImageData {
     /**
      * getLastInferenceAndImageData- Get the latest data of saved inference result and image.
      *  @params
-     * - deviceId (str, required) - Edge AI Device ID.
-     * - subDirectoryName (str, required) - The Sub Directory Name. \
-                The subdirectory will be the directory notified in the response \
-                of startUploadInferenceResult.
+     * - deviceId (str, required) - Device ID.
+     * - subDirectoryName (str, required) - Directory name.
      * @returns
      * - Object: table:: Success Response
-    - when time parameter is not specified
          
             +--------------------+------------+------------------------------------+
-            |  Level1            |  Type      |  Description                       |
-            +--------------------+------------+------------------------------------+
-            |  `image_data`      | `array`    | Refer :ref: Table : 1.0            |
+            | *Level1*           | *Type*     | *Description*                      |
+            +====================+============+====================================+
+            | ``image_data``     |``array``   | Refer : Table : 1.0                |
             |                    |            | for more details                   |
             +--------------------+------------+------------------------------------+
-            | `inference_data`   | `array`    | Refer :  Table : 1.1               |
+            |``inference_data``  |``array``   | Refer : Table : 1.1                |
             |                    |            | for more details                   |
             +--------------------+------------+------------------------------------+
 
-        @Table : 1.0 - image_data schema details
+            @Table : 1.0 - image_data schema details
 
             +----------------+----------------------+------------+---------------------------+
-            |  Level1        |  Level2              |  Type      |  Description              |
-            +----------------+----------------------+------------+---------------------------+
-            |  `image_data`  |                      |  `array`   | image data                |
+            | *Level1*       | *Level2*             | *Type*     | *Description*             |
+            +================+======================+============+===========================+
+            | ``image_data`` |                      | ``array``  | image data                |
             |                |                      |            |                           |
             +----------------+----------------------+------------+---------------------------+
-            |                |  `total_image_count` |   `int`    | Set the total number of   |
+            |                | ``total_image_count``|``number``  | Set the total number of   |
             |                |                      |            | images                    |
             +----------------+----------------------+------------+---------------------------+
-            |                |  `images`            |  `array`   | Refer : Table : 1.2       |
+            |                | ``images``           | ``array``  | Refer : Table : 1.2       |
             |                |                      |            | for more details          |
             +----------------+----------------------+------------+---------------------------+
 
-        @Table : 1.1 - inference_data schema details
+            @Table : 1.2 - images schema details
+
+            +-----------------------+------------+------------+---------------------------+
+            | *Level1*              | *Level2*   | *Type*     | *Description*             |
+            +=======================+============+============+===========================+
+            |``images``             |            | ``array``  |                           |
+            +-----------------------+------------+------------+---------------------------+
+            |                       | ``name``   | ``string`` | Set the image filename.   |
+            +-----------------------+------------+------------+---------------------------+
+            |                       |``contents``| ``string`` | Images file contents      |
+            |                       |            |            | (BASE64 encoding)         |
+            +-----------------------+------------+------------+---------------------------+
+
+            @Table : 1.1 - inference_data schema details
 
             +------------------+-------------+-----------+------------------------------------+
-            |  Level1          |  Level2     |  Type     |  Description                       |
+            | *Level1*         | *Level2*    | *Type*    | *Description*                      |
+            +==================+=============+===========+====================================+
+            |``inference_data``|             |``array``  | inference_data                     |
             +------------------+-------------+-----------+------------------------------------+
-            | `inference_data` |             | `array`   | inference_data                     |
+            |                  |``id``       | ``string``| Inference result metadata ID.      |
+            |                  |             |           | =GUID generated automatically by   |
+            |                  |             |           | CosmosDB                           |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `id`        |  `string` | The ID of the inference            |
-            |                  |             |           | result metadata.                   |
+            |                  |``device_id``| ``string``| Device ID.                         |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `device_id` |  `string` | Device ID.                         |
+            |                  |``model_id`` | ``string``| Model ID.                          |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `model_id`  |  `string` | Model ID.                          |
+            |                  |``version    | ``string``| Version number.                    |
+            |                  |_number``    |           |                                    |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `model      | `string`  | Dnn Model Version                  |
-            |                  |_version_id` |           |                                    |
+            |                  |``model      |``string`` | Model version ID.                  |
+            |                  |_version_id``|           |                                    |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `model      | `string`  |Model type.                         |
-            |                  |_type`       |           |                                    |
-            |                  |             |           |00: Image classification            |
+            |                  |``model      |``string`` | Model type                         |
+            |                  |_type``      |           |                                    |
+            |                  |             |           | 00: Image category                 |
             |                  |             |           |                                    |
-            |                  |             |           |01: Object detection                |
-            |                  |             |           |                                    |
-            |                  |             |           |* In the case of imported           |
-            |                  |             |           |models, 01 is fixed at the          |
-            |                  |             |           |current level.                      |
+            |                  |             |           | 01: Object detection               |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `training   | `string`  |Name of the training_kit            |
-            |                  |_kit_name`   |           |                                    |
+            |                  |``training   |``string`` |                                    |
+            |                  |_kit_name``  |           |                                    |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `_ts`       | `string`  |Timestamp. = System                 |
-            |                  |             |           |registration date and time          |
+            |                  |``_ts``      |``number`` | Timestamp.                         |
+            |                  |             |           | =_ts of CosmosDB                   |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `inference  | `string`  |Refer :  Table : 1.3                |
-            |                  |_result`     |           |for more details                    |
+            |                  |``inference  |``string`` |Refer : Table : 1.3                 |
+            |                  |_result``    |           |for more details                    |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``inferenc   |``array``  |Refer : Table : 1.4                 |
+            |                  |es``         |           |for more details                    |
             +------------------+-------------+-----------+------------------------------------+
 
-        @Table : 1.2 - images schema details
-
-            +-----------------------+------------+------------+---------------------------+
-            |  Level1               |  Level2    |  Type      |  Description              |
-            +-----------------------+------------+------------+---------------------------+
-            | `images`              |            |  `array`   | Image file name array     |
-            |                       |            |            | The descendant elements   |
-            |                       |            |            | are listed in ascending   |
-            |                       |            |            | order by image file name. |
-            +-----------------------+------------+------------+---------------------------+
-            |                       | `name`     |  `string`  | Set the image file name.  |
-            +-----------------------+------------+------------+---------------------------+
-            |                       | `contents` |  `string`  | Image file contents       |
-            |                       |            |            | * Base64 encoding         |
-            +-----------------------+------------+------------+---------------------------+
-
-        @Table : 1.3 - inference_result schema details
+            @Table : 1.3 - inference_result schema details
 
             +--------------------+--------------+------------+-------------------------------+
-            |  Level1            |  Level2      |  Type      |  Description                  |
+            | *Level1*           | *Level2*     | *Type*     | *Description*                 |
+            +====================+==============+============+===============================+
+            |``inference_result``|              | ``array``  |                               |
             +--------------------+--------------+------------+-------------------------------+
-            | `inference_result` |              |  `array`   |Raw data for inference result  |
-            |                    |              |            |in ascending order of project  |
-            |                    |              |            |type and model project name.   |
+            |                    |``DeviceID``  | ``string`` |Device ID                      |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `device_id`  |  `string`  |Device ID                      |
+            |                    |``ModelID``   |``string``  |DnnModelVersion                |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `model_id`   | `string`   |DnnModelVersion                |
+            |                    |``Image``     |``boolean`` |Synchronized to the            |
+            |                    |              |            |InputTensor output.            |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `image`      | `boolean`  |Is it synchronized with        |
-            |                    |              |            |the output of InputTensor?     |
-            +--------------------+--------------+------------+-------------------------------+
-            |                    | `inferences` | `array`    |Refer : Table : 1.4            |
+            |                    |``Inferences``|``array``   |Refer : Table : 1.4            |
             |                    |              |            |for more details               |
             +--------------------+--------------+------------+-------------------------------+
+            |                    |``id``        |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``ttl``       |``number``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_rid``      |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_self``     |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_etag``     |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_attachm    |``string``  |                               |
+            |                    |ents``        |            |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_ts``       |``number``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
 
-        @Table : 1.4 - inferences schema details
+            @Table : 1.4 - inferences schema details
 
             +--------------------+--------------+------------+-------------------------------+
-            |  Level1            |  Level2      |  Type      |  Description                  |
+            | *Level1*           | *Level2*     | *Type*     | *Description*                 |
+            +====================+==============+============+===============================+
+            |``inferences``      |              | ``array``  |                               |
             +--------------------+--------------+------------+-------------------------------+
-            | `inferences`       |              |  `array`   |Inference result Array         |
+            |                    |``T``         | ``string`` |Time when retrieving           |
+            |                    |              |            |data from the sensor.          |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `T`          |  `string`  |The time at which the data     |
-            |                    |              |            |was acquired from the sensor.  |
+            |                    |``O``         |``string``  |Output tensor (Encoding format)|
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `O`          | `string`   |Outputtensor output without    |
-            |                    |              |            |going through PPL              |
-            +--------------------+--------------+------------+-------------------------------+
-            
-    - when time parameter is specified
-
-            +--------------------+------------+------------------------------------+
-            |  Level1            |  Type      |  Description                       |
-            +--------------------+------------+------------------------------------+
-            |  `image_data`      | `array`    | Refer : Table : 1.5                |
-            |                    |            | for more details                   |
-            +--------------------+------------+------------------------------------+
-            | `inference_data`   | `array`    | Refer : Table : 1.6                |
-            |                    |            | for more details                   |
-            +--------------------+------------+------------------------------------+
-
-        @Table : 1.5 - image_data schema details
-
-            +----------------+----------------------+------------+---------------------------+
-            |  Level1        |  Level2              |  Type      |  Description              |
-            +----------------+----------------------+------------+---------------------------+
-            |  `image_data`  |                      |  `array`   | image data                |
-            |                |                      |            |                           |
-            +----------------+----------------------+------------+---------------------------+
-            |                |  `total_image_count `|   `int`    | Set the total number of   |
-            |                |                      |            | images                    |
-            +----------------+----------------------+------------+---------------------------+
-            |                |  `images`            |  `array`   | Refer : Table : 1.7     ` |
-            |                |                      |            | for more details          |
-            +----------------+----------------------+------------+---------------------------+
-
-        @Table : 1.6 - inference_data schema details
-
-            +------------------+--------------+-----------+--------------------------------+
-            |  Level1          |  Level2      |  Type     |  Description                   |
-            +------------------+--------------+-----------+--------------------------------+
-            | `inference_data` |              | `array`   | inference_data                 |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `id`         |  `string` | The ID of the inference result |
-            |                  |              |           | metadata. = GUID automatically |
-            |                  |              |           | fired by CosmosDB              |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `device_id`  |  `string` | Device ID.                     |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `model_id`   |  `string` | Model ID.                      |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `_ts`        | `string`  | Timestamp. = System            |
-            |                  |              |           | registration date and time     |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `inferences` | `array`   |Refer : Table : 1.4             |
-            |                  |              |           |for more details                |
-            +------------------+--------------+-----------+--------------------------------+
-
-        @Table : 1.7 - images schema details
-
-            +-----------------------+------------+------------+---------------------------+
-            |  Level1               |  Level2    |  Type      |  Description              |
-            +-----------------------+------------+------------+---------------------------+
-            | `images`              |            |  `array`   | Image file name array     |
-            |                       |            |            | The descendant elements   |
-            |                       |            |            | are listed in ascending   |
-            |                       |            |            | order by image file name. |
-            +-----------------------+------------+------------+---------------------------+
-            |                       |  `name`    |  `string`  | Set the image file name.  |
-            +-----------------------+------------+------------+---------------------------+
-            |                       | `contents` |  `string`  | Image file contents       |
-            |                       |            |            | * Base64 encoding         |
-            +-----------------------+------------+------------+---------------------------+
 
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK. Object with below key and value pairs.
@@ -312,7 +252,9 @@ export class GetLastInferenceAndImageData {
      *    const portalAuthorizationEndpoint: "__portalAuthorizationEndpoint__";
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *  
      *    const client = await Client.createInstance(config);
      *    const deviceId = '__deviceId__';
@@ -326,19 +268,15 @@ export class GetLastInferenceAndImageData {
     ) {
         Logger.info('getLastInferenceAndImageData');
         let valid = true;
-        const data = {
-            deviceId: deviceId,
-            subDirectoryName: subDirectoryName,
-        };
         try {
             const validate = ajv.compile(this.schema);
-            valid = validate(data);
+            valid = validate({ deviceId, subDirectoryName });
             if (!valid) {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -352,34 +290,57 @@ export class GetLastInferenceAndImageData {
             const skip = 0;
             const orderBy = 'DESC';
 
-            const imgRes = await this.api.getImages(
-                data.deviceId,
-                data.subDirectoryName,
-                orderBy,
-                numberOfImages,
-                skip
-            );
+            let imgRes;
+            if (this.config.applicationId) {
+                imgRes = await this.api.getImages(
+                    deviceId,
+                    subDirectoryName,
+                    'client_credentials',
+                    orderBy,
+                    numberOfImages,
+                    skip
+                );
+            } else {
+                imgRes = await this.api.getImages(
+                    deviceId,
+                    subDirectoryName,
+                    undefined,
+                    orderBy,
+                    numberOfImages,
+                    skip
+                );
+
+            }
 
             if (imgRes && imgRes.data['images'] && imgRes.data['images'][0]) {
-                
-                latestImageTS = imgRes.data['images'][0]['name'].replace(
-                    '.jpg',
-                    ''
-                );
+                latestImageTS = imgRes.data['images'][0]['name'].replace('.jpg', '');
             }
 
             const numberOfInferenceResult = 1;
             const filter = undefined;
             const raw = 1;
             const time = latestImageTS;
-            const inferenceRes = await this.api.getInferenceResults(
-                deviceId,
-                numberOfInferenceResult,
-                filter,
-                raw,
-                time
-            );
 
+            let inferenceRes;
+            if (this.config.applicationId) {
+                inferenceRes = await this.api.getInferenceResults(
+                    deviceId,
+                    'client_credentials',
+                    numberOfInferenceResult,
+                    filter,
+                    raw,
+                    time
+                );
+            } else {
+                inferenceRes = await this.api.getInferenceResults(
+                    deviceId,
+                    undefined,
+                    numberOfInferenceResult,
+                    filter,
+                    raw,
+                    time
+                );
+            }
             return {
                 image_data: imgRes?.data,
                 inference_data: inferenceRes?.data[0],
@@ -387,9 +348,7 @@ export class GetLastInferenceAndImageData {
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

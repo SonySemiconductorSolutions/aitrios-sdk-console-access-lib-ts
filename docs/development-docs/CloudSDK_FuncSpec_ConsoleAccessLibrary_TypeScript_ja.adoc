@@ -15,7 +15,7 @@
 == 更新履歴
 
 |===
-|Date |What/Why 
+|Date |What/Why
 |2022/11/16
 |初版作成
 
@@ -26,6 +26,10 @@ PDFビルド環境更新
 
 |2023/5/26
 |version 1.0.0 修正対応
+
+|2023/12/22
+|version 1.1.0 修正対応 +
+Console Enterprise Edition対応
 
 |===
 
@@ -90,6 +94,10 @@ Azure Storage リソースへの制限付きアクセス権を付与する URI
 |Client Secret
 |アクセストークン発行に必要なClient Secret
 
+|Application ID +
+ (「**Console Enterprise Edition**」利用時に必要)
+|アクセストークン発行に必要なApplication ID
+
 |===
 
 * Clientから機能毎に分類された「**Console**」のAPIを実行する
@@ -134,7 +142,7 @@ APIにtimeoutの引数がない場合にはtimeoutしない。
 *** getInferenceResults / 保存済み推論結果メタデータ一覧取得
 *** exportImages / 保存済み画像エクスポート
 
-* 「**Low Level SDK**」のAPIをユースケースでまとめたHigh Level APIを実行することができます。
+* 「**Low Level SDK**」のAPIをユースケースでまとめたHigh Level APIを実行できます。
 ** AI Model
 *** publishModelWaitResponse / モデル発行し、完了待ち
 ** Deployment
@@ -213,6 +221,7 @@ Client生成時には、アクセストークンの取得、「**Low Level SDK**
 +
 「**Low Level SDK**」のAPIをWrapしたAPI内で、「**Console**」へのアクセスに必要なアクセストークンの取得、更新
 +
+- ConfigにApplication IDが渡された場合、Microsoft Authentication Libraryによるトークンの取得、更新
 - アクセストークンの有効期限は1時間となっており、有効期限が残り180秒以下の場合、アクセストークンの更新
 
 * 推論結果メタデータ取得開始 - 停止
@@ -227,7 +236,7 @@ Client生成時には、アクセストークンの取得、「**Low Level SDK**
 
 === API
 * Config
-** constructor(consoleEndpoint: string, portalAuthorizationEndpoint: string, clientId: string, clientSecret: string)
+** constructor(consoleEndpoint: string, portalAuthorizationEndpoint: string, clientId: string, clientSecret: string, applicationId: string)
 
 * Client
 ** constructor(configuration: Config)
@@ -237,13 +246,13 @@ Client生成時には、アクセストークンの取得、「**Low Level SDK**
 ** insight()
 
 * DeviceManagement
-** getDevices(deviceId?: string, deviceName?: string, connectionState?: string, deviceGroupId?: string)
+** getDevices(deviceId?: string, deviceName?: string, connectionState?: string, deviceGroupId?: string, deviceIds?: string, scope?: string)
 ** startUploadInferenceResult(deviceId: string)
 ** stopUploadInferenceResult(deviceId: string)
 ** getCommandParameterFile()
 
 * AI Model
-** importBaseModel(modelId: string, model: string, converted?: boolean, vendorName?: string, comment?: string, inputFormatParam?: string, networkConfig?: string, networkType?: string, labels?: Array<string>)
+** importBaseModel(modelId: string, model: string, converted?: boolean, vendorName?: string, comment?: string, inputFormatParam?: string, networkConfig?: string, networkType?: string, metadataFormatId?: string)
 ** getModels(modelId?: string, comment?: string, projectName?: string, modelPlatform?: string, projectType?: string, deviceId?: string, latestType?: string)
 ** getBaseModelStatus(modelId: string, latestType?: string)
 ** deleteModel(modelId: string)
@@ -254,7 +263,7 @@ Client生成時には、アクセストークンの取得、「**Low Level SDK**
 *** publishModelWaitResponseCallback(status: string)
 
 * Deployment
-** importDeviceApp(compiledFlg: string, appName: string, versionNumber: string, fileName: string, fileContent: string, entryPoint?: string, comment?: string)
+** importDeviceApp(compiledFlg: string, appName: string, versionNumber: string, fileName: string, fileContent: string, entryPoint?: string, comment?: string, schemaInfo?: object)
 ** getDeviceApps()
 ** deleteDeviceApp(appName: string, versionNumber: string)
 ** getDeployConfigurations()
@@ -263,14 +272,14 @@ Client生成時には、アクセストークンの取得、「**Low Level SDK**
 ** getDeployHistory(deviceId: string)
 ** deleteDeployConfiguration(configId: string)
 ** cancelDeployment(deviceId: string, deployId: string)
-** deployDeviceApp(appName: string, versionNumber: string, deviceIds: string, deployParameter?: string, comment?: string)
+** deployDeviceApp(appName: string, versionNumber: string, deviceIds: string, comment?: string)
 ** undeployDeviceApp(deviceIds: string)
 ** getDeviceAppDeploys(appName: string, versionNumber: string)
 
 * Deployment High Level API
 ** deployByConfigurationWaitResponse(configId: string, deviceIds: string, replaceModelId?: string, comment?: string, timeout?: number, callback?: deployByConfigurationWaitResponseCallback)
 *** deployByConfigurationWaitResponseCallback(deviceStatusArray: object)
-** deployDeviceAppWaitResponse(appName: string, versionNumber: string, deviceIds: string, deployParameter?: string, comment?: string, callback?: deployDeviceAppWaitResponseCallback)
+** deployDeviceAppWaitResponse(appName: string, versionNumber: string, deviceIds: string, comment?: string, callback?: deployDeviceAppWaitResponseCallback)
 *** deployDeviceAppWaitResponseCallback(deviceStatusArray: object)
 
 * Insight
@@ -290,7 +299,7 @@ Client生成時には、アクセストークンの取得、「**Low Level SDK**
 == 操作性仕様、画面仕様
 * なし
 
-== 各BlockでのAPIパラメータ
+== APIパラメータ
 各エラーメッセージは、関数名が言語によって異なる（この資料では代表してTypeScriptでのエラーメッセージを記載）
 
 * Config
@@ -324,6 +333,11 @@ Client生成時には、アクセストークンの取得、「**Low Level SDK**
 
 |clientSecret
 |アクセストークン発行に必要なClient Secret
+|なし +
+指定なしの場合、環境変数から読み出す
+
+|application_id
+|アクセストークン発行に必要なApplication ID
 |なし +
 指定なしの場合、環境変数から読み出す
 
@@ -459,6 +473,19 @@ Client生成時には、アクセストークンの取得、「**Low Level SDK**
 |完全一致検索、大文字小文字は区別しない +
 指定なしの場合、全deviceGroupId検索
 
+|deviceIds
+|エッジAIデバイスの所属グループ
+|複数のDevice IDをカンマで区切って指定 +
+指定なしの場合、全deviceIds検索
+
+|scope
+|エッジAIデバイスの所属グループ
+|レスポンスパラメータの範囲を指定 +
+設定値 +
+full: 完全なパラメータを返す +
+minimal: 最小限のパラメータを返す(応答速度が速い) +
+指定なしの場合、全scope検索
+
 |===
 +
 |===
@@ -493,6 +520,9 @@ Client生成時には、アクセストークンの取得、「**Low Level SDK**
 
 |outputSubDirectory
 |Input Image格納パス、UploadMethod:Blob Storageのみ
+
+|outputSubDirectoryIR
+|Input Inference格納パス、UploadMethodIR:Blob Storageのみ
 
 |===
 
@@ -621,9 +651,9 @@ format: フォーマット（"RGB" or "BGR"） +
 指定なしの場合、1
 
 
-|labels
-|ラベル名
-|例: ["label01","label02","label03"]
+|metadataFormatId
+|メタデータ形式ID
+|100文字以内
 
 |===
 +
@@ -911,6 +941,12 @@ format: フォーマット（"RGB" or "BGR"） +
 |「**DeviceApp**」説明
 |100文字以内 +
 指定なしの場合、コメントなし
+
+|schemaInfo
+|スキーマ情報
+|形式: +
+const schemaInfo = +
+ { interfaces: { in: [{ metadataFormatId: 'formatId' }] } }
 
 |===
 +
@@ -1209,11 +1245,6 @@ _ アンダーバー +
 |カンマ区切りで複数のエッジAIデバイスのIDを指定 +
 大文字小文字を区別する
 
-|deployParameter
-|デプロイパラメータ
-|JsonフォーマットをBase64 Encodeされた文字列 +
-指定なしの場合、パラメータなし
-
 |comment
 |デプロイコメント
 |100文字以内 +
@@ -1406,11 +1437,6 @@ deployByConfigurationWaitResponseのdeviceIdsで指定したdeviceId分のデー
 |エッジAIデバイスのIDs
 |カンマ区切りで複数のエッジAIデバイスのIDを指定 +
 大文字小文字を区別する
-
-|deployParameter
-|デプロイパラメータ
-|JsonフォーマットをBase64 Encodeされた文字列 +
-指定なしの場合、パラメータなし
 
 |comment
 |デプロイコメント

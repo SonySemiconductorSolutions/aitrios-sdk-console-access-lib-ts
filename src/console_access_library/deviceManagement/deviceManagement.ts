@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,122 +36,126 @@ export class DeviceManagement {
     constructor(config: Config) {
         this.getDevicesObj = new GetDevices(config);
         this.getCommandParameterFileObj = new GetCommandParameterFile(config);
-        this.startUploadInferenceResultObj = new StartUploadInferenceResult(
-            config
-        );
-        this.stopUploadInferenceResultObj = new StopUploadInferenceResult(
-            config
-        );
+        this.startUploadInferenceResultObj = new StartUploadInferenceResult(config);
+        this.stopUploadInferenceResultObj = new StopUploadInferenceResult(config);
     }
 
     /**
-     * getDevices- Abstract function call to `getDevices` API
+     * getDevices- Get the device list information.
      * @params
-     *  - 'deviceId' (str, optional) : Device ID. Partial search, case insensitive
-     *  - 'deviceName' (str, optional) : Edge AI device name. Partial search, case insensitive. \
-                If not specified, search all device_names.
-     *  - 'connectionState' (str, optional) : Connection status. For  \
-                connected state: Connected \
-                Disconnected state: Disconnected \
-                Exact match search, case insensitive. \
-                If not specified, search all connection_states.
-     *  - 'deviceGroupId' (str, optional) : Affiliated Edge AI device group. \
-                Exact match search, case insensitive. \
-                Search all device_group_id if not specified.
+     *  - 'deviceId' (str, optional) : Device ID. Partial match search. Default:""
+     *  - 'deviceName' (str, optional) : Device name. Partial match search. Default:""
+     *  - 'connectionState' (str, optional) :  Connection status. Default:"" \
+                Value definition \
+                    - Connected \
+                    - Disconnected
+     *  - 'deviceGroupId' (str, optional) : Device group ID. Default:""
+     *  - 'device_ids' (str, required) : Specify multiple device IDs separated by commas. Default:""
+     *  - 'scope' (str, optional) : Specify the scope of response parameters to return. Default:'full'\
+                Value definition \
+                    - full : Return full parameters \
+                    - minimal : Return minimal parameters fast response speed
      * @returns 
      * - Object: table:: Success Response
 
             +------------+--------------------+-----------+--------------------------------+
-            |  Level1    |  Level2            | Type      |  Description                   |
+            | *Level1*   | *Level2*           |*Type*     | *Description*                  |
+            +============+====================+===========+================================+
+            | ``devices``|                    |``array``  |                                |
             +------------+--------------------+-----------+--------------------------------+
-            |  `devices` |                    | `array`   | The subordinate elements are   |
-            |            |                    |           | listed in ascending order by   |
-            |            |                    |           | device ID                      |
+            |            | ``device_id``      |``string`` | Set the device ID              |
             +------------+--------------------+-----------+--------------------------------+
-            |            |  `device_id`       |  `string` | Set the device ID              |
+            |            | ``place``          |``string`` | Set the location               |
             +------------+--------------------+-----------+--------------------------------+
-            |            |  `place`           |  `string` | Set the location               |
+            |            | ``comment``        |``string`` | Set the device description     |
             +------------+--------------------+-----------+--------------------------------+
-            |            |  `comment`         |  `string` | Set the device description     |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `property`        |  `string` | Set device properties          |
-            |            |                    |           | (device_name, etc.)            |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `ins_id`          |  `string` | Set the creator of the device  |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `ins_date`        |  `string` | Set the date and               |
-            |            |                    |           | time the device was created.   |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `upd_id`          |  `string` | Set up an updater for          |
-            |            |                    |           | your device                    |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `upd_date`        |  `string` | Set the date and time          |
-            |            |                    |           | of the device update.          |
-            +------------+--------------------+-----------+--------------------------------+
-            |            | `connectionState`  |  `string` | Set the connection status      |
-            |            |                    |           | of the device.                 |
-            +------------+--------------------+-----------+--------------------------------+
-            |            | `lastActivityTime` |  `string` | Set the last connection date   |
-            |            |                    |           | and time of the device.        |
-            +------------+--------------------+-----------+--------------------------------+
-            |            |  `device_groups`   | `array`   | Refer : Table : 1.0            |
+            |            | ``property``       |``array``  | Refer : Table : 1.0            |
             |            |                    |           | for more details               |
             +------------+--------------------+-----------+--------------------------------+
-            |            |  `models`          | `array`   | Refer : Table : 1.1            |
+            |            | ``device_type``    |``string`` | Set the device type.           |
+            +------------+--------------------+-----------+--------------------------------+
+            |            |``display_device_   |``string`` | Set the display device type.   |
+            |            |type``              |           |                                |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``ins_id``         |``string`` | Set the device author.         |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``ins_date``       |``string`` | Set the date                   |
+            |            |                    |           | the device was created.        |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``upd_id``         |``string`` | Set the device updater.        |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``upd_date``       |``string`` | Set the date the device was    |
+            |            |                    |           | updated.                       |
+            +------------+--------------------+-----------+--------------------------------+
+            |            |``connectionState`` |``string`` | Set the device connection state|
+            +------------+--------------------+-----------+--------------------------------+
+            |            |``lastActivityTime``|``string`` | Set the date the device last   |
+            |            |                    |           | connected.                     |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``models``         |``array``  | Refer : Table : 1.1            |
             |            |                    |           | for more details               |
             +------------+--------------------+-----------+--------------------------------+
-            
-            @Table : 1.0 - device_groups schema details
-            
+            |            | ``configuration``  |``array``  |                                |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``state``          |``array``  |                                |
+            +------------+--------------------+-----------+--------------------------------+
+            |            | ``device_groups``  |``array``  | Refer : Table : 1.2            |
+            |            |                    |           | for more details               |
+            +------------+--------------------+-----------+--------------------------------+
+
+            @Table : 1.0 - property schema details
+
             +-------------------+--------------------+------------+--------------------------+
-            |  Level1           |  Level2            |  Type      |  Description             |
+            | *Level1*          | *Level2*           | *Type*     | *Description*            |
+            +===================+====================+============+==========================+
+            | ``property``      |                    | ``array``  |                          |
             +-------------------+--------------------+------------+--------------------------+
-            |  `device_groups`  |                    |  `array`   | The subordinate          |
-            |                   |                    |            | elements are listed      |
-            |                   |                    |            | in ascending order       |
-            |                   |                    |            | by device group ID       |   
+            |                   |``device_name``     | ``string`` | Set the device name.     |
             +-------------------+--------------------+------------+--------------------------+
-            |                   | `device_group_id`  |   `string` | Set the device group ID  |
+            |                   |``internal_device_  | ``string`` | Set the internal device  |
+            |                   |id``                |            | id.                      |
             +-------------------+--------------------+------------+--------------------------+
-            |                   | `device_type`      |   `string` | Set the device type      |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `comment`         |  `string`  | Set the device           |
-            |                   |                    |            | bdescription             |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `ins_id`          |  `string`  | Set the date and time    |
-            |                   |                    |            | that the device group    |
-            |                   |                    |            | was created.             |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `ins_date`        |  `string`  | Set the creator of the   |
-            |                   |                    |            | device group.            |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `upd_id`          |  `string`  | Set the updater for      |
-            |                   |                    |            | the device group         |
-            +-------------------+--------------------+------------+--------------------------+
-            |                   |  `upd_date`        |  `string`  | Set the date and time of |
-            |                   |                    |            | the device group update. |
-            +-------------------+--------------------+------------+--------------------------+
-          
+
             @Table : 1.1 - models schema details
 
             +-------------------+--------------------+------------+--------------------------+
-            |  Level1           |  Level2            |  Type      |  Description             |
+            | *Level1*          | *Level2*           | *Type*     | *Description*            |
+            +===================+====================+============+==========================+
+            | ``models``        |                    | ``array``  |                          |
             +-------------------+--------------------+------------+--------------------------+
-            |  `models`         |                    |  `array`   | The subordinate          |
-            |                   |                    |            | elements are listed      |
-            |                   |                    |            | in ascending order       |
-            |                   |                    |            | by device group ID       |   
+            |                   |``model_version_id``| ``string`` | Set the model version ID.|
+            |                   |                    |            | Format: modelid:v1.01    |
+            |                   |                    |            | For model that does not  |
+            |                   |                    |            | exist in the system,     |
+            |                   |                    |            | display network_id       |
+            |                   |                    |            | Example: 000237          |
             +-------------------+--------------------+------------+--------------------------+
-            |                   | `model_version_id` |   `string` | Set the model version ID |
-            |                   |                    |            | Format: ModelID:v1.0001  |
-            |                   |                    |            | * If DnnModelVersion does|
-            |                   |                    |            | not exist in the DB, the |
-            |                   |                    |            | network_id is displayed. |
-            |                   |                    |            | Example) 0201020002370200|
-            |                   |                    |            | In the above case, 000237|
-            |                   |                    |            | (7~12 digits) If it is 16|
-            |                   |                    |            | digits,it is displayed   |
-            |                   |                    |            | as is.                   |
+
+            @Table : 1.2 - device_groups schema details
+
+            +-------------------+--------------------+------------+--------------------------+
+            | *Level1*          | *Level2*           | *Type*     | *Description*            |
+            +===================+====================+============+==========================+
+            | ``device_groups`` |                    | ``array``  |                          |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   |``device_group_id`` | ``string`` | Set the device group ID  |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   |``device_type``     | ``string`` | Set the device type      |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``comment``        |``string``  | Set the device           |
+            |                   |                    |            | group comment.           |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``ins_id``         |``string``  | Set the date the device  |
+            |                   |                    |            | group was created.       |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``ins_date``       |``string``  | Set the device group     |
+            |                   |                    |            | author.                  |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``upd_id``         |``string``  | Set the device group     |
+            |                   |                    |            | updater                  |
+            +-------------------+--------------------+------------+--------------------------+
+            |                   | ``upd_date``       |``string``  | Set the date the device  |
+            |                   |                    |            | group was updated.       |
             +-------------------+--------------------+------------+--------------------------+
 
      * - 'Generic Error Response' :
@@ -183,48 +187,147 @@ export class DeviceManagement {
         deviceId?: string,
         deviceName?: string,
         connectionState?: string,
-        deviceGroupId?: string
+        deviceGroupId?: string,
+        deviceIds?: string,
+        scope?: string
     ) {
         const response = this.getDevicesObj.getDevices(
             deviceId,
             deviceName,
             connectionState,
-            deviceGroupId
+            deviceGroupId,
+            deviceIds,
+            scope
         );
         return response;
     }
 
     /**
-     * getCommandParameterFile- Abstract function call to `getCommandParameterFile` API
+     * getCommandParameterFile- Get the command parameter file list information.
      * @returns 
      * - Object: table:: Success Response
 
-            +-------------------+--------------+----------+-------------------------------+
-            |  Level1           | Level2       | Type     |  Description                  |
-            +-------------------+--------------+----------+-------------------------------+
-            |  `parameter_list` |              | `array`  | Parameter file list           |
-            +-------------------+--------------+----------+-------------------------------+
-            |                   | `parameter`  | `string` | The setting value. json       |
-            +-------------------+--------------+----------+-------------------------------+
-            |                   | `filename`   | `string` | File Name                     |
-            +-------------------+--------------+----------+-------------------------------+
-            |                   | `comment`    | `string` | comment                       |
-            +-------------------+--------------+----------+-------------------------------+
-            |                   | `isdefault`  | `string` | True: Default parameter       |
-            |                   |              |          | not False: Default            |
-            +-------------------+--------------+----------+-------------------------------+
-            |                   | `device_ids` | `List`   | List of target devices.       |
-            +-------------------+--------------+----------+-------------------------------+
-            |                   | `ins_id`     | `string` | Set the creator of the setting|
-            +-------------------+--------------+----------+-------------------------------+
-            |                   | `ins_date`   | `string` | Set the date and time that    |
-            |                   |              |          | the setting was created       |
-            +-------------------+--------------+----------+-------------------------------+
-            |                   | `upd_id`     | `string` | Set who updated the settings. |
-            +-------------------+--------------+----------+-------------------------------+
-            |                   | `upd_date`   | `string` | Set the date and time when    |
-            |                   |              |          | the settings were updated     |
-            +-------------------+--------------+----------+-------------------------------+
+            +-------------------+--------------+------------+-------------------------------+
+            | *Level1*          |*Level2*      |*Type*      | *Description*                 |
+            +===================+==============+============+===============================+
+            | ``parameter_list``|              |``array``   |                               |
+            +-------------------+--------------+------------+-------------------------------+
+            |                   |``parameter`` |``array``   | Refer : Table : 1.0           |
+            |                   |              |            | for more details              |
+            +-------------------+--------------+------------+-------------------------------+
+            |                   |``filename``  |``string``  | Name of file                  |
+            +-------------------+--------------+------------+-------------------------------+
+            |                   |``comment``   |``string``  | Comment                       |
+            +-------------------+--------------+------------+-------------------------------+
+            |                   |``isdefault`` |``string``  | True: Default parameter;      |
+            |                   |              |            | False: Not default            |
+            +-------------------+--------------+------------+-------------------------------+
+            |                   |``device_ids``|``string[]``| Target device list.           |
+            +-------------------+--------------+------------+-------------------------------+
+            |                   |``ins_id``    |``string``  | Set the settings author.      |
+            +-------------------+--------------+------------+-------------------------------+
+            |                   |``ins_date``  |``string``  | Set the date the settings     |
+            |                   |              |            | were created.                 |
+            +-------------------+--------------+------------+-------------------------------+
+            |                   |``upd_id``    |``string``  | Set the settings updater.     |
+            +-------------------+--------------+------------+-------------------------------+
+            |                   |``upd_date``  |``string``  | Set the date the settings     |
+            |                   |              |            | were updated.                 |
+            +-------------------+--------------+------------+-------------------------------+
+
+            @Table : 1.0 - parameter schema details
+
+            +-------------------+-----------------+------------+----------------------------+
+            | *Level1*          | *Level2*        | *Type*     | *Description*              |
+            +===================+=================+============+============================+
+            | ``parameter``     |                 | ``array``  | Setting value. json        |
+            +-------------------+-----------------+------------+----------------------------+
+            |                   |``commands``     | ``array``  | Refer : Table : 1.1        |
+            |                   |                 |            | for more details           |
+            +-------------------+-----------------+------------+----------------------------+
+
+            @Table : 1.1 - commands schema details
+
+            +-------------------+-----------------+------------+-----------------------------+
+            | *Level1*          | *Level2*        | *Type*     | *Description*               |
+            +===================+=================+============+=============================+
+            | ``commands``      |                 | ``array``  |                             |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``command_name`` | ``string`` | Command name.               |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``parameters``   | ``array``  | Refer : Table : 1.2         |
+            |                   |                 |            | for more details            |
+            +-------------------+-----------------+------------+-----------------------------+
+
+            @Table : 1.2 - parameters schema details
+
+            +-------------------+-----------------+------------+-----------------------------+
+            | *Level1*          | *Level2*        | *Type*     | *Description*               |
+            +===================+=================+============+=============================+
+            | ``parameters``    |                 | ``array``  |                             |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``Mode``         | ``number`` | Collection mode.            |
+            |                   |                 |            | - Value definition          |
+            |                   |                 |            | 0 : Input Image only        |
+            |                   |                 |            | 1 : Input Image & Inference |
+            |                   |                 |            | Result                      |
+            |                   |                 |            | 2 : Inference Result only   |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``UploadMethod`` | ``string`` | It specifies how to upload  |
+            |                   |                 |            | Input Image.                |
+            |                   |                 |            | - Value definition          |
+            |                   |                 |            | BlobStorage                 |
+            |                   |                 |            | HTTPStorage                 |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``FileFormat``   | ``string`` | Image file format.          |
+            |                   |                 |            | - Value definition: JPG, BMP|
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``UploadMethod   | ``string`` | It specifies how to         |
+            |                   |IR``             |            | Inference Result.           |
+            |                   |                 |            | - Value definition:         |
+            |                   |                 |            | Mqtt                        |
+            |                   |                 |            | BlobStorage                 |
+            |                   |                 |            | HTTPStorage                 |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``CropHOffset``  | ``number`` | Hoffset for Image crop.     |
+            |                   |                 |            | - Value range : 0 to 4055   |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``CropVOffset``  | ``number`` | Voffset for Image crop.     |
+            |                   |                 |            | - Value range : 0 to 3039   |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``CropHSize``    | ``number`` | Hsize for Image crop.       |
+            |                   |                 |            | - Value range : 0 to 4056   |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``CropVSize``    | ``number`` | Vsize for Image crop.       |
+            |                   |                 |            | - Value range : 0 to 3040   |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``NumberOf       | ``number`` | Number of images to fetch   |
+            |                   |Images``         |            | (Input Image).              |
+            |                   |                 |            | When it is 0, continue      |
+            |                   |                 |            | fetching images until stop  |
+            |                   |                 |            | instruction is mentioned    |
+            |                   |                 |            | explicitly.                 |
+            |                   |                 |            | - Value range : 0 to 10000  |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``Upload         | ``number`` | Upload interval.            |
+            |                   |Interval``       |            | - Value range : 1 to 2592000|
+            |                   |                 |            | If 60 is specified,         |
+            |                   |                 |            | 0.5FPS (=30/60)             |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``NumberOfInferen| ``number`` | Number of inference         |
+            |                   |cesPerMessage``  |            | results to include in one   |
+            |                   |                 |            | message (Inference Result). |
+            |                   |                 |            | - Value range : 1  to 100   |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``MaxDetections  | ``number`` | No. of Objects included in  |
+            |                   |PerFrame``       |            | 1 frame with respect to the |
+            |                   |                 |            | Inference results metadata. |
+            |                   |                 |            | - Value range : 1 to 5      |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``ModelId``      | ``string`` | Model ID.                   |
+            +-------------------+-----------------+------------+-----------------------------+
+            |                   |``PPLParameter`` | ``object`` |PPL parameter                |
+            +-------------------+-----------------+------------+-----------------------------+
 
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK.
@@ -233,7 +336,7 @@ export class DeviceManagement {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -242,7 +345,7 @@ export class DeviceManagement {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -252,28 +355,33 @@ export class DeviceManagement {
      *      - 'datetime' (str) : Time
      */
     getCommandParameterFile() {
-        const response =
-            this.getCommandParameterFileObj.getCommandParameterFile();
+        const response = this.getCommandParameterFileObj.getCommandParameterFile();
         return response;
     }
 
     /**
-     * startUploadInferenceResult- Abstract function call to `startUploadInferenceResult` API
+     * startUploadInferenceResult- Implement instructions to a specified device to start to get the \
+        inference result metadata (Output Tensor) and image (Input image).
      * @params 
-     * - deviceId (str, required): Device ID. Case-sensitive
+     * - deviceId (str, required): Device ID.
      * @returns 
      * - Object: table:: Success Response
-   
-            +------------------------+------------+---------------------------+
-            |  Level1                |  Type      |  Description              |
-            +------------------------+------------+---------------------------+
-            |  `result`              |  `string`  | Set "SUCCESS" pinning     |
-            +------------------------+------------+---------------------------+
-            |  `outputSubDirectory`  |  `string`  | Input Image storage path  |
-            |                        |            | UploadMethod:BlobStorage  |
-            |                        |            | only                      |
-            +------------------------+------------+---------------------------+
-   
+
+            +--------------------------+------------+---------------------------+
+            | *Level1*                 | *Type*     | *Description*             |
+            +==========================+============+===========================+
+            | ``result``               | ``string`` | Set "SUCCESS" fixing      |
+            +--------------------------+------------+---------------------------+
+            | ``outputSubDirectory``   | ``string`` | Input Image storage path, |
+            |                          |            | UploadMethod:BlobStorage  |
+            |                          |            | only                      |
+            +--------------------------+------------+---------------------------+
+            | ``outputSubDirectoryIR`` | ``string`` | Input Inference result    |
+            |                          |            | storage path,             |
+            |                          |            | UploadMethodIR:BlobStorage|
+            |                          |            | only                      |
+            +--------------------------+------------+---------------------------+
+
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK.
      *   Object with below key and value pairs.
@@ -300,24 +408,22 @@ export class DeviceManagement {
      *      - 'datetime' (str) : Time
      */
     startUploadInferenceResult(deviceId: string) {
-        const response =
-            this.startUploadInferenceResultObj.startUploadInferenceResult(
-                deviceId
-            );
+        const response = this.startUploadInferenceResultObj.startUploadInferenceResult(deviceId);
         return response;
     }
 
     /**
-     * stopUploadInferenceResult- Abstract function call to `stopUploadInferenceResult` API
+     * stopUploadInferenceResult- Implement instructions to a specified device to stop getting the \
+        inference result metadata (Output Tensor) and image (Input image).
      * @params 
-     * - deviceId (str, required): Device ID. Case-sensitive
+     * - deviceId (str, required): Device ID.
      * @returns 
      * - Object: table:: Success Response
-            
+
             +-----------------------+------------+---------------------------+
-            |  Level1               |  Type      |  Description              |
-            +-----------------------+------------+---------------------------+
-            |  `result`             |  `string`  | Set "SUCCESS" pinning     |
+            | *Level1*              | *Type*     | *Description*             |
+            +=======================+============+===========================+
+            | ``result``            | ``string`` | Set "SUCCESS" fixing      |
             +-----------------------+------------+---------------------------+
 
      * - 'Generic Error Response' :
@@ -327,7 +433,7 @@ export class DeviceManagement {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -336,7 +442,7 @@ export class DeviceManagement {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -346,10 +452,7 @@ export class DeviceManagement {
      *      - 'datetime' (str) : Time
      */
     stopUploadInferenceResult(deviceId: string) {
-        const response =
-            this.stopUploadInferenceResultObj.stopUploadInferenceResult(
-                deviceId
-            );
+        const response = this.stopUploadInferenceResultObj.stopUploadInferenceResult(deviceId);
         return response;
     }
 }

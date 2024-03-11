@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,10 @@
  */
 import Ajv from 'ajv';
 import ajvErrors from 'ajv-errors';
-import {
-    DeviceAppApi,
-    Configuration,
-    DeployDeviceAppJsonBody,
-} from 'js-client';
+import { DeviceAppApi, Configuration, DeployDeviceAppJsonBody } from 'js-client';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 
 const ajv = new Ajv({ allErrors: true });
@@ -92,21 +84,10 @@ export class DeployDeviceApp {
                     isNotEmpty: 'deviceIds required or can\'t be empty string',
                 },
             },
-            deployParameter: {
-                type: 'string',
-                isNotEmpty: true,
-                errorMessage: {
-                    type: 'Invalid string for deployParameter',
-                    isNotEmpty:
-                        'deployParameter required or can\'t be empty string',
-                },
-            },
             comment: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
-                    type: 'Invalid string for comment',
-                    isNotEmpty: 'comment required or can\'t be empty string',
+                    type: 'Invalid string for comment'
                 },
             },
         },
@@ -122,24 +103,19 @@ export class DeployDeviceApp {
     };
 
     /**
-     * deployDeviceApp - DeviceApp deployment.
+     * deployDeviceApp - Deploy device app.
      *  @params
-     * - appName (str, required) - The App name.
-     * - versionNumber (str, required) - App version.
-     * - deviceIds (str, required) - Specify multiple device IDs separated by commas. \
-                Case-sensitive
-     * - deployParameter (str, optional) -  Deployment parameters \
-                Base64 encoded string in Json format No parameters if not specified.
-     * - comment (str, optional) - deploy comment \
-                up to 100 characters \
-                No comment if not specified.
+     * - appName (str, required) - App Name.
+     * - versionNumber (str, required) - App version number.
+     * - deviceIds (str, required) - Specify multiple device IDs separated by commas.
+     * - comment (str, optional) - Comment. *Max. 100 characters.
     * @returns
     * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -151,7 +127,7 @@ export class DeployDeviceApp {
      * 
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
-          if any input string parameter found empty OR \
+          if any input string parameter found empty. \
           Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -174,21 +150,22 @@ export class DeployDeviceApp {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
-     *  
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
+     *
      *    const client = await Client.createInstance(config);
      *    const appName = '__appName__';
      *    const versionNumber = '__versionNumber__';
      *    const deviceIds = '__deviceIds__';
-     *    const deployParameter = '__deployParameter__';
      *    const comment = '__comment__';
-     *    const response= await client.deployment.deployDeviceApp(appName, versionNumber, deviceIds, deployParameter, comment);
+     *    const response= await client.deployment.deployDeviceApp(appName, versionNumber,
+     *                    deviceIds, comment);
     */
     async deployDeviceApp(
         appName: string,
         versionNumber: string,
         deviceIds: string,
-        deployParameter?: string,
         comment?: string
     ) {
         Logger.info('deployDeviceApp');
@@ -199,15 +176,14 @@ export class DeployDeviceApp {
                 appName,
                 versionNumber,
                 deviceIds,
-                deployParameter,
                 comment,
             });
             if (!valid) {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -219,18 +195,20 @@ export class DeployDeviceApp {
                 app_name: appName,
                 version_number: versionNumber,
                 device_ids: deviceIds,
-                deploy_parameter: deployParameter,
                 comment,
             };
 
-            const res = await this.api.deployDeviceApp(deployDeviceAppJsonBody);
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.deployDeviceApp(deployDeviceAppJsonBody, 'client_credentials');
+            } else {
+                res = await this.api.deployDeviceApp(deployDeviceAppJsonBody);
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

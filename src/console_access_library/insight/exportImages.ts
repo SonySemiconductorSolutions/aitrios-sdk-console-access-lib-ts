@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,7 @@ import ajvErrors from 'ajv-errors';
 import { InsightApi, Configuration } from 'js-client';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 
 const ajv = new Ajv({ allErrors: true });
@@ -58,8 +54,8 @@ export class ExportImages {
     }
 
     /**
-    * Schema for API to get the URL to export the image with the specified conditions in zip file format.
-       * Encrypted and for learning images in other environments
+    * Schema for API to get the URL to export the images of specified conditions in zip \
+        file format. *For encrypted images for learning in other environments
 
     Args:
         Schema (object): Ajv JSON schema Validator
@@ -79,37 +75,31 @@ export class ExportImages {
             fromDatetime: {
                 type: 'string',
                 format: 'date-time',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for fromDatetime',
-                    isNotEmpty:
-                        'fromDatetime required or can\'t be empty string',
+                    type: 'Invalid string for fromDatetime'
                 },
             },
             toDatetime: {
                 type: 'string',
                 format: 'date-time',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for toDatetime',
-                    isNotEmpty: 'toDatetime required or can\'t be empty string',
+                    type: 'Invalid string for toDatetime'
                 },
             },
             deviceId: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for deviceId',
-                    isNotEmpty: 'deviceId required or can\'t be empty string',
+                    type: 'Invalid string for deviceId'
                 },
             },
             fileFormat: {
                 type: 'string',
-                isNotEmpty: true,
-                default: 'JPG',
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for fileFormat',
-                    isNotEmpty: 'fileFormat required or can\'t be empty string',
+                    type: 'Invalid string for fileFormat'
                 },
             },
         },
@@ -123,33 +113,62 @@ export class ExportImages {
     };
 
     /**
-     * exportImages- Get the URL to export the image with the specified conditions in zip file format.\
-       Pre-encrypted, for learning images in other environments
-     *
+     * exportImages- Get the URL to export the images of specified conditions in zip file format. \
+        *For encrypted images for learning in other environments
+
+        [Prerequisites]
+        - The encryption method is public key cryptography.
+        - A zip file containing the target images can be downloaded by accessing a URL. \
+          Each image is encoded using the method described hereafter.
+        - The key used for encryption is a shared key of 32 characters issued 
+          randomly by the API each time.
+        - The image encryption method is AES128, MODE_CBC
+        - The iv (initial vector, 16 digits) and encrypted data are stored in a zip file.
+
+        [Generating a Key]
+        - Private keys are issued by Sier itself.
+        - Public and private keys are issued with a length of 1024 or 2048.
+        - The public key (key) specified to the parameter of this API passes \
+          the pem file content of the public key in a base64 encoded format.
+
+          Example: Base64 encode the entire string as follows:
+
+          -----BEGIN PUBLIC KEY-----
+
+          MIGfMA0GCSqGSIb3DQEBAQUAA4GNADC
+
+          ...
+
+          -----END PUBLIC KEY-----
      *  @params
-     * - key (str, required) : The public key. \
-                Base64-encoded format of the entire contents of the public key PEM file
-     * - fromDatetime (str, optional) : Date and time (From). Form: yyyyMMddhhmm
-     * - toDatetime (str, optional) : Date and time (To). Form: yyyyMMddhhmm
-     * - deviceId (str, optional) : The Device ID.
+     * - key (str, required) : Public key. \
+            *Base64-encoded format of the entire pem file contents of the public key
+     * - fromDatetime (str, optional) : Date and time (From). \
+            - Format: yyyyMMddhhmm \
+            Default: ""
+     * - toDatetime (str, optional) : Date/Time (To). \
+            - Format: yyyyMMddhhmm \
+            Default: ""
+     * - deviceId (str, optional) : Device ID. \
+            Default: ""
      * - fileFormat (str, optional) : Image file format. \
-                If not specified, no filtering. \
-                Value definition
-                - JPG
-                - BMP
-                - RAW
+            If this is not specified, there is no filtering. \
+            - Value definition \
+                JPG \
+                BMP \
+            Default: ""
      * @returns
      * - Object: table:: Success Response
     
             +-------------+------------+---------------------------+
-            |  Level1     |  Type      |  Description              |
-            +-------------+------------+---------------------------+
-            |  `key`      |  `string`  | A common key for image    |
-            |             |            | decryption encrypted with |
+            | *Level1*    | *Type*     | *Description*             |
+            +=============+============+===========================+
+            | ``key``     | ``string`` | Shared key for decrypting |
+            |             |            | images encrypted by       |
             |             |            | a public key.             |
             +-------------+------------+---------------------------+
-            |  `url`      | `string`   | SUS URI for download      |
-            +-------------+------------+---------------------------+     
+            | ``url``     | ``string`` | SUS URI for downloading   |
+            +-------------+------------+---------------------------+
 
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK. Object with below key and value pairs.
@@ -184,7 +203,9 @@ export class ExportImages {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const key = '__key__';
@@ -199,20 +220,19 @@ export class ExportImages {
         fromDatetime?: string,
         toDatetime?: string,
         deviceId?: string,
-        fileFormat = 'JPG'
+        fileFormat?: string
     ) {
         Logger.info('exportImages');
         let valid = true;
-        const data = {
-            key: key,
-            fromDatetime: fromDatetime,
-            toDatetime: toDatetime,
-            deviceId: deviceId,
-            fileFormat: fileFormat,
-        };
         try {
             const validate = ajv.compile(this.schema);
-            valid = validate(data);
+            valid = validate({
+                key,
+                fromDatetime,
+                toDatetime,
+                deviceId,
+                fileFormat,
+            });
             if (!valid) {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
@@ -223,24 +243,35 @@ export class ExportImages {
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
                 accessToken,
-                baseOptions,
+                baseOptions
             });
             this.api = new InsightApi(apiConfig);
 
-            const res = await this.api.exportImages(
-                key,
-                fromDatetime,
-                toDatetime,
-                deviceId,
-                fileFormat
-            );
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.exportImages(
+                    key,
+                    'client_credentials',
+                    fromDatetime,
+                    toDatetime,
+                    deviceId,
+                    fileFormat
+                );
+            } else {
+                res = await this.api.exportImages(
+                    key,
+                    undefined,
+                    fromDatetime,
+                    toDatetime,
+                    deviceId,
+                    fileFormat
+                );
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*
