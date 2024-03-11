@@ -19,7 +19,7 @@
 下記はシステムにインストールする必要がある必須ソフトウェアです。
 
 * VS Code
-* Node >=v14.16.0
+* Node >=v18
 * TypeScriptをグローバルインストール
 ** npm install -g typescript
 
@@ -64,64 +64,86 @@
 
 * 下記の設定ファイルを作成し、パラメータに適切な値を設定します。
 +
-`aitrios-sdk-console-access-lib-ts/samples/demo-console/console_access_settings.yaml`
+`samples/demo-console/console_access_settings.yaml` 
 
+|===
+|「**Console Developer Edition**」使用時
+a|
+[source,Yaml]
 ----
-   console_access_settings:
-     console_endpoint: "__console_endpoint__"
-     portal_authorization_endpoint: "__portal_authorization_endpoint__"
-     client_secret: "__client_secret__"
-     client_id: "__client_id__"
+    console_access_settings:
+        console_endpoint: "__console_endpoint__"
+        portal_authorization_endpoint: "__portal_authorization_endpoint__"
+        client_secret: "__client_secret__"
+        client_id: "__client_id__"
 ----
+|===
+|===
+|「**Console Enterprise Edition**」使用時
+a|
+[source,Yaml]
+----
+    console_access_settings:
+        console_endpoint: "__base_url__"
+        portal_authorization_endpoint: "https://login.microsoftonline.com/'__tenant_id__'"
+        client_secret: "__client_secret__"
+        client_id: "__client_id__"
+        application_id: "__application_id__"
+----
+|===
 
 * 下記のファイルを開きパラメータを適切な値に変更します。
 +
-`aitrios-sdk-console-access-lib-ts/samples/demo-console/demo_config.yaml`
-
+|===
+|samples/demo-console/demo_config.yaml
+a|
+[source,Yaml]
 ----
   demo_configuration:
     device_id: "__device_id__"
-    number_of_images: __number_of_images__
-    skip: __skip__
-    sub_directory_name: "__sub_directory_name__"
-    number_of_inference_results: __number_of_inference_results__
-    filter: "__filter__"
-    raw: __raw__
-    time: "__time__"
+    get_model_device_id: "__get_model_device_id__"
+    publish_model_wait_response_device_id: "__publish_model_wait_response_device_id__"
+    model_id: "__model_id__"
+    model: "__model__"
     converted: "__converted__"
     vendor_name: "__vendor_name__"
-    get_images_order_by: "__get_images_order_by__"
-    get_last_inference_and_image_data_order_by: "__get_last_inference_and_image_data_order_by__"
-    key: "__key__"
-    app_name: "__app_name__"
-    version_number: "__version_number__"
-    model: "__model__"
-    model_id: "__model_id__"
-    file_content: "__file_content__"
-    compiled_flg: "__compiled_flg__"
-    file_name: "__file_name__"
     comment: "__comment__"
     input_format_param: "__input_format_param__"
     network_config: "__network_config__"
     network_type: "__network_type__"
-    labels: "__labels__"
+    metadata_format_id: "__metadata_format_id__"
+    project_name: "__project_name__"
+    model_platform: "__model_platform__"
+    project_type: "__project_type__"
+    latest_type: "__latest_type__"
     config_id: "__config_id__"
     sensor_loader_version_number: "__sensor_loader_version_number__"
     sensor_version_number: "__sensor_version_number__"
     model_version_number: "__model_version_number__"
     ap_fw_version_number: "__ap_fw_version_number__"
     device_ids: "__device_ids__"
-    deploy_parameter: "__deploy_parameter__"
     replace_model_id: "__replace_model_id__"
-    deploy_id: "__deploy_id__"
-    timeout: __timeout__
-    from_datetime: "__from_datetime__"
-    to_datetime: "__to_datetime__"
-    file_format: "__file_format__"
+    timeout: "__timeout__"
+    compiled_flg: "__compiled_flg__"
+    app_name: "__app_name__"
+    version_number: "__version_number__"
+    file_name: "__file_name__"
     entry_point: "__entry_point__"
-    get_model_id: "__model_id__"
-    device_id_for_get_model: "__device_id__"
+    schema_info: "__schema_info__"
+    device_name: "__device_name__"
+    connection_state: "__connection_state__"  
+    device_group_id: "__device_group_id__"
+    scope: "__scope__"
+    sub_directory_name: "__sub_directory_name__"
+    number_of_images: "__number_of_images__"
+    skip: "__skip__"
+    order_by: "__order_by__"
+    number_of_inference_results: "__number_of_inference_results__"
+    filter: "__filter__"
+    raw: "__raw__"
+    time: "__time__"
 ----
+|===
 
 === ネットワークProxy設定
 
@@ -138,3 +160,30 @@ CLIデモを実行するには `**samples/demo-console**` フォルダからcmd�
 ```
 npx ts-node index.ts
 ```
+
+NOTE: demo-consoleでAPIを一括実行した場合は、他のAPIの処理時間の影響により失敗することがあります。その場合は失敗したAPIを個別で実行してください。 +
+APIを個別で実行する場合は、samples/demo-console/src/controller/apiexecutor.tsを開き、実行しないAPIをコメントアウトしてください。
+
+* 例：
+|===
+|samples/demo-console/src/controller/apiexecutor.ts
+a|
+[source,TypeScript]
+----
+        // DeviceManagement - StartUploadInferenceResult
+        // try {
+        //     response = 
+        //          await client?.deviceManagement?.startUploadInferenceResult(deviceId);
+        //     console.log('*********************************************');
+        //     console.log('*********************************************');
+        //     if ('data' in response) {
+        //         response = JSON.stringify(response.data);
+        //     } else {
+        //         response = JSON.stringify(response)
+        //     }
+        //     console.log("StartUploadInferenceResult response: " + response);
+        // } catch (e) {
+        //     console.log("StartUploadInferenceResult Exception: " + e);
+        // }
+----
+|===

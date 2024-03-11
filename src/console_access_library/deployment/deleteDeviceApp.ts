@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,7 @@ import ajvErrors from 'ajv-errors';
 import { DeviceAppApi, Configuration } from 'js-client';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 
 const ajv = new Ajv({ allErrors: true });
@@ -94,15 +90,15 @@ export class DeleteDeviceApp {
     /**
      * deleteDeviceApp - Delete device app.
      *  @params
-     * - appName (str, required) - Set the App name.
-     * - versionNumber (str, required) - Set the Version Number.
+     * - appName (str, required) - App name.
+     * - versionNumber (str, required) - App version number.
      * @returns
     * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -114,8 +110,8 @@ export class DeleteDeviceApp {
      *      - 'datetime' (str) : Time
      * 
      * - 'Validation Error Response' :
-     *   If incorrect API input parameters OR \
-     *   if any input string parameter found empty OR.
+     *   If incorrect API input parameters OR
+     *   if any input string parameter found empty.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -138,7 +134,9 @@ export class DeleteDeviceApp {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const appName = '__appName__';
@@ -158,8 +156,8 @@ export class DeleteDeviceApp {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -168,14 +166,17 @@ export class DeleteDeviceApp {
             });
             this.api = new DeviceAppApi(apiConfig);
 
-            const res = await this.api.deleteDeviceApp(appName, versionNumber);
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.deleteDeviceApp(appName, versionNumber, 'client_credentials');
+            } else {
+                res = await this.api.deleteDeviceApp(appName, versionNumber);
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

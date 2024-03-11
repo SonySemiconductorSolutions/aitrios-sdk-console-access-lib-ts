@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,7 @@ import ajvErrors from 'ajv-errors';
 import { DeployApi, Configuration } from 'js-client';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 
 const ajv = new Ajv({ allErrors: true });
@@ -91,20 +87,16 @@ export class CancelDeployment {
     };
 
     /**
-     * cancelDeployment -  Force cancel the device deployment state.It only restores the \
-        state of the database being deployed, but cannot return the deployed state to the edge AI device. \
-        Used when edge AI device deployment fails and there is a deviation from the state of the database.
+     * cancelDeployment -  Force cancellation of the device deployment status.
      *  @params
-     * - deviceId (str, required) - Device ID. Case-sensitive.
-     * - deployId (str, required) - The Deployment id. \
-     *           Id that can be obtained with getDeployHistory.
-     * @returns
+     * - deviceId (str, required) - Device ID.
+     * - deployId (str, required) - Deploy ID.
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -117,7 +109,9 @@ export class CancelDeployment {
      * 
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
-     *   if any input string parameter found empty.
+     *   if any input string parameter found empty OR
+     *   if any input number parameter found negative OR
+     *   if any input non number parameter found.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -140,7 +134,9 @@ export class CancelDeployment {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *  
      *    const client = await Client.createInstance(config);
      *    const deviceId = '__deviceId__';
@@ -157,8 +153,8 @@ export class CancelDeployment {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -166,14 +162,18 @@ export class CancelDeployment {
                 baseOptions
             });
             this.api = new DeployApi(apiConfig);
-            const res = await this.api.cancelDeployment(deviceId, deployId);
+
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.cancelDeployment(deviceId, deployId + '', 'client_credentials');
+            } else {
+                res = await this.api.cancelDeployment(deviceId, deployId + '');
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

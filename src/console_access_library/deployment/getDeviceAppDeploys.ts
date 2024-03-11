@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Sony Semiconductor Solutions Corp.
+ * Copyright 2021, 2022, 2023 Sony Semiconductor Solutions Corp.
  *
  * This is UNPUBLISHED PROPRIETARY SOURCE CODE of Sony Semiconductor Solutions Corp.
  * No part of this file may be copied, modified, sold, and distributed in any
@@ -13,11 +13,7 @@ import ajvErrors from 'ajv-errors';
 import { DeviceAppApi, Configuration } from 'js-client';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 
 const ajv = new Ajv({ allErrors: true });
@@ -88,62 +84,77 @@ export class GetDeviceAppDeploys {
     };
 
     /**
-     * getDeviceAppDeploys - Get Device app Deployment History.
+     * getDeviceAppDeploys - Get Device App Deploys.
      *  @params
-     * - appName (str, required) - Set the App name
-     * - versionNumber (str, required) - Set the App version
+     * - appName (str, required) - App name
+     * - versionNumber (str, required) - App version number
      * @returns
      * - Object: table:: Success Response
 
-            +-----------+----------------------+------------+------------------------+
-            |  Level1   |  Level2              |  Type      |  Description           |
-            +-----------+----------------------+------------+------------------------+
-            | `deploy`  |                      |  `array`   | Descending order of    |
-            |           |                      |            | ins_date               |
-            +-----------+----------------------+------------+------------------------+
-            |           |  `id`                |  `number`  |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           |  `total_status`      |  `string`  | 0: Running             |
-            |           |                      |            | 1: Normal              |
-            |           |                      |            | 2: Failure             |
-            |           |                      |            | 3: Cancellation        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `deploy_parameter`   |  `dict`    |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `devices`            |  `array`   |  Refer : Table : 1.0   |
-            |           |                      |            |  for more details      |
-            +-----------+----------------------+------------+------------------------+
-            |           | `ins_id`             |  `string`  |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `ins_date`           |  `string`  |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `upd_id`             |  `string`  |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `upd_date`           |  `string`  |                        |
-            +-----------+----------------------+------------+------------------------+
-                        
-    @Table : 1.0 - `devices` schema details
-            
+            +-----------+--------------------+-----------+---------------------------+
+            | *Level1*  | *Level2*           | *Type*    | *Description*             |
+            +===========+====================+===========+===========================+
+            |``deploys``|                    | ``array`` |                           |
+            +-----------+--------------------+-----------+---------------------------+
+            |           | ``id``             | ``number``| Set the deploy id.        |
+            +-----------+--------------------+-----------+---------------------------+
+            |           | ``total_status``   | ``string``| Set the total status.     |
+            |           |                    |           |                           |
+            |           |                    |           | - Value definition        |
+            |           |                    |           |                           |
+            |           |                    |           | 0: Running                |
+            |           |                    |           |                           |
+            |           |                    |           | 1: Successfully completed |
+            |           |                    |           |                           |
+            |           |                    |           | 2: Failed                 |
+            |           |                    |           |                           |
+            |           |                    |           | 3: Canceled               |
+            +-----------+--------------------+-----------+---------------------------+
+            |           |``deploy_parameter``| ``string``| Set the deploy parameter. |
+            +-----------+--------------------+-----------+---------------------------+
+            |           |``devices``         | ``array`` | Refer : Table : 1.0       |
+            |           |                    |           | for more details          |
+            +-----------+--------------------+-----------+---------------------------+
+
+            @Table : 1.0 - devices schema details
+
             +-------------------+-----------------+------------+--------------------------+
-            |  Level1           |  Level2         |  Type      |  Description             |
+            | *Level1*          | *Level2*        | *Type*     | *Description*            |
+            +===================+=================+============+==========================+
+            |``devices``        |                 | ``array``  |                          |
             +-------------------+-----------------+------------+--------------------------+
-            | `devices`         |                 |  `array`   | Ascending order of       |
-            |                   |                 |            | device IDs               |
+            |                   |``device_id``    | ``string`` | Set the device id.       |
             +-------------------+-----------------+------------+--------------------------+
-            |                   | `device_id`     |  `string`  |                          |
-            +-------------------+-----------------+------------+--------------------------+
-            |                   | `status`        |  `string`  | 0: Running               |
-            |                   |                 |            | 1: Successful            |
+            |                   |``status``       | ``string`` | Set the total status.    |
+            |                   |                 |            |                          |
+            |                   |                 |            | - Value definition       |
+            |                   |                 |            |                          |
+            |                   |                 |            | 0: Running               |
+            |                   |                 |            |                          |
+            |                   |                 |            | 1: Successfully completed|
+            |                   |                 |            |                          |
             |                   |                 |            | 2: Failed                |
+            |                   |                 |            |                          |
             |                   |                 |            | 3: Canceled              |
-            |                   |                 |            | Cancellation supplement  |
-            |                   |                 |            | During deployment, if    |
-            |                   |                 |            | the device is deleted,it |
-            |                   |                 |            | will be in this status   |
             +-------------------+-----------------+------------+--------------------------+
-            |                   | `latest_        |  `string`  | 0: Not Latest            |
-            |                   |deployment_flg`  |            |                          |
-            |                   |                 |            | 1: Latest                |
+            |                   |``latest_        | ``string`` | Set the deployment flg.  |
+            |                   |deployment_flg`` |            |                          |
+            |                   |                 |            | - Value definition       |
+            |                   |                 |            |                          |
+            |                   |                 |            | 0: Old deployment history|
+            |                   |                 |            |                          |
+            |                   |                 |            | 1: Recent deployment     |
+            |                   |                 |            | history                  |
+            +-------------------+-----------------+------------+--------------------------+
+            |                   |``ins_id``       | ``string`` | Set the settings author. |
+            +-------------------+-----------------+------------+--------------------------+
+            |                   |``ins_date``     | ``string`` | Set the date the settings|
+            |                   |                 |            | were created.            |
+            +-------------------+-----------------+------------+--------------------------+
+            |                   |``upd_id``       | ``string`` | Set the settings updater.|
+            +-------------------+-----------------+------------+--------------------------+
+            |                   |``upd_date``     | ``string`` | Set the date the settings|
+            |                   |                 |            | were updated.             |
             +-------------------+-----------------+------------+--------------------------+
 
      * - 'Generic Error Response' :
@@ -179,7 +190,9 @@ export class GetDeviceAppDeploys {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const appName = '__appName__';
@@ -192,15 +205,15 @@ export class GetDeviceAppDeploys {
         try {
             const validate = ajv.compile(this.schema);
             valid = validate({
-                appName: appName,
-                versionNumber: versionNumber,
+                appName,
+                versionNumber,
             });
             if (!valid) {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -209,17 +222,17 @@ export class GetDeviceAppDeploys {
             });
             this.api = new DeviceAppApi(apiConfig);
 
-            const res = await this.api.getDeviceAppDeploys(
-                appName,
-                versionNumber
-            );
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.getDeviceAppDeploys(appName, versionNumber, 'client_credentials');
+            } else {
+                res = await this.api.getDeviceAppDeploys(appName, versionNumber);
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,7 @@ import ajvErrors from 'ajv-errors';
 import { DeployApi, Configuration } from 'js-client';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { Config } from '../common/config';
 
 const ajv = new Ajv({ allErrors: true });
@@ -82,16 +78,16 @@ export class DeleteDeployConfiguration {
     };
 
     /**
-     * deleteDeployConfiguration - delete deployment config information.
+     * deleteDeployConfiguration - Delete the information for a specified deploy config.
      *  @params
-     * - configId (str, required) - The config ID.
+     * - configId (str, required) - Config ID
      * @returns
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -127,7 +123,9 @@ export class DeleteDeployConfiguration {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *
      *    const client = await Client.createInstance(config);
      *    const configId = '__configId__';
@@ -143,8 +141,8 @@ export class DeleteDeployConfiguration {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -153,14 +151,17 @@ export class DeleteDeployConfiguration {
             });
             this.api = new DeployApi(apiConfig);
 
-            const res = await this.api.deleteDeployConfiguration(configId);
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.deleteDeployConfiguration(configId, 'client_credentials');
+            } else {
+                res = await this.api.deleteDeployConfiguration(configId);
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

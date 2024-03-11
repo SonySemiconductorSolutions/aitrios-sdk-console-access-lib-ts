@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,14 @@ import Ajv from 'ajv';
 import ajvErrors from 'ajv-errors';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 import { getMessage } from '../common/logger/getMessage';
 import { DeployDeviceApp } from './deployDeviceApp';
 import { GetDeviceAppDeploys } from './getDeviceAppDeploys';
 
 const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
+
 ajv.addKeyword('isNotEmpty', {
     type: 'string',
     validate: (schema: any, data: string) => {
@@ -106,30 +103,13 @@ export class DeployDeviceAppWaitResponse {
                     isNotEmpty: 'deviceIds required or can\'t be empty string',
                 },
             },
-            deployParameter: {
-                type: 'string',
-                isNotEmpty: true,
-                errorMessage: {
-                    type: 'Invalid string for deployParameter ',
-                    isNotEmpty:
-                        'deployParameter required or can\'t be empty string',
-                },
-            },
             comment: {
                 type: 'string',
-                isNotEmpty: true,
                 errorMessage: {
                     type: 'Invalid string for comment',
                     isNotEmpty: 'comment required or can\'t be empty string',
                 },
-            },
-
-            callback: {
-                type: 'object',
-                errorMessage: {
-                    type: 'Invalid return for callback ',
-                },
-            },
+            }
         },
         required: ['appName', 'versionNumber', 'deviceIds'],
         additionalProperties: false,
@@ -145,7 +125,7 @@ export class DeployDeviceAppWaitResponse {
     /**
      * Update the device id deploy status information to global array
      * @param
-     * - deviceId (str): Device ID, Case sensitive
+     * - deviceId (str): Device ID
      * - status (str, optional): The notified deployment status for that device_id.
      * - foundPosition (int, optional): index of the device id from devices array \
      *           of the ``get_device_app_deploys`` response. Defaults to 0.
@@ -154,9 +134,7 @@ export class DeployDeviceAppWaitResponse {
      */
     setValues(deviceId: string, status = '', foundPosition = 0, skip = 0) {
         if (deviceId) {
-            const foundData = this.deployCallbackStatusArray.find(
-                (item) => deviceId in item
-            );
+            const foundData = this.deployCallbackStatusArray.find((item) => deviceId in item);
             if (foundData) {
                 foundData[deviceId]['status'] = status;
                 foundData[deviceId]['found_position'] = foundPosition;
@@ -172,29 +150,22 @@ export class DeployDeviceAppWaitResponse {
     /**
      * Get device id deploy status information from the global array
      * @param
-     * - deviceId (str): Device ID, Case sensitive
+     * - deviceId (str): Device ID
      * @returns
      * - obj: if device ID found.
      * - undefined: if device ID not found.
      */
     getValues(deviceId: string) {
-        const foundData = this.deployCallbackStatusArray.find(
-            (item) => deviceId in item
-        );
+        const foundData = this.deployCallbackStatusArray.find((item) => deviceId in item);
         return foundData[deviceId];
     }
     /**
-     * deployDeviceAppWaitResponse -deploy and wait for completion
+     * deployDeviceAppWaitResponse - deploy and wait for completion
      * @params
-     * - appName (str, required) : App name
-     * - versionNumber (str, required) : App version
-     * - deviceIds (str, required) : IDs of edge AI devices \
-                Specify multiple device IDs separated by commas
-    * - deployParameter (str, optional) : Deployment parameters \
-                Base64 encoded string in Json format No parameters if not specified.
-    * - comment (str, optional) : deploy comment \
-                up to 100 characters \
-                No comment if not specified.
+     * - appName (str, required) - App Name.
+     * - versionNumber (str, required) - App version number.
+     * - deviceIds (str, required) - Specify multiple device IDs separated by commas.
+     * - comment (str, optional) - Comment. *Max. 100 characters.
     * - callback (function, optional) : A function handle of the form - \
                 `deployDeviceAppCallback(deviceStatusArray)`, where `deviceStatusArray`\
                 is the array of the dictionary for each device :
@@ -224,15 +195,15 @@ export class DeployDeviceAppWaitResponse {
                 
             +-------------------+-------------------+------------+----------------------------+
             |  Level1           |  Level2           |  Type      |  Description               |
-            +-------------------+-------------------+------------+----------------------------+
-            |  `No_item_name`   |                   |  `array`   | deploy device app          |
+            +===================+===================+============+============================+
+            | ``No_item_name``  |                   | ``array``  | deploy device app          |
             |                   |                   |            | wait response array        |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `device_id`      |  `string`  | Set the device id          |
+            |                   | ``device_id``     | ``string`` | Set the device id          |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `result`         |  `string`  | "SUCCESS"                  |
+            |                   | ``result``        | ``string`` | "SUCCESS"                  |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `process_time`   |  `string`  | Processing Time            |
+            |                   | ``process_time``  | ``string`` | Processing Time            |
             +-------------------+-------------------+------------+----------------------------+
 
      * - 'Generic Error Response' :
@@ -245,7 +216,7 @@ export class DeployDeviceAppWaitResponse {
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
           if any input string parameter found empty OR \
-          if type of callback paramter not a function. \
+          if type of callback parameter not a function. \
           Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -269,20 +240,22 @@ export class DeployDeviceAppWaitResponse {
      *    const portalAuthorizationEndpoint: '__portalAuthorizationEndpoint__';
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint, portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *  
      *    const client = await Client.createInstance(config);
      *    const appName = '__appName__';
      *    const versionNumber = '__versionNumber__';
      *    const deviceIds = '__deviceIds__';
-     *    const deployParameter = '__deployParameter__';
      *    const comment = '__comment__';
      *    const callback = '__callback__';
      *    // callback is user defined function reference
      *    // function deployDeviceAppCallback(deployStatusArray):
      *    // Process callback received for the `deviceId` with `status`
      * 
-     *    const response= await client.deployment.deployDeviceAppWaitResponse(appName, versionNumber, deviceIds, deployParameter, comment, callback);
+     *    const response= await client.deployment.deployDeviceAppWaitResponse(
+     *                    appName, versionNumber, deviceIds, comment, callback);
      *  ```
     */
 
@@ -290,7 +263,6 @@ export class DeployDeviceAppWaitResponse {
         appName: string,
         versionNumber: string,
         deviceIds: string,
-        deployParameter?: string,
         comment?: string,
         // eslint-disable-next-line @typescript-eslint/ban-types
         callback?: Function
@@ -302,7 +274,6 @@ export class DeployDeviceAppWaitResponse {
                 appName,
                 versionNumber,
                 deviceIds,
-                deployParameter,
                 comment,
             });
             if (!valid) {
@@ -313,14 +284,10 @@ export class DeployDeviceAppWaitResponse {
                 valid = false;
                 const errorMessage = 'Invalid return for callback';
                 Logger.error(getMessage(ErrorCodes.ERROR, errorMessage));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, errorMessage)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, errorMessage));
             }
             this.deployDeviceAppObj = new DeployDeviceApp(this.config);
-            this.getDeviceAppDeployStatusObj = new GetDeviceAppDeploys(
-                this.config
-            );
+            this.getDeviceAppDeployStatusObj = new GetDeviceAppDeploys(this.config);
             let returnDeployDeviceAppWaitResponse: any = {};
             const returnDeployDeviceAppWaitResponseAllDeviceIds = [];
             let count = 0;
@@ -339,12 +306,10 @@ export class DeployDeviceAppWaitResponse {
                     appName,
                     versionNumber,
                     deviceIds,
-                    deployParameter,
                     comment
                 );
 
-            if (
-                'data' in returnDeployDeviceApp &&
+            if ('data' in returnDeployDeviceApp &&
                 'result' in returnDeployDeviceApp.data &&
                 returnDeployDeviceApp.data['result'] === 'SUCCESS'
             ) {
@@ -353,10 +318,7 @@ export class DeployDeviceAppWaitResponse {
                 // eslint-disable-next-line no-constant-condition
                 while (true) {
                     const returnGetDeviceAppDeployStatus: any =
-                        await this.getDeviceAppDeployStatusObj.getDeviceAppDeploys(
-                            appName,
-                            versionNumber
-                        );
+                        await this.getDeviceAppDeployStatusObj.getDeviceAppDeploys(appName, versionNumber);
                     // Check Get Device App Deploys Status is not undefined
                     if (returnGetDeviceAppDeployStatus.data) {
                         returnGetDeviceAppDeployStatus.data['deploys'].some(
@@ -367,65 +329,36 @@ export class DeployDeviceAppWaitResponse {
                                 // traverse device_id status from the "devices" array
                                 deployDeviceAppStatusJson.some(
                                     (devicesIdIndex) => {
-                                        deployDeviceAppStatus =
-                                            devicesIdIndex['status'];
-                                        const devicesIdFromResponse =
-                                            devicesIdIndex['device_id'];
+                                        deployDeviceAppStatus = devicesIdIndex['status'];
+                                        const devicesIdFromResponse = devicesIdIndex['device_id'];
 
                                         //check if the deviceId is present in user provided devices list
-                                        if (
-                                            deviceIdList.includes(
-                                                devicesIdFromResponse
-                                            )
-                                        ) {
+                                        if (deviceIdList.includes(devicesIdFromResponse)) {
                                             /**
                                              * Check if the device_id is not present in global array,
-                                             * Then, add the first occurence of device_id to the
+                                             * Then, add the first occurrence of device_id to the
                                              * global array.
-                                             * Set found_position of the first occurence of device_id
+                                             * Set found_position of the first occurrence of device_id
                                              * to the global array
                                              */
                                             const foundData =
-                                                this.deployCallbackStatusArray.find(
-                                                    (item) =>
-                                                        devicesIdFromResponse in
-                                                        item
-                                                );
+                                                this.deployCallbackStatusArray.find((item) => devicesIdFromResponse in item);
 
                                             if (!foundData) {
-                                                this.setValues(
-                                                    devicesIdFromResponse,
-                                                    deployDeviceAppStatus,
-                                                    index + 1
-                                                );
-                                            } else if (
-                                                foundData &&
-                                                this.deployCallbackStatusArray
-                                                    .length !== 0
-                                            ) {
-                                                const arrayDeviceJson =
-                                                    this.getValues(
-                                                        devicesIdFromResponse
-                                                    );
+                                                this.setValues(devicesIdFromResponse, deployDeviceAppStatus, index + 1);
+                                            } else if (foundData && this.deployCallbackStatusArray.length !== 0) {
+                                                const arrayDeviceJson = this.getValues(devicesIdFromResponse);
 
-                                                const foundPosition =
-                                                    arrayDeviceJson[
-                                                        'found_position'
-                                                    ];
+                                                const foundPosition = arrayDeviceJson['found_position'];
 
-                                                const skip =
-                                                    arrayDeviceJson['skip'];
+                                                const skip = arrayDeviceJson['skip'];
                                                 /**
-                                                 * Check whether it's first occurence
+                                                 * Check whether it's first occurrence
                                                  * Then Add status of the added device to
                                                  * the global array
                                                  */
 
-                                                if (
-                                                    index + 1 ===
-                                                        foundPosition &&
-                                                    skip === 0
-                                                ) {
+                                                if (index + 1 === foundPosition && skip === 0) {
                                                     this.setValues(
                                                         devicesIdFromResponse,
                                                         deployDeviceAppStatus,
@@ -444,9 +377,7 @@ export class DeployDeviceAppWaitResponse {
                                                             DeployDeviceAppStatus.DEPLOYMENT_DONE,
                                                             DeployDeviceAppStatus.DEPLOYMENT_CANCELED,
                                                             DeployDeviceAppStatus.DEPLOYMENT_FAILED,
-                                                        ].includes(
-                                                            deployDeviceAppStatus
-                                                        )
+                                                        ].includes(deployDeviceAppStatus)
                                                     ) {
                                                         /**
                                                          * Set the skip value as 1 of the respective
@@ -463,67 +394,32 @@ export class DeployDeviceAppWaitResponse {
                                                          * Fill Response information for selected
                                                          * device_id
                                                          */
-                                                        returnDeployDeviceAppWaitResponse =
-                                                            {};
+                                                        returnDeployDeviceAppWaitResponse = {};
                                                         // result
-                                                        if (
-                                                            deployDeviceAppStatus ===
-                                                            DeployDeviceAppStatus.DEPLOYMENT_FAILED
-                                                        ) {
-                                                            returnDeployDeviceAppWaitResponse[
-                                                                'result'
-                                                            ] = 'FAILED';
+                                                        if (deployDeviceAppStatus === DeployDeviceAppStatus.DEPLOYMENT_FAILED) {
+                                                            returnDeployDeviceAppWaitResponse['result'] = 'FAILED';
                                                         }
-                                                        if (
-                                                            deployDeviceAppStatus ===
-                                                            DeployDeviceAppStatus.DEPLOYMENT_DONE
-                                                        ) {
-                                                            returnDeployDeviceAppWaitResponse[
-                                                                'result'
-                                                            ] = 'SUCCESS';
+                                                        if (deployDeviceAppStatus === DeployDeviceAppStatus.DEPLOYMENT_DONE) {
+                                                            returnDeployDeviceAppWaitResponse['result'] = 'SUCCESS';
                                                         }
-                                                        if (
-                                                            deployDeviceAppStatus ===
-                                                            DeployDeviceAppStatus.DEPLOYMENT_CANCELED
-                                                        ) {
-                                                            returnDeployDeviceAppWaitResponse[
-                                                                'result'
-                                                            ] = 'CANCELED';
+                                                        if (deployDeviceAppStatus === DeployDeviceAppStatus.DEPLOYMENT_CANCELED) {
+                                                            returnDeployDeviceAppWaitResponse['result'] = 'CANCELED';
                                                         }
                                                         // "deviceId"
-                                                        returnDeployDeviceAppWaitResponse[
-                                                            'device_id'
-                                                        ] =
-                                                            devicesIdFromResponse;
-                                                        const deployDeviceAppEndTime =
-                                                            new Date().getTime();
-                                                        const deployDeviceAppTimeSeconds =
-                                                            deployDeviceAppEndTime -
-                                                            deployDeviceAppStartTime;
+                                                        returnDeployDeviceAppWaitResponse['device_id'] = devicesIdFromResponse;
+                                                        const deployDeviceAppEndTime = new Date().getTime();
+                                                        const deployDeviceAppTimeSeconds = deployDeviceAppEndTime - deployDeviceAppStartTime;
                                                         // convert seconds to "HH:MM:SS" format
                                                         const totalDeployDeviceAppTimeStr =
-                                                            new Date(
-                                                                deployDeviceAppTimeSeconds
-                                                            )
-                                                                .toISOString()
-                                                                .substring(
-                                                                    11,
-                                                                    8
-                                                                );
-                                                        returnDeployDeviceAppWaitResponse[
-                                                            'process_time'
-                                                        ] =
-                                                            totalDeployDeviceAppTimeStr;
+                                                            new Date(deployDeviceAppTimeSeconds).toISOString().substring(11, 8);
+                                                        returnDeployDeviceAppWaitResponse['process_time'] = totalDeployDeviceAppTimeStr;
                                                         /**
                                                          * append the respective device_id's
-                                                         * deployDeviceAppWaitResponse
+                                                         * deploy_by_configuration_wait_response
                                                          * to the array
-                                                         * returnDeployDeviceAppWaitResponseAllDeviceIds
+                                                         * _return_deploy_device_app_wait_response_all_device_ids
                                                          */
-                                                        returnDeployDeviceAppWaitResponseAllDeviceIds.push(
-                                                            returnDeployDeviceAppWaitResponse
-                                                        );
-
+                                                        returnDeployDeviceAppWaitResponseAllDeviceIds.push(returnDeployDeviceAppWaitResponse);
                                                         count += 1;
                                                     }
                                                 }
@@ -553,10 +449,9 @@ export class DeployDeviceAppWaitResponse {
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
+
             if (error.response) {
                 /*
                  * The request was made and the server responded with a

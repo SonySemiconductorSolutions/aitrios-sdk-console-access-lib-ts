@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,22 +44,21 @@ export class AiModel {
         this.getModelsObj = new GetModels(this.config);
         this.importBaseModelObj = new ImportBaseModel(this.config);
         this.publishModelObj = new PublishModel(this.config);
-        this.publishModelWaitResponseObj = new PublishModelWaitResponse(
-            this.config
-        );
+        this.publishModelWaitResponseObj = new PublishModelWaitResponse(this.config);
     }
 
     /**
-     * deleteModel - "Deletes the specified model and associated projects
+     * deleteModel - Deletes the base model, device model, and project associated with
+     * the specified model ID.
      * @params
-     * - modelId (str, required) - The model Id.
+     * - modelId (str, required) - Model Id.
      * @returns 
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing.         |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -71,7 +70,7 @@ export class AiModel {
      *      - 'datetime' (str) : Time
      * 
      * - 'Validation Error Response' :
-     *   If incorrect API input parameters OR \
+     *   If incorrect API input parameters OR
      *   if any input string parameter found empty.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
@@ -94,262 +93,145 @@ export class AiModel {
     }
 
     /**
-     * getBaseModelStatus - Retrieves the specified base model information.
+     * getBaseModelStatus - Get the specified base model information.
      * @params
-     * - modelId(str, required) - The model Id.
-     * - latestType (str, optional) - Latest version type. \
-                - 0: latest published version \
-                - 1: Latest version (latest including model version in process of \
-                conversion/publishing) \
-                Exact search, 1 if not specified.
+     * - modelId(str, required) - Model ID.
+     * - latestType (str, optional) - Latest version type \
+            - Value definition \
+              0: Latest published version \
+              1: Latest version (latest including model version being converted/published) \
+            Default: '1'
 
      * @returns 
      * - Object: table:: Success Response
 
-            +-----------------+----------------------+------------+-----------------------+
-            |  Level1         |  Level2              |  Type      |  Description          |
-            +-----------------+----------------------+------------+-----------------------+
-            | `model_id`      |                      |  `string`  | Set the model ID      |
-            +-----------------+----------------------+------------+-----------------------+
-            | `device_type`   |                      |  `string`  | Set the model type    |
-            +-----------------+----------------------+------------+-----------------------+
-            | `functionality` |                      |  `string`  | Set the feature       |
-            |                 |                      |            | description           |
-            +-----------------+----------------------+------------+-----------------------+
-            | `vendor_name`   |                      |  `string`  | Set the vendor name   |
-            +-----------------+----------------------+------------+-----------------------+
-            | `model_comment` |                      |  `string`  | Set the description   |
-            +-----------------+----------------------+------------+-----------------------+
-            | `network_type`  |                      |  `string`  | 0: Custom Vision(Third|
-            |                 |                      |            | party trademark)      |
-            |                 |                      |            | 1: NonCustomVision    |
-            +-----------------+----------------------+------------+-----------------------+
-            | `projects`      |                      |  `array`   |                       |
-            +-----------------+----------------------+------------+-----------------------+
-            |                 | `model_project_name` |  `string`  | Set the model project |
-            |                 |                      |            | name                  |
-            +-----------------+----------------------+------------+-----------------------+
-            |                 | `model_project_id`   |  `string`  | Set the model project |
-            |                 |                      |            | ID                    |
-            +-----------------+----------------------+------------+-----------------------+
-            |                 | `model_platform`     |  `string`  | Set up the model      |
-            |                 |                      |            | platform              |
-            +-----------------+----------------------+------------+-----------------------+
-            |                 | `model_type`         |  `string`  | Set the model type    |
-            +-----------------+----------------------+------------+-----------------------+
-            |                 | `project_type`       |  `string`  | Set the project type  |
-            +-----------------+----------------------+------------+-----------------------+
-            |                 | `device_id`          |  `string`  | Set the device ID     |
-            +-----------------+----------------------+------------+-----------------------+
-            |                 | `version`            | `array`    | Refer:                |
-            |                 |                      |            | Table : 1.0           |
-            |                 |                      |            | for more details      |
-            +-----------------+----------------------+------------+-----------------------+
+            +-----------------+----------+----------+-----------------------------------------+
+            | *Level1*        | *Level2* | *Type*   |*Description*                            |
+            +=================+==========+==========+=========================================+
+            |``model_id``     |          |``string``|Set the model ID                         |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``model_type``   |          |``string``|Set the model type                       |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``functionality``|          |``string``|Set the function                         |
+            |                 |          |          |descriptions                             |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``vendor_name``  |          |``string``|Set the vendor name                      |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``model_comment``|          |``string``|Set the description                      |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``network_type`` |          |``string``|Set the network type.                    |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``create_by``    |          |``string``| Set the create_by.                      |
+            |                 |          |          | - Value definition                      |
+            |                 |          |          | Self: Self-training models              |
+            |                 |          |          | Marketplace: Marketplace purchasing     |
+            |                 |          |          | model                                   |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``package_id``   |          |``string``|Set the marketplace package ID.          |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``product_id``   |          |``string``|Set the marketplace product ID.          |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``metadata_format|          |``string``|Set the metadata_format_id               |
+            |_id``            |          |          |                                         |
+            +-----------------+----------+----------+-----------------------------------------+
+            |``projects``     |          |``array`` |                                         |
+            +-----------------+----------+----------+-----------------------------------------+
+            |                 |``model_  |``string``|Set the model project name               |
+            |                 |project_  |          |                                         |
+            |                 |name``    |          |                                         |
+            +-----------------+----------+----------+-----------------------------------------+
+            |                 |``model_  |``string``|Set the model project                    |
+            |                 |project_  |          |ID                                       |
+            |                 |id``      |          |                                         |
+            +-----------------+----------+----------+-----------------------------------------+
+            |                 |``model_  |``string``|Set up the model platform                |
+            |                 |platform``|          |                                         |
+            +-----------------+----------+----------+-----------------------------------------+
+            |                 |``model_  |``string``|Set the model type                       |
+            |                 |type``    |          |                                         |
+            |                 |          |          |                                         |
+            +-----------------+----------+----------+-----------------------------------------+
+            |                 |``project_|``string``|Set the project type                     |
+            |                 |type``    |          |                                         |
+            +-----------------+----------+----------+-----------------------------------------+
+            |                 |``device_ |``string``|Set the device ID                        |
+            |                 |id``      |          |                                         |
+            +-----------------+----------+----------+-----------------------------------------+
+            |                 |``versi   |``array`` |Refer : Table : 1.0                      |
+            |                 |ons``     |          |for more details                         |
+            +-----------------+----------+----------+-----------------------------------------+
 
-        @Table : 1.0 - Versions schema details
+            @Table : 1.0 - versions schema details
 
-            +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
-            +------------+--------------------+------------+-----------------------------------+
-            | `versions` |                    |  `array`   |Although it is a subordinate       |
-            |            |                    |            |element, in the case of this       |
-            |            |                    |            |API, there is always one.          |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_number`   |   `string` |Set the version number             |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `iteration_id`     |  `string`  |Set the iteration ID               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `iteration_name`   |  `string`  |Set the iteration name             |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `accuracy`         |  `string`  |Set the precision                  |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `model_            |  `string`  |Refer Table : 1.1                  |
-            |            |performance`        |            |for more details                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `latest_flg`       |  `string`  |Set the latest flag                |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_latest_   |  `string`  |Set the latest published flag      |
-            |            |flg`                |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_status`   |  `string`  |Set your status                    |
-            |            |                    |            |                                   |
-            |            |                    |            |'01': 'Before conversion'          |
-            |            |                    |            |                                   |
-            |            |                    |            |'02': 'Converting'                 |
-            |            |                    |            |                                   |
-            |            |                    |            |'03': 'Conversion failed'          |
-            |            |                    |            |                                   |
-            |            |                    |            |'04': 'Conversion complete'        |
-            |            |                    |            |                                   |
-            |            |                    |            |'05': 'Adding to configuration'    |
-            |            |                    |            |                                   |
-            |            |                    |            |'06': 'Add to configuration failed'|
-            |            |                    |            |                                   |
-            |            |                    |            |'07': 'Add to configuration        |
-            |            |                    |            |complete                           |
-            |            |                    |            |                                   |
-            |            |                    |            |'11': 'Saving' Model saving        |
-            |            |                    |            |status in Model Retrainer case     |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `org_file_name`    |  `string`  |Set the file name of the model     |
-            |            |                    |            |before conversion                  |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `org_file_size`    | `integer`  |Set the publishing model file size |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_file_     |  `string`  |Set the publishing model file name |
-            |            |name`               |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_file_     | `integer`  |Set the publishing model file size |
-            |            |size`               |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `model_file_size`  | `integer`  |Deployment model file size         |
-            |            |                    |            |* However, TBD is set as the       |
-            |            |                    |            |calculation method                 |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `model_framework`  |  `string`  |Set up the model framework         |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `conv_id`          |  `string`  |Set the conversion request ID      |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `labels`           |  `string`  |Set the label array                |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `stage`            |  `string`  |Set the conversion stage           |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `result`           |  `string`  |Set the conversion result          |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `kpi`              |  `string`  |Refer Table : 1.2                  |
-            |            |                    |            |for more details                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `convert_start_    |  `string`  |Set the conversion start date and  |
-            |            |date`               |            |time                               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `convert_end_date` |  `string`  |Set the conversion end date and    |
-            |            |                    |            |time                               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_start_    |  `string`  |Set the publish start date and time|
-            |            |date`               |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_end_date` |  `string`  |Set the publication end date and   |
-            |            |                    |            |time                               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_comment`  |  `string`  |Set the description                |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_ins_date` | `date`     |Set the version creation time      |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_upd_date` | `date`     |Set the version creation time      |
-            +------------+--------------------+------------+-----------------------------------+
-           
-        @Table : 1.1 - model_performance schema details
-           
-            +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
-            +------------+--------------------+------------+-----------------------------------+
-            | `model_p   |                    |   `string` |Set model performance              |
-            |erformance` |                    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `perTag            |  `string`  |Refer Table : 1.3                  |
-            |            |performance`        |            |for more details                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `precision`        |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `precisionStd      |  `string`  |                                   |
-            |            |Deviation`          |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `recall`           |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `recallStd         |  `string`  |                                   |
-            |            |Deviation`          |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `averagePrecision` |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
- 
-        @Table : 1.2 - kpi schema details
- 
-            +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
-            +------------+--------------------+------------+-----------------------------------+
-            | `kpi`      |                    |   `string` |Set KPIs                           |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Memory Report`    |  `string`  |Refer :Table : 1.4                 |
-            |            |                    |            |for more details                   |
-            +------------+--------------------+------------+-----------------------------------+
-        
-        @Table : 1.3 - perTagPerformance schema details
-
-            +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
-            +------------+--------------------+------------+-----------------------------------+
-            | `perTagP   |                    |   `string` |                                   |
-            |erformance` |                    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `id`               |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `name`             |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `precision`        |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `precisionStd      |  `string`  |                                   |
-            |            |Deviation`          |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `recallStd         |  `string`  |                                   |
-            |            |Deviation`          |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `averagePrecision` |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-
-        @Table : 1.4 - Memory Report schema details
-
-            +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
-            +------------+--------------------+------------+-----------------------------------+
-            | `Memory    |                    |   `string` |                                   |
-            |Report`     |                    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `name`             |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Runtime Memory    |  `string`  |                                   |
-            |            |Physical size`      |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Model Memory      |  `string`  |                                   |
-            |            |Physical size`      |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Reserved Memory`  |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Memory Usage`     |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Total Memory      |  `string`  |                                   |
-            |            |Available On Chip`  |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Memory            |  `string`  |                                   |
-            |            |Utilization`        |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Fit In Chip`      |  `string`  |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Input Persistent` |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Networks`         |            |Refer :Table : 1.5                 |
-            |            |                    |            |for more details                   |
-            +------------+--------------------+------------+-----------------------------------+
- 
-        @Table : 1.5 - Networks schema details
- 
-            +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
-            +------------+--------------------+------------+-----------------------------------+
-            | `Networks` |                    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Hash`             |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `name`             |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Runtime Memory    |            |                                   |
-            |            |Physical size`      |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Model Memory      |            |                                   |
-            |            |Physical size`      |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `Input Persistence |            |                                   |
-            |            |Cost`               |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
+            +------------+--------------------+-----------+-----------------------------------+
+            | *Level1*   | *Level2*           | *Type*    | *Description*                     |
+            +============+====================+===========+===================================+
+            |``versions``|                    | ``array`` |There must be one subordinate      |
+            |            |                    |           |element for this API.              |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``version_number``  | ``string``|Set the version number             |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``iteration_id``    |``string`` |Set the iteration ID               |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``iteration_name``  |``string`` |Set the iteration name             |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``accuracy``        |``string`` |Set the accuracy                   |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``model_            |``object`` |Set the the performance information|
+            |            |performances``      |           |of the model.                      |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``latest_flg``      |``string`` |Set the latest flag                |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``publish_latest_   |``string`` |Set the latest published flag      |
+            |            |flg``               |           |                                   |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``version_status``  |``string`` |Set the status                     |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``org_file_name``   |``string`` |Set the preconversion model        |
+            |            |                    |           |filename.                          |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``org_file_size``   |``number`` |Set the publish model file size    |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``publish_file_     |``string`` |Set the publish model file name    |
+            |            |name``              |           |                                   |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``publish_file_     |``number`` |Set the publish model file size    |
+            |            |size``              |           |                                   |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``model_file_size`` |``number`` |Set the model file size.           |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``model_framework`` |``string`` |Set up the model framework         |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``conv_id``         |``string`` |Set the conversion request ID      |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``labels``          |``array``  |Set the label array                |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``stage``           |``string`` |Set the conversion stage           |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``result``          |``string`` |Set the conversion result          |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``kpi``             |``object`` |                                   |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``converter_log``   |``array``  |converter log.                     |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``convert_start_    |``string`` |Set the conversion start date      |
+            |            |date``              |           |                                   |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``convert_end_date``|``string`` |Set the conversion end date        |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``publish_start_    |``string`` |Set the publish start date         |
+            |            |date``              |           |                                   |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``publish_end_date``|``string`` |Set the publish end date           |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``version_comment`` |``string`` |Set the description                |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``version_ins_date``|``string`` |Set the created time of the        |
+            |            |                    |           |version.                           |
+            +------------+--------------------+-----------+-----------------------------------+
+            |            |``version_upd_date``|``string`` |Set the created time of the        |
+            |            |                    |           |version.                           |
+            +------------+--------------------+-----------+-----------------------------------+
 
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK.
@@ -360,14 +242,14 @@ export class AiModel {
      *      - 'datetime' (str) : Time
      * 
      * - 'Validation Error Response' :
-     *   If incorrect API input parameters OR \
+     *   If incorrect API input parameters OR
      *   if any input string parameter found empty.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -377,176 +259,142 @@ export class AiModel {
      *      - 'datetime' (str) : Time
      */
     getBaseModelStatus(modelId: string, latestType?: string) {
-        const response = this.getBaseModelStatusObj.getBaseModelStatus(
-            modelId,
-            latestType
-        );
+        const response = this.getBaseModelStatusObj.getBaseModelStatus(modelId, latestType);
         return response;
     }
 
     /**
-     * getModels -  Get model information list
+     * getModels -  Get the model list information.
      * @params
-     * - modelId (str, optional) -  Model ID. Partial search \
-                If not specified, all model_id searches.
-     * - comment (str, optional) - Model Description. Partial search \
-                If not specified, search all comments.
-     * - projectName (str, optional) - Project Name. Partial search \
-                Search all project_name if not specified.
-     * - modelPlatform (str, optional) - Model platform \
-                - 0 : Custom Vision(Third party trademark) \
-                - 1 : Non Custom Vision \
-                - 2 : Model Retrainer \
-                Exact search, If not specified, search all model_platforms.
-     * - projectType (str, optional) - The project Type. \
-                - 0 : Base \
-                - 1 : Device \
-                Exact search, Search all project_types if not specified.
-     * - deviceId (str, optional)- Device Id. \
-                Specify when you want to search for device models. \
-                Exact match search criteria. Case-sensitive.
-     * - latestType (str, optional) - Latest version type. \
-                 - 0 : latest published version \
-                 - 1 : Latest version (latest including model version in process of \
-                conversion/publishing) \
-                Exact search, 1 if not specified.
+     * - modelId (str, optional) -  Model ID. *Partial match search
+     * - comment (str, optional) - Model description. *Partial match search
+     * - projectName (str, optional) - Project name. *Partial match search
+     * - modelPlatform (str, optional) - Model Platform. \
+            - Value definition \
+              0 : Custom Vision \
+              1 : Non Custom Vision
+     * - projectType (str, optional) - Project Type. \
+            - Value definition \
+              0 : Base model \
+              1 : Device model
+     * - deviceId (str, optional)- Device Id.
+     * - latestType (str, optional) - Latest version type \
+            - Value definition \
+              0: Latest published version \
+              1: Latest version (latest including model version being converted/published) \
+            Default: '1'
      * @returns 
      * - Object: table:: Success Response
 
             +------------+-------------------+------------+-------------------------------+
-            |  Level1    |  Level2           |  Type      |  Description                  |
+            | *Level1*   | *Level2*          | *Type*     | *Description*                 |
+            +============+===================+============+===============================+
+            | ``models`` |                   | ``array``  |                               |
             +------------+-------------------+------------+-------------------------------+
-            |  `models`  |                   |  `array`   | The subordinate elements are  |
-            |            |                   |            | listed in ascending order of  |
-            |            |                   |            | model ID                      |
+            |            | ``model_id``      | ``string`` | Set the model ID              |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `model_id`       |   `string` | Set the model ID              |
+            |            | ``model_type``    | ``string`` | Set the model type            |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `device_type`    |   `string` | Set the model type            |
+            |            | ``functionality`` | ``string`` | Set the feature descriptions  |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `functionality`  |   `string` | Set the feature description   |
+            |            | ``vendor_name``   | ``string`` | Set the vendor name           |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `vendor_name`    |   `string` | Set the vendor name           |
+            |            | ``model_comment`` | ``string`` | Set the description           |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `model_comment`  |   `string` | Set the description           |
+            |            | ``network_type``  | ``string`` | Set the network type.         |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `network_type`   |   `string` | 0: Custom Vision(Third party  |
-            |            |                   |            |  trademark)                   |
-            |            |                   |            | 1: NonCustomVision            |
+            |            | ``create_by``     | ``string`` | Set the create_by.            |
+            |            |                   |            | - Value definition            |
+            |            |                   |            | Self: Self-training models    |
+            |            |                   |            | Marketplace: Marketplace      |
+            |            |                   |            | purchacing model              |
             +------------+-------------------+------------+-------------------------------+
-            |            |  `projects`       |  `array`   | Refer : Table : 1.0           |
+            |            | ``package_id``    | ``string`` | Set the marketplace package ID|
+            +------------+-------------------+------------+-------------------------------+
+            |            | ``product_id``    | ``string`` | Set the marketplace product ID|
+            +------------+-------------------+------------+-------------------------------+
+            |            |``metadata_format_ | ``string`` | Set the metadata_format_id.   |
+            |            |id``               |            |                               |
+            +------------+-------------------+------------+-------------------------------+
+            |            | ``projects``      | ``array``  | Refer : Table : 1.0           |
             |            |                   |            | for more details              |
             +------------+-------------------+------------+-------------------------------+
-        
-        @Table : 1.0 - projects schema details
- 
+
+            @Table : 1.0 - projects schema details
+
             +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
+            | *Level1*   | *Level2*           | *Type*     | *Description*                     |
+            +============+====================+============+===================================+
+            |``projects``|                    | ``array``  |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            | `projects` |                    |  `array`   |The subordinate elements are listed|
-            |            |                    |            |in ascending order of project type |
-            |            |                    |            |and model project name.            |
+            |            |``model_project_    | ``string`` |Set the model project name         |
+            |            |name``              |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_project_    |   `string` |Set the model project name         |
-            |            |name`               |            |                                   |
+            |            |``model_project_    | ``string`` |Set the model project id           |
+            |            |id``                |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_platform`   |  `string`  |Set up the model platform          |
+            |            |``model_platform``  |``string``  |Set the model platform             |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_type`       |  `string`  |Set the model type                 |
+            |            |``model_type``      |``string``  |Set the model type                 |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `project_type`     |  `string`  |Set the project type               |
+            |            |``project_type``    |``string``  |Set the project type               |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `device_id`        |  `string`  |Set the device ID * This is not an |
-            |            |                    |            |internal ID                        |
+            |            |``device_id``       |``string``  |Set the device ID                  |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `versions`         | `array`    |Refer : Table : 1.1                |
+            |            |``versions``        |``array``   |Refer : Table : 1.1                |
             |            |                    |            |for more details                   |
             +------------+--------------------+------------+-----------------------------------+
 
-        @Table : 1.1 - Versions schema details
-        
+            @Table : 1.1 - versions schema details
+
             +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
+            | *Level1*   | *Level2*           | *Type*     | *Description*                     |
+            +============+====================+============+===================================+
+            |``versions``|                    | ``array``  |There must be one subordinate      |
+            |            |                    |            |element for this API.              |
             +------------+--------------------+------------+-----------------------------------+
-            | `versions` |                    |  `array`   |Although it is a subordinate       |
-            |            |                    |            |element, in the case of this API,  |
-            |            |                    |            |there is always one.               |
+            |            |``version_number``  | ``string`` |Set the version number             |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `version_number`   |   `string` |Set the version number             |
+            |            |``iteration_id``    |``string``  |Set the iteration ID               |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `iteration_id`     |  `string`  |Set the iteration ID               |
+            |            |``iteration_name``  |``string``  |Set the iteration name             |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `iteration_name`   |  `string`  |Set the iteration name             |
+            |            |``accuracy``        |``string``  |Set the accuracy                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `accuracy`         |  `string`  |Set the precision                  |
+            |            |``model_performan   |``object``  |Set the performance information    |
+            |            |ces``               |            |of the model.                      |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `latest_flg`       |  `string`  |Set the latest flag                |
+            |            |``latest_flg``      |``string``  |Set the latest flag                |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_latest    |  `string`  |Set the latest published flag      |
-            |            |_flg`               |            |                                   |
+            |            |``publish_latest    |``string``  |Set the latest published flag      |
+            |            |_flg``              |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `version_status`   |  `string`  |Set your status                    |
-            |            |                    |            |                                   |
-            |            |                    |            |'01': 'Before conversion'          |
-            |            |                    |            |                                   |
-            |            |                    |            |'02': 'Converting'                 |
-            |            |                    |            |                                   |
-            |            |                    |            |'03': 'Conversion failed'          |
-            |            |                    |            |                                   |
-            |            |                    |            |'04': 'Conversion complete'        |
-            |            |                    |            |                                   |
-            |            |                    |            |'05': 'Adding to configuration'    |
-            |            |                    |            |                                   |
-            |            |                    |            |'06': 'Add to configuration failed'|
-            |            |                    |            |                                   |
-            |            |                    |            |'07': 'Add to configuration        |
-            |            |                    |            |complete                           |
-            |            |                    |            |                                   |
-            |            |                    |            |'11': 'Saving' Model saving        |
-            |            |                    |            |status in Model Retrainer case     |
+            |            |``version_status``  |``string``  |Set the status                     |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `org_file_name`    |  `string`  |Set the file name of the model     |
-            |            |                    |            |before conversion                  |
+            |            |``org_file_name``   |``string``  |Set the preconversion model        |
+            |            |                    |            |filename.                          |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `org_file_size`    | `integer`  |Set the publishing model file size |
+            |            |``org_file_size``   |``number``  |Set the publish model file size    |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_file_     |  `string`  |Set the publishing model file name |
-            |            |name`               |            |                                   |
+            |            |``publish_file_     |``string``  |Set the publish model filename     |
+            |            |name``              |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_file_     | `integer`  |Set the publishing model file size |
-            |            |size`               |            |                                   |
+            |            |``publish_file_     |``number``  |Set the publish model file size    |
+            |            |size``              |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_file_size`  | `integer`  |Set the model file size            |
+            |            |``model_file_size`` |``number``  |Set the model file size            |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_framework`  |  `string`  |Set up the model framework         |
+            |            |``model_framework`` |``string``  |Set the model framework            |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `conv_id`          |  `string`  |Set the conversion request ID      |
+            |            |``conv_id``         |``string``  |Set the conversion request ID      |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `labels`           | `string[]` |Set the label array                |
+            |            |``labels``          |``string[]``|Set the label array                |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `stage`            |  `string`  |Set the conversion stage           |
+            |            |``stage``           |``string``  |Set the conversion stage           |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `result`           |  `string`  |Set the conversion result          |
+            |            |``kpi``             |``array``   |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `convert_start_    |  `string`  |Set the conversion start date and  |
-            |            |date`               |            |time                               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `convert_end_date` |  `string`  |Set the conversion end date and    |
-            |            |                    |            |time                               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_start     |  `string`  |Set the publish start date and time|
-            |            |_date`              |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `publish_end_date` |  `string`  |Set the publication end date and   |
-            |            |                    |            |time                               |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_comment`  |  `string`  |Set the description                |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_ins_date` | `date`     |Set the version creation time      |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `version_upd_date` | `date`     |Set the version creation time      |
-            +------------+--------------------+------------+-----------------------------------+
- 
+
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK.
      *   Object with below key and value pairs.
@@ -554,16 +402,16 @@ export class AiModel {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
-     *   If incorrect API input parameters OR \
+     *   If incorrect API input parameters OR
      *   if any input string parameter found empty.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -594,57 +442,66 @@ export class AiModel {
     }
 
     /**
-     * importBaseModel - For a new model ID, save it as a new one. \
-        If a model ID already registered in the system is specified, the version is upgraded. \
-        Note that it is not possible to create a device model based on the base model \
-        imported with this API.
+     * importBaseModel - Import the base model. In addition, in the case of a new model \
+        ID, it is newly saved. If you specify a model ID that has already been registered \
+        in the system, the version will be upgraded.
      * @params
-     * - modelId (str, required) - Model ID. \
-                The model ID to be saved or upgraded. 100 characters or less \
-                The following characters are allowed \
-                Alphanumeric characters \
-                -hyphen \
-                _ Underscore \
-                () Small parentheses \
-                . dot
-     * - model (str, required) - Model file SAS URI
-     * - converted (bool, optional) -  Convert flag. \
-                True: Converted Model \
-                False: Unconverted Model \
-                False if not specified
-     * - vendorName (str, optional) -  Vendor Name.  (specified when saving as new) \
-                Up to 100 characters. Not specified for version upgrade. \
-                No vendor name if not specified.
-     * - comment (str, optional) - Explanation about the model to be entered when \
-                registering a new model. When newly saved, it is set as \
-                a description of the model and version. \
-                When the version is upgraded, it is set as the \
-                description of the version. Within 100 characters If not specified, there is no \
-                explanation about the model to be entered when registering a new model.
-     * - inputFormatParam (str, optional) - input format param file (json format) URI \
-                Evaluate Azure: SAS URI+ AWS: Presigned URIs Usage: Packager conversion \
-                information (image format information). Illegal characters except for SAS URI \
-                format json format is an array of objects (each object contains the following \
-                values). Example ordinal: Order of DNN input to converter (value range: 0-2) \
-                format: format ("RGB" or "BGR") If not specified, do not evaluate.
-     * - networkConfig (str, optional) - URI of network config file (json format) \
-                Evaluate Azure: SAS URI+ AWS: Presigned URIs In case of pre-conversion \
-                model, specify. (=Ignored for post-conversion model) Usage: Conversion parameter \
-                information of model converter. Illegal characters except for SAS URI format \
-                If not specified, do not evaluate.
-     * - networkType (str, optional) - The Network Type. (Valid only for \
-                new model registration). \
-                - 0: Custom Vision(Third party trademark) \
-                - 1: Non-CustomVision+ \
-                1 if not specified.
-     * - labels (Array<str>, optional) - Label Name. Example: ["label01","label02","label03"]
+     * - modelId (str, required) - Model ID for new registration or version upgrade. \
+                                   Max. 100 characters. \
+                                   The following characters are allowed \
+                                   Alphanumeric characters \
+                                   -hyphen \
+                                   _ Underscore \
+                                   () Small parentheses \
+                                   . dot
+                                   
+     * - model (str, required) - SAS URI or Presigned URI of the model file.
+     * - converted (bool, optional) - Specify whether to convert the specified model file.
+     * - vendorName (str, optional) -  Vendor Name. Max. 100 characters. \
+            *Specify only when registering a new base model.
+     * - comment (str, optional) - Description. Max. 100 characters. \
+            *When saving new, it is set as a description of the model and version. \
+            *When saving version-up, it is set as a description of the version.
+     * - inputFormatParam (str, optional) - SAS URI or Presigned URI of the input format
+     *           param file. \
+                 - Usage: Packager conversion information (image format information). \
+                 - The json format is an array of objects. Each object contains the \
+                   following values. \
+                     - ordinal: Order of DNN input to converter (value range: 0 to 2) \
+                     - format: Format ("RGB" or "BGR")
+     * - networkConfig (str, optional) - SAS URI or Presigned URI of the network config file. \
+                - Usage: Conversion parameter information of modelconverter. \
+                Therefore, it is not necessary to specify when specifying the model 
+                before conversion.
+     *          - Example: 
+     * ```ts
+     *           {
+     *               "Postprocessor": {
+     *                   "params": {
+     *                       "background": false,
+     *                       "scale_factors": [ 10.0, 10.0, 5.0, 5.0 ],
+     *                       "score_thresh": 0.01,
+     *                       "max_size_per_class": 64,
+     *                       "max_total_size": 64,
+     *                       "clip_window": [ 0, 0, 1, 1 ],
+     *                       "iou_threshold": 0.45
+     *                   }
+     *               }
+     *           }
+     * ```
+     * - networkType (str, optional) - Specify whether or not application is required for the \
+                model. \
+            - Value definition \
+              0 : Model required application \
+              1 : Model do not required application
+     * - metadataFormatId (str, optional) - Metadata Format ID. Max. 100 characters.
      * @returns 
      * - Object: table:: Success Response
-    
+
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -654,16 +511,16 @@ export class AiModel {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
-     *   If incorrect API input parameters OR \
+     *   If incorrect API input parameters OR
      *   if any input string parameter found empty.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -681,7 +538,7 @@ export class AiModel {
         inputFormatParam?: string,
         networkConfig?: string,
         networkType?: string,
-        labels?: Array<string>
+        metadataFormatId?: string
     ) {
         const response = this.importBaseModelObj.importBaseModel(
             modelId,
@@ -692,29 +549,31 @@ export class AiModel {
             inputFormatParam,
             networkConfig,
             networkType,
-            labels
+            metadataFormatId
         );
         return response;
     }
 
     /**
-     * publishModel - Provide the ability to publish transformation models. \
-        Since model import takes time, asynchronous execution is performed.
+     * publishModel - Provide a function to publish a conversion model. \
+        As model publishing takes time, this is performed asynchronously. \
+        *Check the processing status in the result of the GetBaseModelStatus API \
+        or GetDeviceModelStatus API response. If the result is 'Import completed', \
+        the process is completed.
      * @params
-     * - modelId (str, required) - The model Id.
-     * - deviceId (str, optional) - Device ID Specify when the device model is eligible.\
-                Not specified if the base model is the target. Case-sensitive.
+     * - modelId (str, required) - Model ID.
+     * - deviceId (str, optional) - Device ID \
+            *Specify this when the device model is the target. \
+            Do not specify this when the base model is the target.
      * @returns
      * - Object: table:: Success Response
                 
             +----------------+------------+-------------------------------+
-            |  Level1        |  Type      |  Description                  |
+            | *Level1*       | *Type*     | *Description*                 |
+            +================+============+===============================+
+            | ``result``     | ``string`` | Set "SUCCESS" fixing          |
             +----------------+------------+-------------------------------+
-            |  `result`      |  `string`  | Set "SUCCESS" pinning         |
-            +----------------+------------+-------------------------------+
-            |  `import_id`   |  `string`  | Set the import_id of          |
-            |                |            | Model Import Rest API         |
-            |                |            | (model-import) response       |
+            | ``import_id``  | ``string`` | Set the conv id               |
             +----------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -724,16 +583,16 @@ export class AiModel {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
-     *   If incorrect API input parameters OR \
+     *   If incorrect API input parameters OR
      *   if any input string parameter found empty OR.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -751,13 +610,13 @@ export class AiModel {
      * publishModelWaitResponse -  Provide the ability to publish transformation models 
      *                             and wait for completion.
      * @params
-     * - modelId (str, required) : The model Id.
-     * - deviceId (str, optional) : The ID of edge AI device. \
-                Specify when the device model is the target \
-                If the base model is the target, do not specify.
+     * - modelId (str, required) : Model Id.
+     * - deviceId (str, optional) : Device ID \
+            *Specify this when the device model is the target. \
+            Do not specify this when the base model is the target.
      * - callback (function, optional) : A function handle of the form - \
                 `publishCallback(status)`, where `status` is the notified publish status. \
-                Callback Function to check the publishing status with `getBaseModelStatus`,
+                Callback Function to check the publishing status with `getBaseModelStatus`, \
                 and if not completed, call the callback function to notify the publishing status.\
                 If not specified, no callback notification.
      * @returns
@@ -765,10 +624,10 @@ export class AiModel {
 
             +-------------------+------------+-------------------------------+
             |  Level1           |  Type      |  Description                  |
+            +===================+============+===============================+
+            | ``result``        | ``string`` | "SUCCESS"                     |
             +-------------------+------------+-------------------------------+
-            |  `result`         |  `string`  | "SUCCESS"                     |
-            +-------------------+------------+-------------------------------+
-            |  `process time`   |  `string`  | Processing Time               |
+            | ``process time``  | ``string`` | Processing Time               |
             +-------------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -778,17 +637,17 @@ export class AiModel {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
-     *   If incorrect API input parameters OR \
-     *   if any input string parameter found empty OR \
-     *   if type of callback paramter not a function. \
+     *   If incorrect API input parameters OR
+     *   if any input string parameter found empty OR
+     *   if type of callback parameter not a function.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.

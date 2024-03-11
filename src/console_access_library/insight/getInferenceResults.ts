@@ -1,17 +1,17 @@
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import Ajv from 'ajv';
@@ -20,11 +20,7 @@ import { InsightApi, Configuration } from 'js-client';
 import { Config } from '../common/config';
 import * as Logger from '../common/logger/logger';
 import { getMessage } from '../common/logger/getMessage';
-import {
-    ErrorCodes,
-    genericErrorMessage,
-    validationErrorMessage,
-} from '../common/errorCodes';
+import { ErrorCodes, genericErrorMessage, validationErrorMessage } from '../common/errorCodes';
 
 const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
@@ -60,7 +56,8 @@ export class GetInferenceResults {
     }
 
     /**
-    * Schema for API to retrieve (saved) inference result metadata list information for a specified device.
+    * Schema for API to Get the (saved) inference result metadata list information for \
+      a specified device.
 
     Args:
         Schema (object): Ajv JSON schema Validator
@@ -78,10 +75,9 @@ export class GetInferenceResults {
             },
             filter: {
                 type: 'string',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for filter',
-                    isNotEmpty: 'filter required or can\'t be empty string',
+                    type: 'Invalid string for filter'
                 },
             },
             numberOfInferenceResults: {
@@ -106,10 +102,9 @@ export class GetInferenceResults {
             time: {
                 type: 'string',
                 format: 'date-time',
-                isNotEmpty: true,
+                default: '',
                 errorMessage: {
-                    type: 'Invalid string for time',
-                    isNotEmpty: 'time required or can\'t be empty string',
+                    type: 'Invalid string for time'
                 },
             },
         },
@@ -123,141 +118,134 @@ export class GetInferenceResults {
     };
 
     /**
-     * getInferenceResults- Retrieves (saved) inference result metadata list information for a specified device.     
+     * getInferenceResults- Get the (saved) inference result metadata list information for \
+        a specified device.
      *  @params
-     *  - deviceId (str, required)  : Device ID. Case-sensitive.
-     *  - filter (str, optional) : The Filter. Search filter (same specifications as Cosmos DB UI\
-     *                                on Azure portal except for the following) \
-     *                                   - No need to prepend where string \
-     *                                   - It is not necessary to add a deviceID.\
-     *                           Filter Samples: \
-     *                           - ModelID: string  match filter \
-                                        eg. "c.ModelID=\"0300000001590100\"" \
-     *                           - Image: boolean  match filter \
-                                        eg. "c.Image=true" \
-     *                           - T: string  match or more filter \
-                                        eg. "c.Inferences[0].T>=\"20230412140050618\"" \
-     *                           - T: string  range filter \
-                                        eg. "EXISTS(SELECT VALUE i FROM i IN c.Inferences \
-                                            WHERE i.T >= \"20230412140023098\" AND \
-                                            i.T <= \"20230412140029728\")" \
-     *                           - _ts: number  match filter \
-                                        eg. "c._ts=1681308028"
-     * - numberOfInferenceResults (int, optional):Number of acquisitions. If not specified: 20
-     * - raw (int, optional) : The Raw. Data format of inference results.
-     *                               - 1:Append records stored in Cosmos DB. \
-     *                               - 0:Not granted. \
-     *                                   If not specified: 1
-     * - time (str, optional) : The Time. Inference result data stored in Cosmos DB.\
-     *                              yyyyMMddHHmmssfff \
-     *                               - yyyy: 4-digit year string \
-     *                               - MM: 2-digit month string \
-     *                               - dd: 2-digit day string \
-     *                               - HH: 2-digit hour string \
-     *                               - mm: 2-digit minute string \
-     *                               - ss: 2-digit seconds string \
-     *                               - fff: 3-digit millisecond string
+     *  - deviceId (str, required)  : Device ID.
+     *  - filter (str, optional) : Search filter \
+            *The specifications are the same except for those of CosmosDB UI of the Azure portal \
+            and those listed below. \
+            - A where string does not need to be added to the heading. \
+            - deviceID does not need to be added. \
+
+            Example: \
+            - Filter by model ID \
+              c.ModelID = "0201020001790103" \
+            - Filter by Cosmos time stamp \
+              c._ts > 1606897951 \
+
+            Default: ""
+     * - numberOfInferenceResults (number, optional): Number of cases to get.
+     *                            Return the latest record of the specified number of cases. \
+     *                            *Maximum value: 10000 \
+     *                            Default: 20
+     * - raw (number, optional) : If 1 is specified, add a record stored to CosmosDB and return it. \
+                                - Value definition \
+                                    0: Do not add \
+                                    1: Add
+                                Default:: 1
+     * - time (str, optional) : When this value is specified, extract the inference result \
+                                metadata within the following range. \
+            - Extraction range \
+              (time - threshold) <= T  
+              Time in inference result metadata < (time + threshold) \
+
+            - Value definition \
+              yyyy: 4-digit year string \
+              MM: 2-digit month string \
+              dd: 2-digit day string \
+              HH: 2-digit hour string \
+              mm: 2-digit minute string \
+              ss: 2-digit second string \
+              fff: 3-digit millisecond string \
+
+            Default: ""
      * @returns
      * - Object: table:: Success Response
-    - when time parameter is not specified
 
             +------------------+-------------+-----------+------------------------------------+
-            |  Level1          |  Level2     |  Type     |  Description                       |
+            | *Level1*         | *Level2*    | *Type*    | *Description*                      |
+            +==================+============+============+====================================+
+            | ``No_item_name`` |             |           |                                    |
             +------------------+-------------+-----------+------------------------------------+
-            |  `No_item_name`  |             |           | The subordinate elements are       |
-            |                  |             |           | listed in descending order         |
-            |                  |             |           | by system registration date        |
-            |                  |             |           | and time.                          |
+            |                  |``id``       | ``string``| Inference result metadata ID.      |
+            |                  |             |           | =GUID generated automatically by   |
+            |                  |             |           | CosmosDB                           |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `id`        |  `string` | The ID of the inference            |
-            |                  |             |           | result metadata.                   |
+            |                  |``device_id``| ``string``| Device ID.                         |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `device_id` |  `string` | Device ID.                         |
+            |                  |``model_id`` | ``string``| Model ID.                          |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `model_id`  |  `string` | Model ID.                          |
+            |                  |``version    | ``string``| Version number.                    |
+            |                  |_number``    |           |                                    |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `model      | `string`  | Dnn Model Version                  |
-            |                  |_version_id` |           |                                    |
+            |                  |``model      |``string`` | Model version ID.                  |
+            |                  |_version_id``|           |                                    |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `model      | `string`  | Model type                         |
-            |                  |_type`       |           |                                    |
-            |                  |             |           | 00: Image classification           |
+            |                  |``model      |``string`` | Model type                         |
+            |                  |_type``      |           |                                    |
+            |                  |             |           | 00: Image category                 |
             |                  |             |           |                                    |
             |                  |             |           | 01: Object detection               |
-            |                  |             |           |                                    |
-            |                  |             |           | * In the case of imported          |
-            |                  |             |           | models, 01 is fixed at the         |
-            |                  |             |           | current level.                     |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `training   | `string`  | Name of the training_kit           |
-            |                  |_kit_name`   |           |                                    |
+            |                  |``training   |``string`` |                                    |
+            |                  |_kit_name``  |           |                                    |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `_ts`       | `string`  | Timestamp. = System                |
-            |                  |             |           | registration date and time         |
+            |                  |``_ts``      |``number`` | Timestamp.                         |
+            |                  |             |           | =_ts of CosmosDB                   |
             +------------------+-------------+-----------+------------------------------------+
-            |                  | `inference  | `string`  |Refer :  Table : 1.0                |
-            |                  |_result`     |           |for more details                    |
+            |                  |``inference  |           |Refer : Table : 1.0                 |
+            |                  |_result``    |           |for more details                    |
+            +------------------+-------------+-----------+------------------------------------+
+            |                  |``inferenc   |``array``  |Refer : Table : 1.1                 |
+            |                  |es``         |           |for more details                    |
             +------------------+-------------+-----------+------------------------------------+
 
-        @Table : 1.0 - inference_result schema details
+            @Table : 1.0 - inference_result schema details
 
             +--------------------+--------------+------------+-------------------------------+
-            |  Level1            |  Level2      |  Type      |  Description                  |
+            | *Level1*           | *Level2*     | *Type*     | *Description*                 |
+            +====================+==============+============+===============================+
+            |``inference_result``|              | ``array``  |                               |
             +--------------------+--------------+------------+-------------------------------+
-            | `inference_result` |              |  `array`   |Raw data for inference result  |
-            |                    |              |            |in ascending order of project  |
-            |                    |              |            |type and model project name.   |
+            |                    |``device_id`` | ``string`` |Device ID                      |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `device_id`  |  `string`  |Device ID                      |
+            |                    |``model_id``  |``string``  |DnnModelVersion                |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `model_id`   | `string`   |DnnModelVersion                |
+            |                    |``image``     |``boolean`` |Synchronized to the            |
+            |                    |              |            |InputTensor output.            |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `image`      | `boolean`  |Is it synchronized with        |
-            |                    |              |            |the output of InputTensor?     |
-            +--------------------+--------------+------------+-------------------------------+
-            |                    | `inferences` | `array`    |Refer : Table : 1.1            |
+            |                    |``inferences``|``array``   |Refer : Table : 1.1            |
             |                    |              |            |for more details               |
             +--------------------+--------------+------------+-------------------------------+
+            |                    |``id``        |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``ttl``       |``number``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_rid``      |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_self``     |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_etag``     |``string``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_attachm    |``string``  |                               |
+            |                    |ents``        |            |                               |
+            +--------------------+--------------+------------+-------------------------------+
+            |                    |``_ts``       |``number``  |                               |
+            +--------------------+--------------+------------+-------------------------------+
 
-        @Table : 1.1 - inferences schema details
+            @Table : 1.1 - inferences schema details
 
             +--------------------+--------------+------------+-------------------------------+
-            |  Level1            |  Level2      |  Type      |  Description                  |
+            | *Level1*           | *Level2*     | *Type*     | *Description*                 |
+            +====================+==============+============+===============================+
+            |``inferences``      |              | ``array``  |                               |
             +--------------------+--------------+------------+-------------------------------+
-            | `inferences`       |              |  `array`   |Inference result Array         |
+            |                    |``T``         | ``string`` |Time when retrieving           |
+            |                    |              |            |data from the sensor.          |
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `T`          |  `string`  |The time at which the data     |
-            |                    |              |            |was acquired from the sensor.  |
+            |                    |``O``         |``string``  |Output tensor (Encoding format)|
             +--------------------+--------------+------------+-------------------------------+
-            |                    | `O`          | `string`   |Outputtensor output without    |
-            |                    |              |            |going through PPL              |
-            +--------------------+--------------+------------+-------------------------------+
-
-    - when time parameter is specified
-
-
-            +------------------+--------------+-----------+--------------------------------+
-            |  Level1          |  Level2      |  Type     |  Description                   |
-            +------------------+--------------+-----------+--------------------------------+
-            |  `No_item_name`  |              |           | The subordinate elements are   |
-            |                  |              |           | listed in descending order     |
-            |                  |              |           | by system registration date    |
-            |                  |              |           | and time.                      |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `id`         |  `string` | The ID of the inference result |
-            |                  |              |           | metadata. = GUID automatically |
-            |                  |              |           | fired by CosmosDB              |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `device_id`  |  `string` | Device ID.                     |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `model_id`   |  `string` | Model ID.                      |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `_ts`        | `string`  | Timestamp. = System            |
-            |                  |              |           | registration date and time     |
-            +------------------+--------------+-----------+--------------------------------+
-            |                  | `inferences` | `array`   |Refer :  Table : 1.1            |
-            |                  |              |           |for more details                |
-            +------------------+--------------+-----------+--------------------------------+
             
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK. Object with below key and value pairs.
@@ -269,8 +257,8 @@ export class GetInferenceResults {
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty OR \
-     *   if any input integer parameter found negative OR \
-     *   if any input non integer parameter found. OR \
+     *   if any input number parameter found negative OR \
+     *   if any input non number parameter found. OR \
      *   if any input time format is invalid.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
@@ -295,7 +283,9 @@ export class GetInferenceResults {
      *    const portalAuthorizationEndpoint: "__portalAuthorizationEndpoint__";
      *    const clientId: '__clientId__';
      *    const clientSecret: '__clientSecret__';
-     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint, clientId, clientSecret);
+     *    const applicationId: '__applicationId__';
+     *    const config = new Config(consoleEndpoint,portalAuthorizationEndpoint,
+     *                              clientId, clientSecret, applicationId);
      *  
      *    const client = await Client.createInstance(config);
      *    const deviceId = '__deviceId__';
@@ -310,27 +300,27 @@ export class GetInferenceResults {
     async getInferenceResults(
         deviceId: string,
         filter?: string,
-        numberOfInferenceResults= 20,
-        raw= 1,
+        numberOfInferenceResults?: number,
+        raw = 1,
         time?: string
     ) {
         Logger.info('getInferenceResults');
         let valid = true;
         try {
             const validate = ajv.compile(this.schema);
-            valid = validate( {
-                deviceId: deviceId,
-                numberOfInferenceResults: numberOfInferenceResults,
-                filter: filter,
-                raw: raw,
-                time: time,
+            valid = validate({
+                deviceId,
+                numberOfInferenceResults,
+                filter,
+                raw,
+                time,
             });
             if (!valid) {
                 Logger.error(`${validate.errors}`);
                 throw validate.errors;
             }
-            const accessToken= await this.config.getAccessToken();
-            const baseOptions= await this.config.setOption();
+            const accessToken = await this.config.getAccessToken();
+            const baseOptions = await this.config.setOption();
 
             const apiConfig = new Configuration({
                 basePath: this.config.consoleEndpoint,
@@ -339,20 +329,31 @@ export class GetInferenceResults {
             });
             this.api = new InsightApi(apiConfig);
 
-            const res = await this.api.getInferenceResults(
-                deviceId,
-                numberOfInferenceResults,
-                filter,
-                raw,
-                time
-            );
+            let res;
+            if (this.config.applicationId) {
+                res = await this.api.getInferenceResults(
+                    deviceId,
+                    'client_credentials',
+                    numberOfInferenceResults,
+                    filter,
+                    raw,
+                    time
+                );
+            } else {
+                res = await this.api.getInferenceResults(
+                    deviceId,
+                    undefined,
+                    numberOfInferenceResults,
+                    filter,
+                    raw,
+                    time
+                );
+            }
             return res;
         } catch (error) {
             if (!valid) {
                 Logger.error(getMessage(ErrorCodes.ERROR, error[0].message));
-                return validationErrorMessage(
-                    getMessage(ErrorCodes.ERROR, error[0].message)
-                );
+                return validationErrorMessage(getMessage(ErrorCodes.ERROR, error[0].message));
             }
             if (error.response) {
                 /*

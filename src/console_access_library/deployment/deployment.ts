@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /*
- * Copyright 2022 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,58 +60,47 @@ export class Deployment {
         this.deleteDeviceAppObj = new DeleteDeviceApp(this.config);
         this.getDeviceAppsObj = new GetDeviceApps(this.config);
         this.cancelDeploymentObj = new CancelDeployment(this.config);
-        this.deleteDeployConfigurationObj = new DeleteDeployConfiguration(
-            this.config
-        );
+        this.deleteDeployConfigurationObj = new DeleteDeployConfiguration(this.config);
         this.deployDeviceAppObj = new DeployDeviceApp(this.config);
         this.undeployDeviceAppObj = new UndeployDeviceApp(this.config);
-        this.createDeployConfigurationObj = new CreateDeployConfiguration(
-            this.config
-        );
+        this.createDeployConfigurationObj = new CreateDeployConfiguration(this.config);
         this.deployByConfigurationObj = new DeployByConfiguration(this.config);
-        this.getDeployConfigurationsObj = new GetDeployConfigurations(
-            this.config
-        );
+        this.getDeployConfigurationsObj = new GetDeployConfigurations(this.config);
         this.getDeployHistoryObj = new GetDeployHistory(this.config);
         this.getDeviceAppDeploysObj = new GetDeviceAppDeploys(this.config);
-        this.deployByConfigurationWaitResponseObj =
-            new DeployByConfigurationWaitResponse(this.config);
-        this.deployDeviceAppWaitResponseObj = new DeployDeviceAppWaitResponse(
-            this.config
-        );
+        this.deployByConfigurationWaitResponseObj = new DeployByConfigurationWaitResponse(this.config);
+        this.deployDeviceAppWaitResponseObj = new DeployDeviceAppWaitResponse(this.config);
     }
 
     /**
-     * importDeviceApp - Import DeviceApp
+     * importDeviceApp - Import Device app.
      *  @params
-     * - compiledFlg (str, required): Specify compile FLG Value definition \
-                - 0: Uncompiled (compile process) \
-                - 1: Compiled (no compilation process)
-     * - appName (str, required): DeviceApp name. The maximum number of \
-                characters is app_name + version_number ⇐31. Characters other than the \
-                following are forbidden characters \
-                    - Alphanumeric \
-                    - Underbar \
-                    - Dot
-
-     * - versionNumber (str, required): DeviceApp version. The maximum number of \
-                characters is app_name + version_number ⇐31. Characters other than the \
-                following are forbidden characters \
-                    - Alphanumeric \
-                    - Underbar \
-                    - Dot
-     * - fileName (str, required): DeviceApp file name.
-     * - fileContent (str, required): Contents of DeviceApp file. Base64 encoded string.
-     * - entryPoint (str, optional): EVP module entry point. "ppl" if not specified.
-     * - comment (str, optional): DeviceApp Description. up to 100 characters \
-                No comment if not specified.
+     * - compiledFlg (str, required): Set the compiled flg. \
+            - Value definition \
+              0 : Specified App is not compiled \
+              1 : Specified App is compiled
+     * - appName (str, required): App name. Allow only the following characters. \
+                    - Alphanumeric characters \
+                    - Under bar \
+                    - Dot \
+                    The maximum number of characters is app_name + version_number <=31.
+     * - versionNumber (str, required): App version number. Allow only the following characters. \
+                    - Alphanumeric characters \
+                    - Under bar \
+                    - Dot \
+                    The maximum number of characters is app_name + version_number <=31.
+     * - fileName (str, required): filename.
+     * - fileContent (str, required): App file content in base64 encoding.
+     * - entryPoint (str, optional): App entry point. Default: ppl
+     * - comment (str, optional): Comment. *Max. 100 characters.
+     * - schemaInfo (object, optional): Schema info.
      * @returns 
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -120,7 +109,7 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -129,7 +118,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -145,7 +134,8 @@ export class Deployment {
         fileName: string,
         fileContent: string,
         entryPoint?: string,
-        comment?: string
+        comment?: string,
+        schemaInfo?: object
     ) {
         const response = this.importDeviceAppObj.importDeviceApp(
             compiledFlg,
@@ -154,23 +144,24 @@ export class Deployment {
             fileName,
             fileContent,
             entryPoint,
-            comment
+            comment,
+            schemaInfo
         );
         return response;
     }
 
     /**
-     * deleteDeviceApp - Delete DeviceApp
+     * deleteDeviceApp - Delete device app.
      * @params
-     * - appName (str, required) - Set the app name.
-     * - versionNumber (str, required) - Set the version Number.
+     * - appName (str, required) - App name.
+     * - versionNumber (str, required) - App version number.
      * @returns 
     * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -179,7 +170,7 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -188,7 +179,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -198,69 +189,133 @@ export class Deployment {
      *      - 'datetime' (str) : Time
      */
     deleteDeviceApp(appName: string, versionNumber: string) {
-        const response = this.deleteDeviceAppObj.deleteDeviceApp(
-            appName,
-            versionNumber
-        );
+        const response = this.deleteDeviceAppObj.deleteDeviceApp(appName, versionNumber);
         return response;
     }
 
     /**
-     * getDeviceApps -  DeviceApp information list acquisition
+     * getDeviceApps -  Get the device app list information.
      * @returns
      * - Object: table:: Success Response
 
             +----------+-------------+------------+------------------------------------------+
-            |  Level1  |  Level2     |  Type      |  Description                             |
+            | *Level1* | *Level2*    | *Type*     | *Description*                            |
+            +==========+=============+============+==========================================+
+            | ``apps`` |             | ``array``  |                                          |
             +----------+-------------+------------+------------------------------------------+
-            |  `apps`  |             |  `array`   | App array                                |
+            |          | ``name``    | ``string`` | Set the app name.                        |
             +----------+-------------+------------+------------------------------------------+
-            |          |  `name`     |   `string` | App name                                 |
+            |          |``create_by``| ``string`` | Set the create_by.                       |
+            |          |             |            |                                          |
+            |          |             |            | - Value definition                       |
+            |          |             |            |                                          |
+            |          |             |            | Self: Self-training models               |
+            |          |             |            |                                          |
+            |          |             |            | Marketplace: Marketplace purchacing model|
             +----------+-------------+------------+------------------------------------------+
-            |          |  `versions` |  `array`   | Refer : Table : 1.0                      |
+            |          |``package_   | ``string`` | Set the marketplace package ID.          |
+            |          |id``         |            |                                          |
+            +----------+-------------+------------+------------------------------------------+
+            |          |``product    | ``string`` | Set the marketplace product ID.          |
+            |          |_id``        |            |                                          |
+            +----------+-------------+------------+------------------------------------------+
+            |          |``schema_    | ``array``  | Refer : Table : 1.0                      |
+            |          |info``       |            | for more details                         |
+            +----------+-------------+------------+------------------------------------------+
+            |          |``versions`` | ``array``  | Refer : Table : 1.1                      |
             |          |             |            | for more details                         |
             +----------+-------------+------------+------------------------------------------+
-          
-        @Table : 1.0 - versions schema details
-          
+
+            @Table : 1.0 - schema_info schema details
+
+            +-------------------+-----------------+------------+-------------------------------+
+            | *Level1*          | *Level2*        | *Type*     | *Description*                 |
+            +===================+=================+============+===============================+
+            | ``schema_info``   |                 | ``array``  | Schema info.                  |
+            +-------------------+-----------------+------------+-------------------------------+
+            |                   | ``VnSAppId``    | ``string`` | Set the VnS app ID            |
+            +-------------------+-----------------+------------+-------------------------------+
+            |                   | ``version``     | ``string`` | Set the app version no.       |
+            +-------------------+-----------------+------------+-------------------------------+
+            |                   | ``interfaces``  | ``array``  |Refer : Table : 1.2            |
+            |                   |                 |            |for more details               |
+            +-------------------+-----------------+------------+-------------------------------+
+
+            @Table : 1.2 - interfaces schema details
+
+            +-------------------+-----------------+------------+-------------------------------+
+            | *Level1*          | *Level2*        | *Type*     | *Description*                 |
+            +===================+=================+============+===============================+
+            | ``interfaces``    |                 | ``array``  | Set the metadata format IDs.  |
+            +-------------------+-----------------+------------+-------------------------------+
+            |                   | ``in``          | ``array``  | Refer : Table : 1.3           |
+            |                   |                 |            | for more details              |
+            +-------------------+-----------------+------------+-------------------------------+
+
+            @Table : 1.3 - in schema details
+
+            +-------------------+-----------------+------------+-------------------------------+
+            | *Level1*          | *Level2*        | *Type*     | *Description*                 |
+            +===================+=================+============+===============================+
+            | ``in``            |                 | ``array``  |                               |
+            +-------------------+-----------------+------------+-------------------------------+
+            |                   |``metadata       | ``string`` | Set the metadata format ID.   |
+            |                   |FormatId``       |            |                               |
+            +-------------------+-----------------+------------+-------------------------------+
+
+            @Table : 1.1 - versions schema details
+
             +-------------------+--------------------+------------+-------------------+
-            |  Level1           |  Level2            |  Type      |  Description      |
+            | *Level1*          | *Level2*           | *Type*     | *Description*     |
+            +===================+====================+============+===================+
+            | ``versions``      |                    | ``array``  |                   |
             +-------------------+--------------------+------------+-------------------+
-            |  `versions`       |                    |  `array`   |                   |
+            |                   | ``version``        | ``string`` | Set the app       |
+            |                   |                    |            | version number.   |
             +-------------------+--------------------+------------+-------------------+
-            |                   |  `version`         |   `string` |                   |
-            +-------------------+--------------------+------------+-------------------+
-            |                   |  `compiled_flg`    |   `string` | 0: Uncompiled     |
-            |                   |                    |            | (compile process) |
+            |                   | ``compiled_flg``   | ``string`` | Set the compiled  |
+            |                   |                    |            | flg.              |
             |                   |                    |            |                   |
-            |                   |                    |            | 1: Compiled (no   |
-            |                   |                    |            | compilation       |
-            |                   |                    |            | process)          |
+            |                   |                    |            | - Value definition|
+            |                   |                    |            |                   |
+            |                   |                    |            | 0 : Specified App |
+            |                   |                    |            | is not compiled   |
+            |                   |                    |            |                   |
+            |                   |                    |            | 1 : Specified App |
+            |                   |                    |            | is compiled       |
             +-------------------+--------------------+------------+-------------------+
-            |                   |  `status`          |   `string` | 0: Before         |
+            |                   | ``status``         | ``string`` | Set the status.   |
+            |                   |                    |            |                   |
+            |                   |                    |            | - Value definition|
+            |                   |                    |            |                   |
+            |                   |                    |            | 0: before         |
             |                   |                    |            | compilation       |
             |                   |                    |            |                   |
-            |                   |                    |            | 1: Compiling      |
-            |                   |                    |            | 2: Successful     |
-            |                   |                    |            | 3: Failed         |
+            |                   |                    |            | 1: during         |
+            |                   |                    |            | compilation       |
+            |                   |                    |            |                   |
+            |                   |                    |            | 2: successful     |
+            |                   |                    |            |                   |
+            |                   |                    |            | 3: failed         |
             +-------------------+--------------------+------------+-------------------+
-            |                   |  `comment`         |   `string` |                   |
+            |                   | ``comment``        | ``string`` | Set the comment.  |
             +-------------------+--------------------+------------+-------------------+
-            |                   |  `deploy_count`    |   `string` |                   |
+            |                   | ``deploy_count``   | ``string`` | Set the deploy    |
+            |                   |                    |            | count.            |
             +-------------------+--------------------+------------+-------------------+
-            |                   |   `ins_id`         |  `string`  | App Version       |
-            |                   |                    |            | Author            |
+            |                   |  ``ins_id``        |``string``  | Set the settings  |
+            |                   |                    |            | author.           |
             +-------------------+--------------------+------------+-------------------+
-            |                   |   `ins_date`       |  `string`  | Date and time the |
-            |                   |                    |            | app version was   |
-            |                   |                    |            | created           |
+            |                   |  ``ins_date``      |``string``  | Set the date the  |
+            |                   |                    |            | settings were     |
+            |                   |                    |            | created.          |
             +-------------------+--------------------+------------+-------------------+
-            |                   |   `upd_id`         |  `string`  | App version       |
-            |                   |                    |            | updated by        |
+            |                   |  ``upd_id``        |``string``  | Set the settings  |
+            |                   |                    |            | updater.          |
             +-------------------+--------------------+------------+-------------------+
-            |                   |   `upd_date`       |  `string`  | Date and time the |
-            |                   |                    |            | app version was   |
-            |                   |                    |            | updated           |
+            |                   |  ``upd_date``      |``string``  | Set the date the  |
+            |                   |                    |            | settings were     |
+            |                   |                    |            | updated.          |
             +-------------------+--------------------+------------+-------------------+
 
      * - 'Generic Error Response' :
@@ -278,7 +333,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -293,35 +348,25 @@ export class Deployment {
     }
 
     /**
-     * createDeployConfiguration - Register the deployment config information to deploy the following to the device. \
-     *   Firmware, AIModel.
+     * createDeployConfiguration - Register the deploy config information to deploy \
+     *                             to the following devices. \
+     *                              - Firmware \
+     *                              - AIModel.
      * @params
-     * - configId (str, required) : The config ID. Up to 20 characters \
-     *           half-width only. \
-                The following characters are allowed \
-                Alphanumeric characters \
-                -hyphen \
-                _ Underscore \
-                () Small parentheses \
-                . dot
-     * - comment (str, optional) : 100 characters or less
-     * - sensorLoaderVersionNumber (str, optional) : If -1 is specified \
-                the default version is applied The default value is system setting "DVC0017"
-     * - sensorVersionNumber (str, optional) : If -1 is specified \
-                the default version is applied The default value is system setting "DVC0018"
-     * - modelId (str, optional) : The model_id. \
-     *           If not specified, no model deployment.
-     * - modelVersionNumber (str, optional) : The Model version number. \
-     *           If not specified, the latest version is applied.
-     * - apFwVersionNumber (str, optional) : The ApFw version number. \
-     *           If not specified, no firmware deployment.
+     * - configId (str, required) : Max. 20 single characters, single-byte characters only.
+     * - comment (str, optional) : Max. 100 characters. Default: ''
+     * - sensorLoaderVersionNumber (str, optional) : Sensor loader version number. Default: ''
+     * - sensorVersionNumber (str, optional) : Sensor version number. Default: ''
+     * - modelId (str, optional) : Model ID. Default: ''
+     * - modelVersionNumber (str, optional) : Model version number. Default: ''
+     * - apFwVersionNumber (str, optional) : AppFw version number. Default: ''
      * @returns
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -330,7 +375,7 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -339,7 +384,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -371,26 +416,25 @@ export class Deployment {
     }
 
     /**
-     * deployByConfiguration - Provides a Function to deploy the following to the device specified from the \
-     *   deployment config. Firmware, AIModel.
+     * deployByConfiguration - Provide a function for deploying the following to devices \
+     *                          specified with deploy config. \
+     *                          - Firmware \
+     *                          - AIModel
      * @params
-     * - configId (str, required) : The config_id.
-     * - deviceIds (str, required) : Specify multiple device IDs separated by commas. \
-                Case-sensitive
-     * - replaceModelId (str, optional) : Replacement target model ID \
-     *           Specify "model_id" or "network_id" If the specified model ID does \
-     *           not exist in the DB, treat the input value as network_id \
-     *           (console internal management ID) and perform processing \
-     *           If not specified, do not replace.
-     * - comment (str, optional) : deploy comment \
-     *           up to 100 characters No comment if not specified
+     * - configId (str, required) : Setting ID.
+     * - deviceIds (str, required) : Specify multiple device IDs separated by commas.
+     * - replaceModelId (str, optional) : Specify the model ID or network_id. \
+     *           If the model with the specified model ID does not exist in the database, \
+     *           treat the entered value as the network_id and process it. \
+     *           Default: ''
+     * - comment (str, optional) : Max. 100 characters. Default: ''
      * @returns
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -434,159 +478,108 @@ export class Deployment {
     }
 
     /**
-     * getDeployConfigurations - Get deployment config information list.
+     * getDeployConfigurations - Get the deploy config list.
      * @returns
      * - Object: table:: Success Response
 
-            +-------------------------+------------------+------------+-------------------+
-            |  Level1                 |  Level2          |  Type      |  Description      |
-            +-------------------------+------------------+------------+-------------------+
-            | `deploy_configurations` |                  |  `array`   | Ascending order of|
-            |                         |                  |            | config_id         |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |  `config_id`     |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |  `device_type`   |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `config_comment` |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `running_cnt`  |  `int`     |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `success_cnt`  |  `int`     |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `fail_cnt`     |  `int`     |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `firmware`     |  `array`   |Refer : Table : 1.0|
-            |                         |                  |            | for more details  |
-            +-------------------------+------------------+------------+-------------------+
-            |                         |   `model`        |  `array`   |Refer : Table : 2.0|
-            |                         |                  |            | for more details  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `custom_setting` |  `array`   |Refer : Table : 3.0|
-            |                         |                  |            | for more details  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `ins_id`         |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `ins_date`       |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `upd_id`         |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
-            |                         | `upd_date`       |  `string`  |                   |
-            +-------------------------+------------------+------------+-------------------+
+            +-----------------+------------+------------+---------------------------------+
+            | *Level1*        | *Level2*   | *Type*     | *Description*                   |
+            +=================+============+============+=================================+
+            |``deploy_        |            | ``array``  |                                 |
+            |configurations`` |            |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``config_   | ``string`` | Set the config ID.              |
+            |                 |id``        |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``device_   | ``string`` | Set the device type.            |
+            |                 |type``      |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``config_   | ``string`` | Set the config comment.         |
+            |                 |comment``   |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``running_  | ``number`` | Set the running cnt.            |
+            |                 |cnt``       |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``success_  | ``number`` | Set the success cnt.            |
+            |                 |cnt``       |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``fail_cnt``| ``number`` | Set the fail cnt.               |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``firmware``| ``array``  | Refer : Table : 1.0             |
+            |                 |            |            | for more details                |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``model``   | ``array``  | Refer : Table : 1.1             |
+            |                 |            |            | for more details                |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``custom_   |            |                                 |
+            |                 |setting``   |            |                                 |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``ins_id``  | ``string`` | Set the deployment author.      |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``ins_date``| ``string`` | Set the date the deployment     |
+            |                 |            |            | were created.                   |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``upd_id``  | ``string`` | Set the deployment updater.     |
+            +-----------------+------------+------------+---------------------------------+
+            |                 |``upd_date``| ``string`` | Set the date the deployment     |
+            |                 |            |            | were updated.                   |
+            +-----------------+------------+------------+---------------------------------+
 
-        @Table : 1.0 - firmware schema details
+            @Table : 1.0 - firmware schema details
 
             +-------------------+--------------------+------------+-------------------+
             | *Level1*          | *Level2*           | *Type*     | *Description*     |
-            +-------------------+--------------------+------------+-------------------+
+            +===================+====================+============+===================+
             | ``firmware``      |                    | ``array``  |                   |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_loader_    | ``string`` |                   |
-            |                   |file_name``         |            |                   |
+            |                   |``sensor_loader_    | ``string`` | Set the sensor    |
+            |                   |file_name``         |            | loader filename.  |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_loader_    | ``string`` |                   |
-            |                   |version_number``    |            |                   |
+            |                   |``sensor_loader_    | ``string`` | Set the sensor    |
+            |                   |version_number``    |            | loader version    |
+            |                   |                    |            | number.           |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_loader_    | ``string`` |                   |
-            |                   |firmware_comment``  |            |                   |
+            |                   |``sensor_loader_    | ``string`` | Set the sensor    |
+            |                   |firmware_comment``  |            | loader firmware   |
+            |                   |                    |            | comment.          |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_file_name``| ``string`` |                   |
+            |                   |``sensor_file_name``| ``string`` | Set the sensor    |
+            |                   |                    |            | filename.         |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_           | ``string`` |                   |
-            |                   |version_number``    |            |                   |
+            |                   |``sensor_           | ``string`` | Set the sensor    |
+            |                   |version_number``    |            | version number.   |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``sensor_           |``string``  |                   |
-            |                   |firmware_comment``  |            |                   |
+            |                   |``sensor_           |``string``  | Set the sensor    |
+            |                   |firmware_comment``  |            | firmware comment. |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``apfw_file_name``  |``string``  |                   |
+            |                   |``apfw_file_name``  |``string``  | Set the apfw      |
+            |                   |                    |            | filename.         |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``apfw_version_     |``string``  |                   |
-            |                   |number``            |            |                   |
+            |                   |``apfw_version_     |``string``  | Set the apfw      |
+            |                   |number``            |            | version number.   |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``apfw_firmware_    |``string``  |                   |
-            |                   |comment``           |            |                   |
+            |                   |``apfw_firmware_    |``string``  | Set the apfw      |
+            |                   |comment``           |            | firmware comment. |
             +-------------------+--------------------+------------+-------------------+
 
-        @Table : 2.0 - model schema details
+            @Table : 1.1 - model schema details
 
             +-------------------+--------------------+------------+-------------------+
             | *Level1*          | *Level2*           | *Type*     | *Description*     |
-            +-------------------+--------------------+------------+-------------------+
+            +===================+====================+============+===================+
             | ``model``         |                    | ``array``  |                   |
             +-------------------+--------------------+------------+-------------------+
-            |                   | ``model_id``       | ``string`` |                   |
+            |                   | ``model_id``       | ``string`` | Set the model ID. |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``model_            | ``string`` |                   |
-            |                   |version_number``    |            |                   |
+            |                   |``model_            | ``string`` | Set the model     |
+            |                   |version_number``    |            | version number.   |
             +-------------------+--------------------+------------+-------------------+
-            |                   | ``model_comment``  | ``string`` |                   |
+            |                   | ``model_comment``  | ``string`` | Set the model     |
+            |                   |                    |            | comment.          |
             +-------------------+--------------------+------------+-------------------+
-            |                   |``model_            | ``string`` |                   |
-            |                   |version_comment``   |            |                   |
+            |                   |``model_            | ``string`` | Set the model     |
+            |                   |version_comment``   |            | version comment.  |
             +-------------------+--------------------+------------+-------------------+
-
-        @Table : 3.0 - custom_setting schema details
-
-            +--------------+--------------------+------------+---------------+
-            | *Level1*     | *Level2*           | *Type*     | *Description* |
-            +--------------+--------------------+------------+---------------+
-            |``custom_     |                    | ``array``  |               |
-            |setting``     |                    |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``color_matrix_     |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``color_matrix_     | ``string`` |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``color_matrix_     |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``gamma_            |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``gamma_            |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``gamma_            |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscisp_           |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscisp_           |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscisp_           |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscraw_           |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscraw_           |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``lscraw_           |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``prewb_            |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``prewb_            |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``prewb_            |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``dewarp_           |``string``  |               |
-            |              |mode``              |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``dewarp_           |``string``  |               |
-            |              |file_name``         |            |               |
-            +--------------+--------------------+------------+---------------+
-            |              |``dewarp_           |``string``  |               |
-            |              |comment``           |            |               |
-            +--------------+--------------------+------------+---------------+
 
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK. Object with below key and value pairs.
@@ -594,7 +587,7 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -603,7 +596,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -614,402 +607,189 @@ export class Deployment {
      */
 
     getDeployConfigurations() {
-        const response =
-            this.getDeployConfigurationsObj.getDeployConfigurations();
+        const response = this.getDeployConfigurationsObj.getDeployConfigurations();
         return response;
     }
 
     /**
-     * getDeployHistory - Get the deployment history for a specified device.
+     * getDeployHistory - Get the deploy history for a specified device.
      * @params
-     * - deviceId (str, required) - Device ID. Case-sensitive
+     * - deviceId (str, required) - Device ID.
      * @returns
      * - Object: table:: Success Response
     
-            +----------+----------------------+------------+------------------------------+
-            |  Level1  |  Level2              |  Type      |  Description                 |
-            +----------+----------------------+------------+------------------------------+
-            | `deploy` |                      |  `array`   | Descending order of          |
-            |          |                      |            | ins_date                     |
-            +----------+----------------------+------------+------------------------------+
-            |          |  `id`                |  `number`  |                              |
-            +----------+----------------------+------------+------------------------------+
-            |          |  `deploy_type`       |  `string`  | 0: Deployment configuration  |
-            |          |                      |            |                              |
-            |          |                      |            | 1: Device model,             |
-            |          |                      |            | App:DeviceApp                |
-            +----------+----------------------+------------+------------------------------+
-            |          | `deploy_status`      |  `string`  | Target device status         |
-            |          |                      |            |                              |
-            |          |                      |            | 0: Deploying                 |
-            |          |                      |            |                              |
-            |          |                      |            | 1: Succeeding                |
-            |          |                      |            |                              |
-            |          |                      |            | 2: failed                    |
-            |          |                      |            |                              |
-            |          |                      |            | 3: canceled                  |
-            |          |                      |            |                              |
-            |          |                      |            | 9: DeviceApp Undeploy        |
-            +----------+----------------------+------------+------------------------------+
-            |          | `deploy_comment`     |  `string`  |                              |
-            +----------+----------------------+------------+------------------------------+
-            |          |   `config_id`        |  `string`  |                              |
-            +----------+----------------------+------------+------------------------------+
-            |          | `replace_network_id` |  `string`  |                              |
-            +----------+----------------------+------------+------------------------------+
-            |          |  `current_target`    |  `string`  |                              |
-            +----------+----------------------+------------+------------------------------+
-            |          | `total_status`       |  `string`  | Total deployment status      |
-            |          |                      |            | including other devices      |
-            |          |                      |            |                              |
-            |          |                      |            | 0: Deploying                 |
-            |          |                      |            |                              |
-            |          |                      |            | 1: Succeeding                |
-            |          |                      |            |                              |
-            |          |                      |            | 2: failed                    |
-            |          |                      |            |                              |
-            |          |                      |            | 3: canceled                  |
-            |          |                      |            |                              |
-            |          |                      |            | 9: DeviceApp Undeploy        |
-            +----------+----------------------+------------+------------------------------+
-            |          |  `firmware`          |  `array`   |  Refer : Table : 1.0         |
-            |          |                      |            |  for more details            |
-            +----------+----------------------+------------+------------------------------+
-            |          |   `model`            |  `array`   |  Refer : Table : 1.1         |
-            |          |                      |            |  for more details            |
-            +----------+----------------------+------------+------------------------------+
-            |          | `custom_setting`     |  `array`   |  Refer : Table : 1.2         |
-            |          |                      |            |  for more details            |
-            +----------+----------------------+------------+------------------------------+
-            |          | `ins_id`             |  `string`  |                              |
-            +----------+----------------------+------------+------------------------------+
-            |          | `ins_date`           |  `string`  |                              |
-            +----------+----------------------+------------+------------------------------+
-            |          | `upd_id`             |  `string`  |                              |
-            +----------+----------------------+------------+------------------------------+
-            |          | `upd_date`           |  `string`  |                              |
-            +----------+----------------------+------------+------------------------------+
+            +----------+----------------------+------------+-------------------------------+
+            | *Level1* | *Level2*             | *Type*     | *Description*                 |
+            +==========+======================+============+===============================+
+            |``deploy  |                      | ``array``  |                               |
+            |s``       |                      |            |                               |
+            +----------+----------------------+------------+-------------------------------+
+            |          | ``id``               | ``number`` | Deploy ID.                    |
+            +----------+----------------------+------------+-------------------------------+
+            |          | ``deploy_type``      | ``string`` | Set the deploy type.          |
+            |          |                      |            | - Value definition            |
+            |          |                      |            |                               |
+            |          |                      |            | 0: Deploy config              |
+            |          |                      |            |                               |
+            |          |                      |            | 1: Device model               |
+            |          |                      |            |                               |
+            |          |                      |            | App: DeviceApp                |
+            +----------+----------------------+------------+-------------------------------+
+            |          |``deploy_status``     | ``string`` | Set the deploy status. Target |
+            |          |                      |            | device deployment status.     |
+            |          |                      |            | - Value definition            |
+            |          |                      |            |                               |
+            |          |                      |            | 0: Deploying                  |
+            |          |                      |            |                               |
+            |          |                      |            | 1: Success                    |
+            |          |                      |            |                               |
+            |          |                      |            | 2: Fail                       |
+            |          |                      |            |                               |
+            |          |                      |            | 3: Cancel                     |
+            |          |                      |            |                               |
+            |          |                      |            | App: DeviceApp undeploy       |
+            +----------+----------------------+------------+-------------------------------+
+            |          |``update_progress``   | ``string`` | Set the update progress in    |
+            |          |                      |            | percentage.                   |
+            +----------+----------------------+------------+-------------------------------+
+            |          |``deploy_comment``    | ``string`` | Set the deploy comment.       |
+            +----------+----------------------+------------+-------------------------------+
+            |          |  ``config_id``       | ``string`` | Set the deploy config ID.     |
+            +----------+----------------------+------------+-------------------------------+
+            |          |``replace_network_id``| ``string`` | Set the replace network ID.   |
+            +----------+----------------------+------------+-------------------------------+
+            |          | ``current_target``   | ``string`` | Set the current target.       |
+            +----------+----------------------+------------+-------------------------------+
+            |          |``total_status``      | ``string`` | Set the deploy status.        |
+            |          |                      |            | Total status of devices       |
+            |          |                      |            | deployed together.            |
+            |          |                      |            | - Value definition            |
+            |          |                      |            |                               |
+            |          |                      |            | 0: Deploying                  |
+            |          |                      |            |                               |
+            |          |                      |            | 1: Success                    |
+            |          |                      |            |                               |
+            |          |                      |            | 2: Fail                       |
+            |          |                      |            |                               |
+            |          |                      |            | 3: Cancel                     |
+            +----------+----------------------+------------+-------------------------------+
+            |          | ``app_name``         | ``string`` | Set the app name.             |
+            +----------+----------------------+------------+-------------------------------+
+            |          | ``version_number``   | ``string`` | Set the version number.       |
+            +----------+----------------------+------------+-------------------------------+
+            |          | ``firmware``         | ``array``  |Refer : Table : 1.0            |
+            |          |                      |            |for more details               |
+            +----------+----------------------+------------+-------------------------------+
 
-        @Table : 1.0 - `firmware` schema details
-
-            +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
-            +------------+--------------------+------------+-----------------------------------+
-            | `firmware` |                    |  `array`   |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_loader_    |  `string`  | 0: Not eligible                   |
-            |            |target_flg`         |            |                                   |
-            |            |                    |            | 1: Eligible                       |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_loader_    | `string`   | 0: Waiting to run                 |
-            |            |status`             |            |                                   |
-            |            |                    |            | 1: Running                        |
-            |            |                    |            |                                   |
-            |            |                    |            | 2: Successful                     |
-            |            |                    |            |                                   |
-            |            |                    |            | 3: Failed                         |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_loader_    | `string`   |                                   |
-            |            |retry_count`        |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_loader_    | `string`   |                                   |
-            |            |start_date`         |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_loader_    |  `string`  |                                   |
-            |            |end_date`           |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_loader_    | `string`   |                                   |
-            |            |version_number`     |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_loader_    | `string`   |                                   |
-            |            |version_comment`    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_target_    | `string`   | 0: Not eligible                   |
-            |            |flg`                |            |                                   |
-            |            |                    |            | 1: Eligible                       |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_status`    |  `string`  | 0: Waiting to run                 |
-            |            |                    |            | 1: Running                        |
-            |            |                    |            | 2: Successful                     |
-            |            |                    |            | 3: Failed                         |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_retry_     | `string`   |                                   |
-            |            |count`              |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_start_     | `string`   |                                   |
-            |            |date`               |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_end_date`  | `string`   |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_version_   | `string`   |                                   |
-            |            |number`             |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `sensor_version_   | `string`   |                                   |
-            |            |comment`            |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `apfw_target_flg`  | `string`   | 0: Not eligible                   |
-            |            |                    |            |                                   |
-            |            |                    |            | 1: Eligible                       |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `apfw_status`      | `string`   | 0: Waiting to run                 |
-            |            |                    |            | 1: Running                        |
-            |            |                    |            | 2: Successful                     |
-            |            |                    |            | 3: Failed                         |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `apfw_retry_count` | `string`   |                                   |
-            |            |                    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `apfw_start_date`  | `string`   |                                   |
-            |            |                    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `apfw_end_date`    | `string`   |                                   |
-            |            |                    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `apfw_version_     | `string`   |                                   |
-            |            |number`             |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `apfw_version_     | `string`   |                                   |
-            |            |comment`            |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-
-        @Table : 1.1 - `model` schema details
+            @Table : 1.0 - firmware schema details
 
             +------------+--------------------+------------+-----------------------------------+
-            |  Level1    |  Level2            |  Type      |  Description                      |
+            | *Level1*   | *Level2*           | *Type*     | *Description*                     |
+            +============+====================+============+===================================+
+            |``firmware``|                    | ``array``  |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            | `model`    |                    |  `array`   |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `model_target_flg` |  `string`  | 0: Not eligible                   |
+            |            |``sensor_loader_    | ``string`` | Set the deploy target flg.        |
+            |            |target_flg``        |            | - Value definition                |
             |            |                    |            |                                   |
-            |            |                    |            | 1: Eligible                       |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `model_status`     | `string`   | 0: Waiting to run                 |
+            |            |                    |            | 0: Not for deployment             |
             |            |                    |            |                                   |
-            |            |                    |            | 1: Running                        |
+            |            |                    |            | 1: Deployment target              |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_loader_    |``string``  | Set the deploy status.            |
+            |            |status``            |            | - Value definition                |
             |            |                    |            |                                   |
-            |            |                    |            | 2: Successful                     |
+            |            |                    |            | 0: Waiting                        |
             |            |                    |            |                                   |
-            |            |                    |            | 3: Failed                         |
+            |            |                    |            | 1: Deploying                      |
+            |            |                    |            |                                   |
+            |            |                    |            | 2: Success                        |
+            |            |                    |            |                                   |
+            |            |                    |            | 3: Fail                           |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_retry_      | `string`   |                                   |
-            |            |count`              |            |                                   |
+            |            |``sensor_loader_    |``number``  | Set the sensor loader retry count.|
+            |            |retry_count``       |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_start_date` | `string`   |                                   |
+            |            |``sensor_loader_    |``string``  | Set the sensor loader start date. |
+            |            |start_date``        |            |                                   |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_loader_    | ``string`` | Set the sensor loader end date.   |
+            |            |end_date``          |            |                                   |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_loader_    |``string``  | Set the sensor loader version     |
+            |            |version_number``    |            | number.                           |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_loader_    |``string``  | Set the sensor loader version     |
+            |            |version_comment``   |            | comment.                          |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_target_    |``string``  | Set the deploy target flg.        |
+            |            |flg``               |            | - Value definition                |
+            |            |                    |            |                                   |
+            |            |                    |            | 0: Not for deployment             |
+            |            |                    |            |                                   |
+            |            |                    |            | 1: Deployment target              |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_status``   | ``string`` | Set the deploy status.            |
+            |            |                    |            |                                   |
+            |            |                    |            | - Value definition                |
+            |            |                    |            |                                   |
+            |            |                    |            | 0: Waiting                        |
+            |            |                    |            |                                   |
+            |            |                    |            | 1: Deploying                      |
+            |            |                    |            |                                   |
+            |            |                    |            | 2: Success                        |
+            |            |                    |            |                                   |
+            |            |                    |            | 3: Fail                           |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_retry_     |``number``  | Set the sensor retry count.       |
+            |            |count``             |            |                                   |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_start_     |``string``  | Set the sensor start date.        |
+            |            |date``              |            |                                   |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_end_date`` |``string``  | Set the sensor end date.          |
             |            |                    |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_end_date`   |  `string`  |                                   |
+            |            |``sensor_version_   |``string``  | Set the sensor version number.    |
+            |            |number``            |            |                                   |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``sensor_version_   |``string``  | Set the sensor version comment.   |
+            |            |comment``           |            |                                   |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``apfw_target_flg`` |``string``  | Set the deploy target flg.        |
+            |            |                    |            |                                   |
+            |            |                    |            |- Value definition                 |
+            |            |                    |            |                                   |
+            |            |                    |            | 0: Not for deployment             |
+            |            |                    |            |                                   |
+            |            |                    |            | 1: Deployment target              |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``apfw_status``     |``string``  | Set the deploy status.            |
+            |            |                    |            |                                   |
+            |            |                    |            | - Value definition                |
+            |            |                    |            |                                   |
+            |            |                    |            | 0: Waiting                        |
+            |            |                    |            |                                   |
+            |            |                    |            | 1: Deploying                      |
+            |            |                    |            |                                   |
+            |            |                    |            | 2: Success                        |
+            |            |                    |            |                                   |
+            |            |                    |            | 3: Fail                           |
+            +------------+--------------------+------------+-----------------------------------+
+            |            |``apfw_retry_count``|``number``  | Set the appfw retry count.        |
             |            |                    |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_id`         | `string`   |                                   |
+            |            |``apfw_start_date`` |``string``  | Set the appfw start date.         |
             |            |                    |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_version_    | `string`   |                                   |
-            |            |number`             |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `model_comment`    | `string`   |                                   |
+            |            |``apfw_end_date``   |``string``  | Set the appfw end date.           |
             |            |                    |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `model_version_    |  `string`  |                                   |
-            |            |comment`            |            |                                   |
+            |            |``apfw_version_     |``string``  | Set the appfw version number.     |
+            |            |number``            |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `dnn_parame_set    | `string`   |                                   |
-            |            |ting_target_flg`    |            |                                   |
+            |            |``apfw_version_     |``string``  | Set the appfw version comment.    |
+            |            |comment``           |            |                                   |
             +------------+--------------------+------------+-----------------------------------+
-            |            | `dnn_parame_       | `string`   |                                   |
-            |            |settingstatus`      |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `dnn_parame_sett   | `string`   |                                   |
-            |            |ing_retry_count`    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `dnn_parame_set    | `string`   |                                   |
-            |            |ting_start_date`    |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-            |            | `dnn_parame_set    | `string`   |                                   |
-            |            |ting_end_date`      |            |                                   |
-            +------------+--------------------+------------+-----------------------------------+
-
-        @Table : 1.2 - `custom_setting` schema details
-
-            +--------------+--------------------+------------+---------------------------------+
-            |  Level1      |  Level2            |  Type      |  Description                    |
-            +--------------+--------------------+------------+---------------------------------+
-            | `custom_     |                    |  `array`   |                                 |
-            |setting`      |                    |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `color_matrix_     |  `string`  | 0: Not eligible                 |
-            |              |target_flg`         |            |                                 |
-            |              |                    |            | 1: Eligible                     |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `color_matrix_     | `string`   | 0: Waiting to run               |
-            |              |status`             |            |                                 |
-            |              |                    |            | 1: Running                      |
-            |              |                    |            | 2: Successful                   |
-            |              |                    |            | 3: Failed                       |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `color_matrix_     |  `string`  |                                 |
-            |              |retry_count`        |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `color_matrix_     | `string`   |                                 |
-            |              |start_date`         |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `color_matrix_     |  `string`  |                                 |
-            |              |end_date`           |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `color_matrix_     | `string`   |                                 |
-            |              |mode`               |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `color_matrix_     |  `string`  |                                 |
-            |              |file_name`          |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `color_matrix_     | `string`   |                                 |
-            |              |comment`            |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `gamma_            | `string`   | 0: Not eligible                 |
-            |              |target_flg`         |            |                                 |
-            |              |                    |            | 1: Eligible                     |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `gamma_            | `string`   | 0: Waiting to run               |
-            |              |status`             |            |                                 |
-            |              |                    |            | 1: Running                      |
-            |              |                    |            |                                 |
-            |              |                    |            | 2: Successful                   |
-            |              |                    |            |                                 |
-            |              |                    |            | 3: Failed                       |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `gamma_            | `string`   |                                 |
-            |              |retry_count`        |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `gamma_            | `string`   |                                 |
-            |              |start_date`         |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `gamma_            | `string`   |                                 |
-            |              |end_date`           |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `gamma_            | `string`   |                                 |
-            |              |mode`               |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `gamma_            | `string`   |                                 |
-            |              |file_name`          |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `gamma_            | `string`   |                                 |
-            |              |comment`            |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscisp_           | `string`   | 0: Not eligible                 |
-            |              |target_flg`         |            |                                 |
-            |              |                    |            | 1: Eligible                     |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscisp_           | `string`   | 0: Waiting to run               |
-            |              |status`             |            |                                 |
-            |              |                    |            | 1: Running                      |
-            |              |                    |            | 2: Successful                   |
-            |              |                    |            | 3: Failed                       |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscisp_           | `string`   |                                 |
-            |              |retry_count`        |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscisp_           | `string`   |                                 |
-            |              |start_date`         |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscisp_           | `string`   |                                 |
-            |              |end_date`           |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscisp_           | `string`   |                                 |
-            |              |mode`               |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscisp_           | `string`   |                                 |
-            |              |file_name`          |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscisp_           | `string`   |                                 |
-            |              |comment`            |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscraw_           | `string`   | 0: Not eligible                 |
-            |              |target_flg`         |            |                                 |
-            |              |                    |            | 1: Eligible                     |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscraw_           | `string`   | 0: Waiting to run               |
-            |              |status`             |            |                                 |
-            |              |                    |            | 1: Running                      |
-            |              |                    |            |                                 |
-            |              |                    |            | 2: Successful                   |
-            |              |                    |            |                                 |
-            |              |                    |            | 3: Failed                       |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscraw_           | `string`   |                                 |
-            |              |retry_count`        |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscraw_           | `string`   |                                 |
-            |              |start_date`         |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscraw_           | `string`   |                                 |
-            |              |end_date`           |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscraw_           | `string`   |                                 |
-            |              |mode`               |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscraw_           | `string`   |                                 |
-            |              |file_name`          |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `lscraw_           | `string`   |                                 |
-            |              |comment`            |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `prewb_            | `string`   | 0: Not eligible                 |
-            |              |target_flg`         |            |                                 |
-            |              |                    |            | 1: Eligible                     |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `prewb_            | `string`   | 0: Waiting to run               |
-            |              |status`             |            |                                 |
-            |              |                    |            | 1: Running                      |
-            |              |                    |            | 2: Successful                   |
-            |              |                    |            | 3: Failed                       |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `prewb_            | `string`   |                                 |
-            |              |retry_count`        |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `prewb_            | `string`   |                                 |
-            |              |start_date`         |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `prewb_            | `string`   |                                 |
-            |              |end_date`           |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `prewb_            | `string`   |                                 |
-            |              |mode`               |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `prewb_            | `string`   |                                 |
-            |              |file_name`          |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `prewb_            | `string`   |                                 |
-            |              |comment`            |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `dewarp_           | `string`   | 0: Not eligible                 |
-            |              |target_flg`         |            |                                 |
-            |              |                    |            | 1: Eligible                     |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `dewarp_           | `string`   | 0: Waiting to run               |
-            |              |status`             |            |                                 |
-            |              |                    |            | 1: Running                      |
-            |              |                    |            |                                 |
-            |              |                    |            | 2: Successful                   |
-            |              |                    |            |                                 |
-            |              |                    |            | 3: Failed                       |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `dewarp_           | `string`   |                                 |
-            |              |retry_count`        |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `dewarp_           | `string`   |                                 |
-            |              |start_date`         |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `dewarp_           | `string`   |                                 |
-            |              |end_date`           |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `dewarp_           | `string`   |                                 |
-            |              |mode`               |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `dewarp_           | `string`   |                                 |
-            |              |file_name`          |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
-            |              | `dewarp_           | `string`   |                                 |
-            |              |comment`            |            |                                 |
-            +--------------+--------------------+------------+---------------------------------+
 
      * - 'Generic Error Response' :
      *   If Any generic error returned from the Low Level SDK.
@@ -1018,7 +798,7 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -1027,7 +807,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -1043,20 +823,17 @@ export class Deployment {
     }
 
     /**
-     * cancelDeployment -  Force cancel the device deployment state.It only restores the \
-        state of the database being deployed, but cannot return the deployed state to the edge AI device. \
-        Used when edge AI device deployment fails and there is a deviation from the state of the database.
+     * cancelDeployment -  Force cancellation of the device deployment status.
      *  @params
-     * - deviceId (str, required) - Device ID. Case-sensitive
-     * - deployId (str, required) - The Deployment id. \
-     *          Id that can be obtained with getDeployHistory.
+     * - deviceId (str, required) - Device ID.
+     * - deployId (str, required) - Deploy ID.
      * @returns 
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -1066,16 +843,18 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
-     *   if any input string parameter found empty.
+     *   if any input string parameter found empty OR \
+     *   if any input number parameter found negative OR \
+     *   if any input non number parameter found.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -1086,24 +865,21 @@ export class Deployment {
      */
 
     cancelDeployment(deviceId: string, deployId: string) {
-        const response = this.cancelDeploymentObj.cancelDeployment(
-            deviceId,
-            deployId
-        );
+        const response = this.cancelDeploymentObj.cancelDeployment(deviceId, deployId);
         return response;
     }
 
     /**
-     * deleteDeployConfiguration - delete deployment config information.
+     * deleteDeployConfiguration - Delete the information for a specified deploy config.
      *  @params
-     * - configId (str, required) - The config ID.
+     * - configId (str, required) - Config ID
      * @returns
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -1113,7 +889,7 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -1122,7 +898,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -1133,32 +909,24 @@ export class Deployment {
      */
 
     deleteDeployConfiguration(configId: string) {
-        const response =
-            this.deleteDeployConfigurationObj.deleteDeployConfiguration(
-                configId
-            );
+        const response = this.deleteDeployConfigurationObj.deleteDeployConfiguration(configId);
         return response;
     }
 
     /**
-     * deployDeviceApp - DeviceApp deployment.
+     * deployDeviceApp - Deploy device app.
      *  @params
-     * - appName (str, required) - The App name.
-     * - versionNumber (str, required) - App version.
-     * - deviceIds (str, required) - Specify multiple device IDs separated by commas. \
-                Case-sensitive
-     * - deployParameter (str, optional) -  Deployment parameters \
-                Base64 encoded string in Json format No parameters if not specified.
-     * - comment (str, optional) - deploy comment \
-                up to 100 characters \
-                No comment if not specified.
+     * - appName (str, required) - App Name.
+     * - versionNumber (str, required) - App version number.
+     * - deviceIds (str, required) - Device IDs.
+     * - comment (str, optional) - Comment. *Max. 100 characters.
      * @returns 
     * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+===============================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -1168,7 +936,7 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -1177,7 +945,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -1191,31 +959,28 @@ export class Deployment {
         appName: string,
         versionNumber: string,
         deviceIds: string,
-        deployParameter?: string,
         comment?: string
     ) {
         const response = this.deployDeviceAppObj.deployDeviceApp(
             appName,
             versionNumber,
             deviceIds,
-            deployParameter,
             comment
         );
         return response;
     }
 
     /**
-     * undeployDeviceApp - Undeploy the device app.
+     * undeployDeviceApp - Undeploy device app.
      *  @params
-     * - deviceIds (str, required) - Specify multiple device IDs separated by commas \
-                Case-sensitive
+     * - deviceIds (str, required) - Specify multiple device IDs separated by commas.
      * @returns
      * - Object: table:: Success Response
 
             +------------+------------+-------------------------------+
-            |  Level1    |  Type      |  Description                  |
-            +------------+------------+-------------------------------+
-            |  `result`  |  `string`  | Set "SUCCESS" pinning         |
+            | *Level1*   | *Type*     | *Description*                 |
+            +============+============+============+==================+
+            | ``result`` | ``string`` | Set "SUCCESS" fixing          |
             +------------+------------+-------------------------------+
 
      * - 'Generic Error Response' :
@@ -1225,7 +990,7 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -1234,7 +999,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -1250,62 +1015,77 @@ export class Deployment {
     }
 
     /**
-     * getDeviceAppDeploys - Get Device app Deployment History.
+     * getDeviceAppDeploys - Get Device App Deploys.
      *  @params
-     * - appName (str, required) - Set the App name
-     * - versionNumber (str, required) - Set the App version
-         * @returns
+     * - appName (str, required) - App name
+     * - versionNumber (str, required) - App version number
+     * @returns
      * - Object: table:: Success Response
 
-            +-----------+----------------------+------------+------------------------+
-            |  Level1   |  Level2              |  Type      |  Description           |
-            +-----------+----------------------+------------+------------------------+
-            | `deploy`  |                      |  `array`   | Descending order of    |
-            |           |                      |            | ins_date               |
-            +-----------+----------------------+------------+------------------------+
-            |           |  `id`                |  `number`  |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           |  `total_status`      |  `string`  | 0: Running             |
-            |           |                      |            | 1: Normal              |
-            |           |                      |            | 2: Failure             |
-            |           |                      |            | 3: Cancellation        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `deploy_parameter`   |  `dict`    |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `devices`            |  `array`   |  Refer : Table : 1.0   |
-            |           |                      |            |  for more details      |
-            +-----------+----------------------+------------+------------------------+
-            |           | `ins_id`             |  `string`  |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `ins_date`           |  `string`  |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `upd_id`             |  `string`  |                        |
-            +-----------+----------------------+------------+------------------------+
-            |           | `upd_date`           |  `string`  |                        |
-            +-----------+----------------------+------------+------------------------+
-                        
-    @Table : 1.0 - `devices` schema details
-            
+            +-----------+--------------------+-----------+---------------------------+
+            | *Level1*  | *Level2*           | *Type*    | *Description*             |
+            +===========+====================+===========+===========================+
+            |``deploys``|                    | ``array`` |                           |
+            +-----------+--------------------+-----------+---------------------------+
+            |           | ``id``             | ``number``| Set the deploy id.        |
+            +-----------+--------------------+-----------+---------------------------+
+            |           | ``total_status``   | ``string``| Set the total status.     |
+            |           |                    |           |                           |
+            |           |                    |           | - Value definition        |
+            |           |                    |           |                           |
+            |           |                    |           | 0: Running                |
+            |           |                    |           |                           |
+            |           |                    |           | 1: Successfully completed |
+            |           |                    |           |                           |
+            |           |                    |           | 2: Failed                 |
+            |           |                    |           |                           |
+            |           |                    |           | 3: Canceled               |
+            +-----------+--------------------+-----------+---------------------------+
+            |           |``deploy_parameter``| ``string``| Set the deploy parameter. |
+            +-----------+--------------------+-----------+---------------------------+
+            |           |``devices``         | ``array`` | Refer : Table : 1.0       |
+            |           |                    |           | for more details          |
+            +-----------+--------------------+-----------+---------------------------+
+
+            @Table : 1.0 - devices schema details
+
             +-------------------+-----------------+------------+--------------------------+
-            |  Level1           |  Level2         |  Type      |  Description             |
+            | *Level1*          | *Level2*        | *Type*     | *Description*            |
+            +===================+=================+============+==========================+
+            |``devices``        |                 | ``array``  |                          |
             +-------------------+-----------------+------------+--------------------------+
-            | `devices`         |                 |  `array`   | Ascending order of       |
-            |                   |                 |            | device IDs               |
+            |                   |``device_id``    | ``string`` | Set the device id.       |
             +-------------------+-----------------+------------+--------------------------+
-            |                   | `device_id`     |  `string`  |                          |
-            +-------------------+-----------------+------------+--------------------------+
-            |                   | `status`        |  `string`  | 0: Running               |
-            |                   |                 |            | 1: Successful            |
+            |                   |``status``       | ``string`` | Set the total status.    |
+            |                   |                 |            |                          |
+            |                   |                 |            | - Value definition       |
+            |                   |                 |            |                          |
+            |                   |                 |            | 0: Running               |
+            |                   |                 |            |                          |
+            |                   |                 |            | 1: Successfully completed|
+            |                   |                 |            |                          |
             |                   |                 |            | 2: Failed                |
+            |                   |                 |            |                          |
             |                   |                 |            | 3: Canceled              |
-            |                   |                 |            | Cancellation supplement  |
-            |                   |                 |            | During deployment, if    |
-            |                   |                 |            | the device is deleted,it |
-            |                   |                 |            | will be in this status   |
             +-------------------+-----------------+------------+--------------------------+
-            |                   | `latest_        |  `string`  | 0: Not Latest            |
-            |                   |deployment_flg`  |            |                          |
-            |                   |                 |            | 1: Latest                |
+            |                   |``latest_        | ``string`` | Set the deployment flg.  |
+            |                   |deployment_flg`` |            |                          |
+            |                   |                 |            | - Value definition       |
+            |                   |                 |            |                          |
+            |                   |                 |            | 0: Old deployment history|
+            |                   |                 |            |                          |
+            |                   |                 |            | 1: Recent deployment     |
+            |                   |                 |            | history                  |
+            +-------------------+-----------------+------------+--------------------------+
+            |                   |``ins_id``       | ``string`` | Set the settings author. |
+            +-------------------+-----------------+------------+--------------------------+
+            |                   |``ins_date``     | ``string`` | Set the date the settings|
+            |                   |                 |            | were created.            |
+            +-------------------+-----------------+------------+--------------------------+
+            |                   |``upd_id``       | ``string`` | Set the settings updater.|
+            +-------------------+-----------------+------------+--------------------------+
+            |                   |``upd_date``     | ``string`` | Set the date the settings|
+            |                   |                 |            | were updated.            |
             +-------------------+-----------------+------------+--------------------------+
 
      * - 'Generic Error Response' :
@@ -1315,7 +1095,7 @@ export class Deployment {
      *      - 'message' (str) : error message returned from the Low Level SDK API
      *      - 'code' (str) : "Generic Error"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty.
@@ -1324,7 +1104,7 @@ export class Deployment {
      *      - 'message' (str) : validation error message for respective input parameter
      *      - 'code' (str) : "E001"
      *      - 'datetime' (str) : Time
-     * 
+     *
      * - 'HTTP Error Response' :
      *   If the API http_status returned from the Console Server
      *   is other than 200. Object with below key and value pairs.
@@ -1335,25 +1115,17 @@ export class Deployment {
      */
 
     getDeviceAppDeploys(appName: string, versionNumber: string) {
-        const response = this.getDeviceAppDeploysObj.getDeviceAppDeploys(
-            appName,
-            versionNumber
-        );
+        const response = this.getDeviceAppDeploysObj.getDeviceAppDeploys(appName, versionNumber);
         return response;
     }
 
     /**
-      * deployDeviceAppWaitResponse -deploy and wait for completion
+      * deployDeviceAppWaitResponse - deploy and wait for completion
      * @params
-     * - appName (str, required) : App name
-     * - versionNumber (str, required) : App version
-     * - deviceIds (str, required) : IDs of edge AI devices \
-                Specify multiple device IDs separated by commas
-    * - deployParameter (str, optional) : Deployment parameters \
-                Base64 encoded string in Json format No parameters if not specified.
-    * - comment (str, optional) : deploy comment \
-                up to 100 characters \
-                No comment if not specified.
+     * - appName (str, required) - App Name.
+     * - versionNumber (str, required) - App version number.
+     * - deviceIds (str, required) - Specify multiple device IDs separated by commas.
+     * - comment (str, optional) - Comment. *Max. 100 characters.
     * - callback (function, optional) : A function handle of the form - \
                 `deployDeviceAppCallback(deviceStatusArray)`, where `deviceStatusArray`\
                 is the array of the dictionary for each device :
@@ -1380,18 +1152,18 @@ export class Deployment {
                 If not specified, no callback notification.
      * @returns 
      * - Object: table:: Success Response
-                
+
             +-------------------+-------------------+------------+----------------------------+
             |  Level1           |  Level2           |  Type      |  Description               |
-            +-------------------+-------------------+------------+----------------------------+
-            |  `No_item_name`   |                   |  `array`   | deploy device app          |
+            +===================+===================+============+============================+
+            | ``No_item_name``  |                   | ``array``  | deploy device app          |
             |                   |                   |            | wait response array        |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `device_id`      |  `string`  | Set the device id          |
+            |                   | ``device_id``     | ``string`` | Set the device id          |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `result`         |  `string`  | "SUCCESS"                  |
+            |                   | ``result``        | ``string`` | "SUCCESS"                  |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `process_time`   |  `string`  | Processing Time            |
+            |                   | ``process_time``  | ``string`` | Processing Time            |
             +-------------------+-------------------+------------+----------------------------+
 
      * - 'Generic Error Response' :
@@ -1405,7 +1177,7 @@ export class Deployment {
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty OR
-     *   if type of callback paramter not a function.
+     *   if type of callback parameter not a function.
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
@@ -1425,7 +1197,6 @@ export class Deployment {
         appName: string,
         versionNumber: string,
         deviceIds: string,
-        deployParameter?: string,
         comment?: string,
         callback?: Function
     ) {
@@ -1434,7 +1205,6 @@ export class Deployment {
                 appName,
                 versionNumber,
                 deviceIds,
-                deployParameter,
                 comment,
                 callback
             );
@@ -1442,16 +1212,19 @@ export class Deployment {
     }
 
     /**
-     *  deployByConfigurationWaitResponse -Provides a Function to deploy the following to the device specified from the
-        deployment config.
+     *  deployByConfigurationWaitResponse - Provide a function for deploying the following to devices \
+     *                          specified with deploy config. \
+     *                          - Firmware \
+     *                          - AIModel
      *  @params
-     * - configId (str, required) : Configuration ID.
-     * - deviceIds (str, required) : Device ID. Specify multiple device IDs separated by commas.
-     * - replaceModelId (str, optional) : Model ID to be replaced. Specify "Model ID" or \
-                "network_id". If the specified model ID does not exist in the DB, the \
-                entered value is regarded as a network_id and processed is performed.
-    * - comment (str, optional) : The comment. 100 character or less
-    * - timeout (int, optional) : Timeout waiting for completion. There are cases where the \
+     * - configId (str, required) : Setting ID.
+     * - deviceIds (str, required) : Specify multiple device IDs separated by commas.
+     * - replaceModelId (str, optional) : Specify the model ID or network_id. \
+     *           If the model with the specified model ID does not exist in the database, \
+     *           treat the entered value as the network_id and process it. \
+     *           Default: ''
+     * - comment (str, optional) : Max. 100 characters. Default: ''
+    * - timeout (number, optional) : Timeout waiting for completion. There are cases where the \
                 edge AI device hangs up during the deployment process,\
                 so there are cases where the process remains in progress,\
                 so timeout to exit the process, 3600 seconds if not specified.
@@ -1477,15 +1250,15 @@ export class Deployment {
 
             +-------------------+-------------------+------------+----------------------------+
             |  Level1           |  Level2           |  Type      |  Description               |
-            +-------------------+-------------------+------------+----------------------------+
-            |  `No_item_name`   |                   |  `array`   | deploy by configuration    |
+            +===================+===================+============+============================+
+            | ``No_item_name``  |                   | ``array``  | deploy by configuration    |
             |                   |                   |            | wait response array        |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `device_id`      |  `string`  | Set the device id          |
+            |                   | ``device_id``     | ``string`` | Set the device id          |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `result`         |  `string`  | "SUCCESS"                  |
+            |                   | ``result``        | ``string`` | "SUCCESS"                  |
             +-------------------+-------------------+------------+----------------------------+
-            |                   |  `process_time`   |  `string`  | Processing Time            |
+            |                   | ``process_time``  | ``string`` | Processing Time            |
             +-------------------+-------------------+------------+----------------------------+
 
      * - 'Generic Error Response' :
@@ -1499,8 +1272,8 @@ export class Deployment {
      * - 'Validation Error Response' :
      *   If incorrect API input parameters OR \
      *   if any input string parameter found empty OR \
-     *   if any input integer parameter found negative OR \
-     *   if type of callback paramter not a function. \
+     *   if any input number parameter found negative OR \
+     *   if type of callback parameter not a function. \
      *   Then, Object with below key and value pairs.
      *      - 'result' (str) : "ERROR"
      *      - 'message' (str) : validation error message for respective input parameter
