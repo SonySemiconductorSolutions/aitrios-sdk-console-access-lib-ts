@@ -50,7 +50,7 @@ export class GetImages {
     }
 
     /**
-    * Schema for API to get the (saved) images for a specified device.
+    * Schema for API to get the (saved) images for a specified Edge Device.
 
     Args:
         Schema (object): Ajv JSON schema Validator
@@ -101,6 +101,24 @@ export class GetImages {
                     minimum: 'skip is required or can\'t be negative',
                 },
             },
+            fromDatetime: {
+                type: 'string',
+                isNotEmpty: false,
+                default: '',
+                errorMessage: {
+                    type: 'Invalid string for fromDatetime',
+                    isNotEmpty: 'can\'t be empty string',
+                }
+            },
+            toDatetime: {
+                type: 'string',
+                isNotEmpty: false,
+                default: '',
+                errorMessage: {
+                    type: 'Invalid string for toDatetime',
+                    isNotEmpty: 'can\'t be empty string',
+                }
+            }
         },
         required: ['deviceId', 'subDirectoryName'],
         additionalProperties: false,
@@ -113,7 +131,7 @@ export class GetImages {
     };
 
     /**
-     * getImages- Get the (saved) images for a specified device. \
+     * getImages- Get the (saved) images for a specified Edge Device. \
         *Application: Use to display an image in a UI
      *  @params
      * - deviceId (str, required) - Device ID.
@@ -126,6 +144,8 @@ export class GetImages {
      * - orderBy (str, optional) - Sort order: Sorted by date image was created.
             Value range: DESC, ASC \
             Default: ASC. 
+     * - fromDatetime(str, optional) : Date and time (From).   - Format: yyyyMMddhhmm
+     * - toDatetime(str, optional) : Date and time (To).  - Format: yyyyMMddhhmm
      * @returns
      * - Object: table:: Success Response
     
@@ -188,7 +208,9 @@ export class GetImages {
      *    const numberOfImages = '__numberOfImages__';
      *    const skip = '__skip__';
      *    const orderBy = '__orderBy__';     * 
-     *    const response= await client.insight.getImages(deviceId, subDirectoryName, numberOfImages, skip, orderBy);
+     *    const fromDatetime = 'fromDatetime';
+     *    const toDatetime = 'toDatetime';
+     *    const response= await client.insight.getImages(deviceId, subDirectoryName, numberOfImages, skip, orderBy, fromDatetime, toDatetime);
      *
      */
 
@@ -197,7 +219,9 @@ export class GetImages {
         subDirectoryName: string,
         numberOfImages?: number,
         skip?: number,
-        orderBy?: string
+        orderBy?: string,
+        fromDatetime?: string,
+        toDatetime?: string
     ) {
         Logger.info('getImages');
         let valid = true;
@@ -209,6 +233,8 @@ export class GetImages {
                 orderBy,
                 numberOfImages,
                 skip,
+                fromDatetime,
+                toDatetime
             });
             if (!valid) {
                 Logger.error(`${validate.errors}`);
@@ -232,7 +258,9 @@ export class GetImages {
                     'client_credentials',
                     orderBy,
                     numberOfImages,
-                    skip
+                    skip,
+                    fromDatetime,
+                    toDatetime
                 );
             } else {
                 res = await this.api.getImages(
@@ -241,7 +269,9 @@ export class GetImages {
                     undefined,
                     orderBy,
                     numberOfImages,
-                    skip
+                    skip,
+                    fromDatetime,
+                    toDatetime
                 );
             }
             return res;

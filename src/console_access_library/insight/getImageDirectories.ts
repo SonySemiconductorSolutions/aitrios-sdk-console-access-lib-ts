@@ -26,7 +26,7 @@ const ajv = new Ajv({ allErrors: true });
 ajvErrors(ajv);
 
 /**
- * This class implements API to get the image save directory list of the devices for each device
+ * This class implements API to get the image save directory list of the Edge Devices for each device
  * group.
  */
 export class GetImageDirectories {
@@ -55,7 +55,7 @@ export class GetImageDirectories {
     };
 
     /**
-     * getImageDirectories- Get the image save directory list of the devices for each device \
+     * getImageDirectories- Get the image save directory list of the Edge Devices for each device \
         group.
      *  @params 
      * - deviceId(str, optional):  Device ID. \

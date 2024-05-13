@@ -51,7 +51,7 @@ export class GetDeployHistory {
     }
 
     /**
-    * Schema for API to get the deployment history for a specified device.
+    * Schema for API to get the deployment history for a specified Edge Device.
 
     Args:
         Schema (object): Ajv JSON schema Validator
@@ -79,7 +79,7 @@ export class GetDeployHistory {
     };
 
     /**
-     * getDeployHistory - Get the deploy history for a specified device.
+     * getDeployHistory - Get the deploy history for a specified Edge Device.
      * @params
      * - deviceId (str, required) - Device ID
      * @returns
@@ -128,7 +128,7 @@ export class GetDeployHistory {
             |          | ``current_target``   | ``string`` | Set the current target.       |
             +----------+----------------------+------------+-------------------------------+
             |          |``total_status``      | ``string`` | Set the deploy status.        |
-            |          |                      |            | Total status of devices       |
+            |          |                      |            | Total status of Edge Devices  |
             |          |                      |            | deployed together.            |
             |          |                      |            | - Value definition            |
             |          |                      |            |                               |

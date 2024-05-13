@@ -171,7 +171,7 @@ export class DeployByConfigurationWaitResponse {
     }
 
     /**
-     *  deployByConfigurationWaitResponse - Provide a function for deploying the following to devices \
+     *  deployByConfigurationWaitResponse - Provide a function for deploying the following to Edge Devices \
      *                          specified with deploy config. \
      *                          - Firmware \
      *                          - AIModel
@@ -184,12 +184,12 @@ export class DeployByConfigurationWaitResponse {
      *           Default: ''
      * - comment (str, optional) : Max. 100 characters. Default: ''
      * - timeout (number, optional) : Timeout waiting for completion. There are cases where the \
-                edge AI device hangs up during the deployment process,\
+                Edge Device hangs up during the deployment process,\
                 so there are cases where the process remains in progress,\
                 so timeout to exit the process, 3600 seconds if not specified.
      * - callback (function, optional) : A function handle of the form - \
                 `deployCallback(deviceStatusArray)`, where `deviceStatusArray`
-                is the array of the dictionary for each device :
+                is the array of the dictionary for each Edge Device :
      * ```ts
      *            [
      *                {
@@ -333,7 +333,7 @@ export class DeployByConfigurationWaitResponse {
 
                     for (const deviceId of deviceIdList) {
                         let deployStatus;
-                        // get deploy history for all devices
+                        // get deploy history for all Edge Devices
                         const returnGetDeployHistory: any =
                             await this.getDeployHistoryObj.getDeployHistory(deviceId);
                         if (returnGetDeployHistory.data) {
@@ -360,7 +360,7 @@ export class DeployByConfigurationWaitResponse {
                                     } else {
                                         /**
                                          * Check whether it's first occurrence
-                                         * Then update status of the added device to
+                                         * Then update status of the added Edge Device to
                                          * the global array
                                          */
                                         this.setValues(deviceId, deployStatus);

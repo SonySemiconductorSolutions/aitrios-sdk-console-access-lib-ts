@@ -57,7 +57,7 @@ export class GetInferenceResults {
 
     /**
     * Schema for API to Get the (saved) inference result metadata list information for \
-      a specified device.
+      a specified Edge Device.
 
     Args:
         Schema (object): Ajv JSON schema Validator
@@ -119,7 +119,7 @@ export class GetInferenceResults {
 
     /**
      * getInferenceResults- Get the (saved) inference result metadata list information for \
-        a specified device.
+        a specified Edge Device.
      *  @params
      *  - deviceId (str, required)  : Device ID.
      *  - filter (str, optional) : Search filter \
