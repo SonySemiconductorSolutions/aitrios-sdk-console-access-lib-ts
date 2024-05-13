@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, 2023 Sony Semiconductor Solutions Corp. All rights reserved.
+ * Copyright 2022, 2023, 2024 Sony Semiconductor Solutions Corp. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import { Client, Config, DeployDeviceAppStatus, DeployByConfigurationStatus, Log
 import yaml = require('js-yaml');
 import * as fs from 'fs';
 import * as path from 'path'
+import { format } from 'date-fns'
 
 /**
  * Class for Execute Console Access Library API
@@ -50,6 +51,7 @@ export class APIExecutor {
                 console.log("Device app undeploy - ", deployDeviceId)
             else {
                 console.log(deployDeviceId, "Error - ", deployDeviceId)
+                process.exit();
             }
         })
     }
@@ -78,6 +80,7 @@ export class APIExecutor {
                 console.log("Saving");
             else {
                 console.log("Error")
+                process.exit();
             }
             this.prevPublishCallbackStatus = status
         } else {
@@ -104,6 +107,7 @@ export class APIExecutor {
                 console.log("Deployment Canceled - ", deployDeviceId)
             else {
                 console.log("Error - ", deployDeviceId)
+                process.exit();
             }
         })
     }
@@ -140,13 +144,23 @@ export class APIExecutor {
                             null
                         )
                     }
-
+                    
+                    //Required parameter
                     const {
                         device_id: deviceId,
-                        get_model_device_id: getModelDeviceId,
-                        publish_model_wait_response_device_id: publishModelWaitResponseDeviceId,
                         model_id: modelId,
                         model: model,
+                        config_id: configId,
+                        app_name: appName,
+                        sub_directory_name: subDirectoryName,
+                        version_number: versionNumber,
+                        file_content_name: fileContentName,
+                    } = demoConfigurations
+
+                    //Option parameter
+                    const {
+                        get_model_device_id: getModelDeviceId,
+                        publish_model_wait_response_device_id: publishModelWaitResponseDeviceId,
                         converted,
                         vendor_name: vendorName,
                         comment,
@@ -158,7 +172,6 @@ export class APIExecutor {
                         model_platform: modelPlatform,
                         project_type: projectType,
                         latest_type: latestType,
-                        config_id: configId,
                         sensor_loader_version_number: sensorLoaderVersionNumber,
                         sensor_version_number: sensorVersionNumber,
                         model_version_number: modelVersionNumber,
@@ -166,17 +179,14 @@ export class APIExecutor {
                         device_ids: deviceIds,
                         replace_model_id: replaceModelId,
                         timeout,
-                        compiled_flg: compiledFlg,
-                        app_name: appName,
-                        version_number: versionNumber,
-                        file_name: fileName,
                         entry_point: entryPoint,
                         schema_info: schemaInfo,
                         device_name: deviceName,
+                        from_datetime: fromDatetime,
+                        to_datetime: toDatetime,
                         connection_state: connectionState,
                         device_group_id: deviceGroupId,
                         scope,
-                        sub_directory_name: subDirectoryName,
                         number_of_images: numberOfImages,
                         skip,
                         order_by: orderBy,
@@ -186,6 +196,31 @@ export class APIExecutor {
                         time
                     } = demoConfigurations
 
+                    const fileContentPath = path.join('.', fileContentName)
+                    let fileContent
+                    let compiledFlg
+                    if (fs.existsSync(fileContentPath)) {
+                        if (fs.lstatSync(fileContentPath).isSymbolicLink()) {
+                            Logger.info("Can't open symbolic link file.");
+                            process.exit();
+                        }
+                        const fileEncodeContent = fs.readFileSync(fileContentPath).toString('base64')
+                        fileContent = Buffer.from(fileEncodeContent).toString('utf-8')
+                        const fileContentExtension = fileContentName.split('.').pop()
+                        if (fileContentExtension === 'aot') {
+                            compiledFlg = "1"
+                        } else if (fileContentExtension ==="wasm") {
+                            compiledFlg = "0"
+                        } else {
+                            Logger.info("The extension of file_content_name is not appropriate.");
+                            process.exit();
+                        }
+                    } else {
+                        Logger.info("file_content_name is not exist.");
+                        process.exit();
+                    }
+
+                    
                     // Create instance of Client
                     var client = await Client.createInstance(config);
 
@@ -298,7 +333,7 @@ export class APIExecutor {
                     try {
                         response = await client?.deployment?.deployByConfigurationWaitResponse(
                             configId,
-                            deviceIds,
+                            deviceIds === null ? undefined : deviceId,
                             replaceModelId === null ? undefined : replaceModelId,
                             comment === null ? undefined : comment,
                             timeout === null ? undefined : timeout,
@@ -319,7 +354,7 @@ export class APIExecutor {
                     try {
                         await client?.deployment?.deployByConfiguration(
                             configId,
-                            deviceIds,
+                            deviceIds === null ? undefined : deviceId,
                             replaceModelId === null ? undefined : replaceModelId,
                             comment === null ? undefined : comment);
                         const responseDeployHistory = await client?.deployment?.getDeployHistory(deviceId);
@@ -377,17 +412,11 @@ export class APIExecutor {
 
                     // Deployment - ImportDeviceApp
                     try {
-                        const file_content_path = path.join(process.cwd(), "device_application_file_content.txt")
-                        console.log('file_content_path : ' + file_content_path)
-                        let fileContent
-                        if (file_content_path !== undefined) {
-                            fileContent = fs.readFileSync(file_content_path, 'utf8')
-                        }
                         response = await client?.deployment?.importDeviceApp(
                             compiledFlg,
                             appName,
                             versionNumber,
-                            fileName,
+                            fileContentName,
                             fileContent,
                             entryPoint === null ? undefined : entryPoint,
                             comment === null ? undefined : comment,
@@ -406,10 +435,23 @@ export class APIExecutor {
 
                     // Deployment - DeployDeviceAppWaitResponse
                     try {
+                        let app_status = '0'
+                        while (app_status != '2') {
+                            const deviceAppsResponse = await client?.deployment?.getDeviceApps()
+                            for (let i = 0; i < deviceAppsResponse['data']['apps'].length; i++) {
+                                if (deviceAppsResponse['data']['apps'][i]['name'] === appName) {
+                                    app_status = deviceAppsResponse['data']['apps'][i]['versions'][0]['status']
+                                    if (app_status == '3') {
+                                        Logger.info('ImportDeviceApp is failed.');
+                                        process.exit();
+                                    }
+                                }
+                            }
+                        }
                         response = await client?.deployment?.deployDeviceAppWaitResponse(
                             appName,
                             versionNumber,
-                            deviceIds,
+                            deviceIds === null ? undefined : deviceId,
                             comment === null ? undefined : comment,
                             this.deployDeviceAppCallback);
                         console.log('************************************************************************');
@@ -461,7 +503,7 @@ export class APIExecutor {
                             deviceName === null ? undefined : deviceName,
                             connectionState === null ? undefined : connectionState,
                             deviceGroupId === null ? undefined : deviceGroupId,
-                            deviceIds === null ? undefined : deviceIds,
+                            deviceIds === null ? undefined : deviceId,
                             scope === null ? undefined : scope);
                         console.log('************************************************************************');
                         console.log('************************************************************************');
@@ -538,12 +580,32 @@ export class APIExecutor {
 
                     //Insight - GetImages
                     try {
+                        let fromTime = undefined
+                        let toTime = undefined
+                        if (fromDatetime === undefined && toDatetime === undefined) {
+                            const convertedFromDate = new Date(
+                                Number(subDirectoryName.slice(0, 4)),
+                                Number(subDirectoryName.slice(4, 6)) - 1,
+                                Number(subDirectoryName.slice(6, 8)),
+                                Number(subDirectoryName.slice(8, 10)),
+                                Number(subDirectoryName.slice(10, 12)),
+                                Number(subDirectoryName.slice(12, 14)),
+                                Number(subDirectoryName.slice(14, 17))
+                            )
+                            const convertedToDate = new Date(convertedFromDate.getTime() + 10 * 60 * 60 * 1000)
+                            toTime = format(convertedToDate, 'yyyyMMddHHmm')
+                        } else {
+                            fromTime = fromDatetime
+                            toTime = toDatetime
+                        }
                         response = await client?.insight?.getImages(
                             deviceId,
                             subDirectoryName,
                             numberOfImages === null ? undefined : numberOfImages,
                             skip === null ? undefined : skip,
-                            orderBy === null ? undefined : orderBy);
+                            orderBy === null ? undefined : orderBy,
+                            fromTime,
+                            toTime);
                         console.log('************************************************************************');
                         console.log('************************************************************************');
                         if ('data' in response) {
@@ -578,12 +640,32 @@ export class APIExecutor {
 
                     // Insight - GetImageData
                     try {
+                        let fromTime = undefined
+                        let toTime = undefined
+                        if (fromDatetime === undefined && toDatetime === undefined) {
+                            const convertedFromDate = new Date(
+                                Number(subDirectoryName.slice(0, 4)),
+                                Number(subDirectoryName.slice(4, 6)) - 1,
+                                Number(subDirectoryName.slice(6, 8)),
+                                Number(subDirectoryName.slice(8, 10)),
+                                Number(subDirectoryName.slice(10, 12)),
+                                Number(subDirectoryName.slice(12, 14)),
+                                Number(subDirectoryName.slice(14, 17))
+                            )
+                            const convertedToDate = new Date(convertedFromDate.getTime() + 10 * 60 * 60 * 1000)
+                            toTime = format(convertedToDate, 'yyyyMMddHHmm')
+                        } else {
+                            fromTime = fromDatetime
+                            toTime = toDatetime
+                        }
                         response = await client?.insight?.getImageData(
                             deviceId,
                             subDirectoryName,
                             numberOfImages === null ? undefined : numberOfImages,
                             skip === null ? undefined : skip,
-                            orderBy === null ? undefined : orderBy);
+                            orderBy === null ? undefined : orderBy,
+                            fromTime,
+                            toTime);
                         console.log('************************************************************************');
                         console.log('************************************************************************');
                         if ('data' in response) {
@@ -643,7 +725,7 @@ export class APIExecutor {
 
                     // Deployment - UndeployDeviceApp
                     try {
-                        response = await client?.deployment?.undeployDeviceApp(deviceIds);
+                        response = await client?.deployment?.undeployDeviceApp(deviceIds === null ? undefined : deviceId);
                         console.log('************************************************************************');
                         console.log('************************************************************************');
                         if ('data' in response) {

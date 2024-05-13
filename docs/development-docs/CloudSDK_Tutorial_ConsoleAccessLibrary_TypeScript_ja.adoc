@@ -23,13 +23,14 @@
 * TypeScriptをグローバルインストール
 ** npm install -g typescript
 
+[[anchor-id]]
 === 「**Console Access Library**」 API仕様
 「**Console Access Library**」のAPI仕様を参照する方法は、下記の手順を参照してください。
 
 1. リポジトリをクローンします
     ** https://github.com/SonySemiconductorSolutions/aitrios-sdk-console-access-lib-ts
 
-2. クローンしたディレクトリ内に存在する `**docs/api-reference/index.html**` をウェブブラウザで開きます
+2. クローンしたディレクトリ内に存在する `**docs/api-reference/index.html**` をウェブブラウザで開きます。
 
 == 使用法
 
@@ -46,7 +47,7 @@
     npm pack
 ```
 
-3. ターミナルを開いて `**src**` パスに移動し、次のコマンドを実行します
+3. ターミナルを開いて `**src**` パスに移動し、次のコマンドを実行します。
 + 
 ```
     npm install
@@ -54,18 +55,28 @@
     npm pack
 ```
 
-4. ターミナルを開いて `**samples/demo-console**` パスに移動し、次のコマンドを実行します
+4. ターミナルを開いて `**samples/demo-console**` パスに移動し、次のコマンドを実行します。
 + 
 ```
     npm install
 ```
 
+5. ネットワークProxy設定
++
+プロキシ環境で「**Console Access Library**」を使用するには `**https_proxy**` 環境変数を設定します。
++ 
+```
+    export https_proxy=http://username:password@proxyhost:port
+```
+
+
 === 「**Console Access Library**」のサンプルアプリケーション開始用のパラメータ設定
 
-* 下記の設定ファイルを作成し、パラメータに適切な値を設定します。
+1. 下記の設定ファイルを作成し、パラメータに適切な値を設定します。 +
+作成したファイルは  `**console_access_settings.yaml**`  のファイル名で `**samples/demo-console**`  配下に配置します。
 +
 `samples/demo-console/console_access_settings.yaml` 
-
++
 |===
 |「**Console Developer Edition**」使用時
 a|
@@ -78,6 +89,7 @@ a|
         client_id: "__client_id__"
 ----
 |===
++
 |===
 |「**Console Enterprise Edition**」使用時
 a|
@@ -91,67 +103,102 @@ a|
         application_id: "__application_id__"
 ----
 |===
++
+環境変数からエクスポート場合は、下記のコマンドでユーザー環境値を環境変数に設定します。 +
+その場合は、 `**console_access_settings.yaml**` の設定ファイルの作成は不要です。
++ 
+```
+    export CONSOLE_ENDPOINT="__console_endpoint__"
+    export PORTAL_AUTHORIZATION_ENDPOINT="__portal_authorization_endpoint__"
+    export CLIENT_SECRET="__client_secret__"
+    export CLIENT_ID="__client_id__"
+    export APPLICATION_ID="__application_id__"    #「Console Enterprise Edition」使用時のみ設定
+```
 
-* 下記のファイルを開きパラメータを適切な値に変更します。
+2. wasmファイルまたはaotファイルを `**samples/demo-console**` 配下に配置します。
+3. 下記のファイルを開きパラメータを適切な値に変更します。
++
+`samples/demo_config.yaml`
 +
 |===
-|samples/demo-console/demo_config.yaml
+|必須パラメータのみ設定する場合
 a|
-[source,Yaml]
 ----
-  demo_configuration:
-    device_id: "__device_id__"
-    get_model_device_id: "__get_model_device_id__"
-    publish_model_wait_response_device_id: "__publish_model_wait_response_device_id__"
-    model_id: "__model_id__"
-    model: "__model__"
-    converted: "__converted__"
-    vendor_name: "__vendor_name__"
-    comment: "__comment__"
-    input_format_param: "__input_format_param__"
-    network_config: "__network_config__"
-    network_type: "__network_type__"
-    metadata_format_id: "__metadata_format_id__"
-    project_name: "__project_name__"
-    model_platform: "__model_platform__"
-    project_type: "__project_type__"
-    latest_type: "__latest_type__"
-    config_id: "__config_id__"
-    sensor_loader_version_number: "__sensor_loader_version_number__"
-    sensor_version_number: "__sensor_version_number__"
-    model_version_number: "__model_version_number__"
-    ap_fw_version_number: "__ap_fw_version_number__"
-    device_ids: "__device_ids__"
-    replace_model_id: "__replace_model_id__"
-    timeout: "__timeout__"
-    compiled_flg: "__compiled_flg__"
-    app_name: "__app_name__"
-    version_number: "__version_number__"
-    file_name: "__file_name__"
-    entry_point: "__entry_point__"
-    schema_info: "__schema_info__"
-    device_name: "__device_name__"
-    connection_state: "__connection_state__"  
-    device_group_id: "__device_group_id__"
-    scope: "__scope__"
-    sub_directory_name: "__sub_directory_name__"
-    number_of_images: "__number_of_images__"
-    skip: "__skip__"
-    order_by: "__order_by__"
-    number_of_inference_results: "__number_of_inference_results__"
-    filter: "__filter__"
-    raw: "__raw__"
-    time: "__time__"
+demo_configuration:
+   device_id: "__device_id__"
+   model_id: "__model_id__"
+   model: "__model__"
+   config_id: "__config_id__"
+   app_name: "__app_name__"
+   file_content_name: "__file_content_name__"
+   version_number: "__version_number__"
+   sub_directory_name: "__sub_directory_name__"
 ----
 |===
-
-=== ネットワークProxy設定
-
-プロキシ環境で「**Console Access Library**」を使用するには `**https_proxy**` 環境変数を設定します。
-
-```
-export https_proxy=http://username:password@proxyhost:port
-```
++
+    ** `**device_id**` にデバイスIDを指定してください。
+    ** `**model_id**` に「**Console**」に登録する任意のモデルの名前を指定してください。
+    ** `**model**` にモデルファイルのSAS URIまたは署名付きURIを指定してください。
+    ** `**config_id**` に「**Console**」に登録する任意のConfigの名前を指定してください。
+    ** `**app_name**` に「**Console**」に登録する任意のApplicationの名前を指定してください。
+    ** `**file_content_name**` に2.で指定したwasmファイルまたはaotファイルのファイル名を指定してください。
+    ** `**version_number**` に「**Console**」に登録する任意のApplicationのバージョンを指定してください。
+    ** `**sub_directory_name**` にエッジデバイスの任意のサブディレクトリを指定してください。
++
+NOTE: `**model_id**` 、`**config_id**` 、`**app_name**` は既に「**Console**」に登録されているものと重複しない値を指定してください。
++
+|===
+|オプションのパラメータをすべて含んで設定する場合
+a|
+----
+demo_configuration:
+   device_id: "__device_id__"
+   get_model_device_id: "__get_model_device_id__"
+   publish_model_wait_response_device_id: "__publish_model_wait_response_device_id__"
+   model_id: "__model_id__"
+   model: "__model__"
+   converted: "__converted__"
+   vendor_name: "__vendor_name__"
+   comment: "__comment__"
+   input_format_param: "__input_format_param__"
+   network_config: "__network_config__"
+   network_type: "__network_type__"
+   metadata_format_id: "__metadata_format_id__"
+   project_name: "__project_name__"
+   model_platform: "__model_platform__"
+   project_type: "__project_type__"
+   latest_type: "__latest_type__"
+   config_id: "__config_id__"
+   sensor_loader_version_number: "__sensor_loader_version_number__"
+   sensor_version_number: "__sensor_version_number__"
+   model_version_number: "__model_version_number__"
+   ap_fw_version_number: "__ap_fw_version_number__"
+   device_ids: "__device_ids__"
+   replace_model_id: "__replace_model_id__"
+   timeout: "__timeout__"
+   app_name: "__app_name__"
+   file_content_name: "__file_content_name__"
+   version_number: "__version_number__"
+   file_name: "__file_name__"
+   entry_point: "__entry_point__"
+   schema_info: "__schema_info__"
+   device_name: "__device_name__"
+   connection_state: "__connection_state__"
+   device_group_id: "__device_group_id__"
+   scope: "__scope__"
+   sub_directory_name: "__sub_directory_name__"
+   number_of_images: "__number_of_images__"
+   skip: "__skip__"
+   order_by: "__order_by__"
+   number_of_inference_results: "__number_of_inference_results__"
+   filter: "__filter__"
+   raw: "__raw__"
+   time: "__time__"
+   from_datetime: "__from_datetime__"
+   to_datetime: "__to_datetime__"
+----
+|===
+オプションのパラメータの詳細については、<<anchor-id,「**Console Access Library**」 API仕様>>を参照してください。
 
 === アプリケーション開始
 
@@ -187,3 +234,33 @@ a|
         // }
 ----
 |===
+
+== 「**Console Access Library**」の使用方法
+1. 「**Console Access Library**」から `**Client**` と `**Config**` のクラスをインポートします。
++
+[source,TypeScript]
+----
+    import { Client, Config } from 'consoleAccessLibrary'
+----
+
+2. `**Config**` に接続情報を引数として渡し、 `**Config**` インスタンスを生成します。 +
+`**Config**` インスタンスを `**Client**` の `**createInstance**` メソッドの引数として渡し、 `**Client**` インスタンスを生成します。
++
+[source,TypeScript]
+----
+    const config = new Config(
+        console_endpoint,
+        portal_authorization_endpoint,
+        client_id,
+        client_secret,
+        application_id    #「Console Enterprise Edition」使用時のみ指定
+    )
+    const client = await Client.createInstance(config)
+----
+
+3. `**Client**` インスタンスのインスタンス変数が持つ任意のAPIを呼び出します。
++
+[source,TypeScript]
+----
+    const res = await client?.deviceManagement?.getCommandParameterFile()
+----

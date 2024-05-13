@@ -29,9 +29,15 @@ Updated the PDF build environment
 |2023/5/26
 |Fixed parenthesis notation for tool names
 
+|2023/7/24
+|Console Enterprise Edition support
+
 |2023/12/22
 |Changed for "**Cloud SDK**" 1.1.0 +
 Console Enterprise Edition support
+
+|2023/03/26
+|Changed for "**Cloud SDK**" 1.2.0
 
 |===
 
@@ -45,7 +51,7 @@ Use TypeScript for feature development language.
 |Terms/Abbreviations |Meaning 
 
 |"**Console for AITRIOS**"
-|A cloud service that provides various functions (Deployment, Retraining, Edge AI Device Management etc.) to efficiently implement solutions from edge to cloud +
+|A cloud service that provides various functions (Deployment, Retraining, Edge Device Management etc.) to efficiently implement solutions from edge to cloud +
 Hereafter referred to as "**Console**" in the text
 
 |"**Low Level SDK**"
@@ -65,16 +71,16 @@ URI that grant limited access to Azure storage resources
 
 == Expected use case
 * Use the "**Console Access Library**" to:
-** Get information about edge AI devices
-** Start inference (Start to upload inference results), stop inference (stop to upload inference results) of edge AI devices
-** Get edge AI device output results (images, inference results)
+** Get information about Edge Devices
+** Start inference (Start to upload inference results), stop inference (stop to upload inference results) of Edge Devices
+** Get Edge Device output results (images, inference results)
 ** Upload AI models created by users to the "**Console**"
 *** Review and delete uploaded AI models
-** Convert AI models to a format deployable to edge AI devices
-** Deploy AI models to edge AI devices
+** Convert AI models to a format deployable to Edge Devices
+** Deploy AI models to Edge Devices
 ** Upload "**DeviceApps**" created by users to the "**Console**"
 *** Review and delete uploaded "**DeviceApps**"
-** Deploy "**DeviceApps**" to edge AI devices
+** Deploy "**DeviceApps**" to Edge Devices
 
 == Functional overview/Algorithm
 [#_Functional-Overview]
@@ -118,11 +124,11 @@ Get and update an access token needed to access the "**Console**".（Wrap）
 API without a timeout parameter will not timeout
 ====
 ** DeviceManagement
-*** getDevices / Get edge AI device info list
+*** getDevices / Get device info list
 *** startUploadInferenceResult / Start to upload inference results
 *** stopUploadInferenceResult / Stop to upload inference results
 *** getCommandParameterFile / Get list of command parameter files registered in the "**Console**"
-** AI Model
+** AI model
 *** importBaseModel / Import base model
 *** getModels / Get model info list
 *** getBaseModelStatus / Get base model status
@@ -148,7 +154,7 @@ API without a timeout parameter will not timeout
 *** exportImages / Export saved images
 
 * High Level API that combine "**Low Level SDK**" API for each use case can be executed.
-** AI Model
+** AI model
 *** publishModelWaitResponse / Publish model and wait for response
 ** Deployment
 *** deployByConfigurationWaitResponse / Deploy and wait for response
@@ -257,14 +263,14 @@ When the Application ID is passed to Config, the token is obtained and updated b
 ** stopUploadInferenceResult(deviceId: string)
 ** getCommandParameterFile()
 
-* AI Model
+* AI model
 ** importBaseModel(modelId: string, model: string, converted?: boolean, vendorName?: string, comment?: string, inputFormatParam?: string, networkConfig?: string, networkType?: string, metadataFormatId?: string)
 ** getModels(modelId?: string, comment?: string, projectName?: string, modelPlatform?: string, projectType?: string, deviceId?: string, latestType?: string)
 ** getBaseModelStatus(modelId: string, latestType?: string)
 ** deleteModel(modelId: string)
 ** publishModel(modelId: string, deviceId?: string)
 
-* AI Model High Level API
+* AI model High Level API
 ** publishModelWaitResponse(modelId: string, deviceId?: string, callback?: publishModelWaitResponseCallback)
 *** publishModelWaitResponseCallback(status: string)
 
@@ -290,17 +296,17 @@ When the Application ID is passed to Config, the token is obtained and updated b
 
 * Insight
 ** getImageDirectories(deviceId?: string)
-** getImages(deviceId: string, subDirectoryName: string, numberOfImages?: number, skip?: number, orderBy?: string)
+** getImages(deviceId: string, subDirectoryName: string, numberOfImages?: number, skip?: number, orderBy?: string, fromDatetime?: string, toDatetime?: string)
 ** getInferenceResults(deviceId: string, filter?: string, numberOfInferenceResults?: number, raw?: number, time?: string)
 ** exportImages(key: string, fromDatetime?: string, toDatetime?: string, deviceId?: string, fileFormat?: string)
 
 * Insight High Level API
-** getImageData(deviceId: string, subDirectoryName: string, numberOfImages?: number, skip?: number, orderBy?: string)
+** getImageData(deviceId: string, subDirectoryName: string, numberOfImages?: number, skip?: number, orderBy?: string, fromDatetime?: string, toDatetime?: string)
 ** getLastInferenceData(deviceId: string)
 ** getLastInferenceAndImageData(deviceId: string, subDirectoryName: string)
 
 === Others exclusive conditions/Specifications
-* Command parameter file has been applied to the edge AI device
+* Command parameter file has been applied to the Edge Device
 
 == User interface specifications
 * None
@@ -394,7 +400,7 @@ variables
 |Instance that provides DeviceManagement API
 |===
 
-** aiModel: Get the instance that provides AI Model API
+** aiModel: Get the instance that provides AI model API
 +
 |===
 |Parameter’s name|Meaning|Range of parameter
@@ -408,8 +414,8 @@ variables
 |===
 |Return value|Meaning
 
-|AI Model instance
-|Instance that provides AI Model API
+|AI model instance
+|Instance that provides AI model API
 |===
 
 ** deployment: Get the instance that provides Deployment API
@@ -449,7 +455,7 @@ variables
 |===
 
 * DeviceManagement
-** getDevices: Get edge AI device info list
+** getDevices: Get device info list
 +
 【Error: When an error occurs in the "**Low Level SDK**"】Raise an error defined in the "**Console Access Library**"
 +
@@ -459,12 +465,12 @@ variables
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Partial search, case insensitive +
 If not specified, search all deviceId
 
 |deviceName
-|Name of the edge AI device
+|Name of the Edge Device
 |Partial search, case insensitive +
 If not specified, search all deviceName
 
@@ -476,17 +482,17 @@ Exact match search, case insensitive +
 If not specified, search all connectionState
 
 |deviceGroupId
-|Affiliation group of the edge AI device
+|Affiliation group of the Edge Device
 |Exact match search, case insensitive +
 If not specified, search all deviceGroupId
 
 |deviceIds
-|Group that belongs to edge AI devices
+|Group that belongs to Edge Devices
 |Specify multiple Device ID separated by comma. +
 If not specified, search all device IDs
 
 |scope
-|Group that belongs to edge AI devices 
+|Group that belongs to Edge Devices 
 |Specifies the range of response parameters. +
 Setting value: +
 full: Return complete parameters. +
@@ -498,8 +504,8 @@ If not specified, search entire scope
 |===
 |Return value|Meaning
 
-|Device information
-|Edge AI device information
+|Edge Device information
+|Edge Device information
 |===
 
 ** startUploadInferenceResult: Start to upload inference results
@@ -514,7 +520,7 @@ If not specified, search entire scope
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive
 
 |===
@@ -545,7 +551,7 @@ If not specified, search entire scope
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive
 
 |===
@@ -581,7 +587,7 @@ If not specified, search entire scope
 
 |===
 
-* AI Model
+* AI model
 ** importBaseModel: Import base model
 +
 【Error: modelId is empty】E001 : modelId is required.
@@ -716,7 +722,7 @@ Exact match search +
 If not specified, search all projectType
 
 |deviceId
-|Edge AI device ID (specify if you want to search for a device model)
+|device ID (specify if you want to search for a device model)
 |Exact match search +
 Case sensitive +
 If not specified, search all deviceId
@@ -811,7 +817,7 @@ If not specified, 1
 |None
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive +
 Specify for device models +
 If the base model is the target, do not specify
@@ -845,7 +851,7 @@ If the base model is the target, do not specify
 |None
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive +
 Specify for device models +
 If the base model is the target, do not specify
@@ -1122,8 +1128,8 @@ If not specified, no Sensor deployment
 |None
 
 |deviceIds
-|Edge AI device IDs
-|Specify multiple edge AI device IDs separated by commas +
+|device IDs
+|Specify multiple device IDs separated by commas +
 Case sensitive
 
 |replaceModelId
@@ -1159,7 +1165,7 @@ If not specified, no comment
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive
 
 |===
@@ -1211,7 +1217,7 @@ If not specified, no comment
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive
 
 |deployId
@@ -1252,8 +1258,8 @@ If not specified, no comment
 |None
 
 |deviceIds
-|Edge AI device IDs
-|Specify multiple edge AI device IDs separated by commas +
+|device IDs
+|Specify multiple device IDs separated by commas +
 Case sensitive
 
 |comment
@@ -1283,8 +1289,8 @@ If not specified, no comment
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceIds
-|Edge AI device ID
-|Specify multiple edge AI device IDs separated by commas +
+|device ID
+|Specify multiple device IDs separated by commas +
 Case sensitive
 
 |===
@@ -1346,8 +1352,8 @@ Case sensitive
 |None
 
 |deviceIds
-|Edge AI device IDs
-|Specify multiple edge AI device IDs separated by commas +
+|device IDs
+|Specify multiple device IDs separated by commas +
 Case sensitive
 
 |replaceModelId
@@ -1363,7 +1369,7 @@ If not specified, do not replace
 
 |timeout
 |timeout waiting for completion +
-Set the timeout to exit the deployment process because it may remain in progress, such as when edge AI device hangs.
+Set the timeout to exit the deployment process because it may remain in progress, such as when Edge Device hangs.
 |None +
 If not specified, 3600 seconds
 
@@ -1391,7 +1397,7 @@ Check the processing result with the getDeployHistory and call the callback func
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceStatusArray
-|List of deployment state of edge AI devices
+|List of deployment state of Edge Devices
 |The format is as follows: +
 [ +
 　{ +
@@ -1403,7 +1409,7 @@ Check the processing result with the getDeployHistory and call the callback func
 
 Fill in data for deviceId specified by deviceIds in devloyByConfigurationWaitResponse +
 
-<deviceId>: Edge AI device ID +
+<deviceId>: device ID +
 <status>: Fill in the following deployment states +
 　0: Deploying +
 　1: Success +
@@ -1445,8 +1451,8 @@ Fill in data for deviceId specified by deviceIds in devloyByConfigurationWaitRes
 |None
 
 |deviceIds
-|Edge AI device IDs
-|Specify multiple edge AI device IDs separated by commas +
+|device IDs
+|Specify multiple device IDs separated by commas +
 Case sensitive
 
 |comment
@@ -1478,7 +1484,7 @@ Check the processing result with the getDeviceAppDeploys and call the callback f
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceStatusArray
-|List of deployment state of edge AI devices
+|List of deployment state of Edge Devices
 |The format is as follows: +
 [ +
 　{ +
@@ -1492,7 +1498,7 @@ Check the processing result with the getDeviceAppDeploys and call the callback f
 
 Fill in data for deviceId specified by deviceIds in deployDeviceAppWaitResponse +
 
-<deviceId>: Edge AI device ID +
+<deviceId>: device ID +
 <found_position>: Index of the deviceId stored in the getDeviceAppDeploys response +
 <skip>: Fill in the following values +
 　0: For the most recent status stored in the getDeviceAppDeploys response +
@@ -1524,7 +1530,7 @@ Fill in data for deviceId specified by deviceIds in deployDeviceAppWaitResponse 
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive +
 If not specified, return information for all deviceIds
 
@@ -1551,7 +1557,7 @@ If not specified, return information for all deviceIds
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive
 
 |subDirectoryName
@@ -1573,6 +1579,16 @@ If not specified:0
 |Sort order: Sort order by date and time the image was created
 |DESC、ASC、desc、asc +
 If not specified:ASC
+
+|fromDatetime
+|Date and time(From)
+|yyyyMMddhhmm format +
+If not specified, no start date and time is set
+
+|toDatetime
+|Date and time(To)
+|yyyyMMddhhmm format +
+If not specified, no end date and time is set
 
 |===
 +
@@ -1598,7 +1614,7 @@ If not specified:ASC
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive
 
 |filter
@@ -1664,7 +1680,7 @@ If not specified, no start date and time is set
 If not specified, no end date and time is set
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive +
 If not specified, specify all deviceId
 
@@ -1701,7 +1717,7 @@ A common key for decrypting images encrypted with a public key
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive
 
 |subDirectoryName
@@ -1723,6 +1739,16 @@ If not specified:0
 |Sort order: Sort order by date and time the image was created
 |DESC、ASC、desc、asc +
 If not specified:ASC
+
+|fromDatetime
+|Date and time(From)
+|yyyyMMddhhmm format +
+If not specified, no start date and time is set
+
+|toDatetime
+|Date and time(To)
+|yyyyMMddhhmm format +
+If not specified, no end date and time is set
 
 |===
 +
@@ -1748,7 +1774,7 @@ If not specified:ASC
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive
 
 |===
@@ -1774,7 +1800,7 @@ If not specified:ASC
 |Parameter’s name|Meaning|Range of parameter
 
 |deviceId
-|Edge AI device ID
+|device ID
 |Case sensitive
 
 |subDirectoryName
@@ -1824,7 +1850,8 @@ T.B.D.
 * None
 
 == Assumption/Restriction
-* None
+* The deploy_by_configuration_wait_response API may return historical results for devices that have previously deployed using the same deployment config. +
+ In that case, you can use the get_deploy_history API again to check the status of the deployment process.
 
 == Remarks
 * None

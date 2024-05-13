@@ -127,7 +127,7 @@ export class DeployDeviceAppWaitResponse {
      * @param
      * - deviceId (str): Device ID
      * - status (str, optional): The notified deployment status for that device_id.
-     * - foundPosition (int, optional): index of the device id from devices array \
+     * - foundPosition (int, optional): index of the device id from Edge Devices array \
      *           of the ``get_device_app_deploys`` response. Defaults to 0.
      * - skip (int, optional): deploy status has captured, so skip for next iteration\
      *          inside the loop. Defaults to 0.
@@ -168,7 +168,7 @@ export class DeployDeviceAppWaitResponse {
      * - comment (str, optional) - Comment. *Max. 100 characters.
     * - callback (function, optional) : A function handle of the form - \
                 `deployDeviceAppCallback(deviceStatusArray)`, where `deviceStatusArray`\
-                is the array of the dictionary for each device :
+                is the array of the dictionary for each Edge Device :
     * ```ts
     *                [
     *                    {
@@ -182,7 +182,7 @@ export class DeployDeviceAppWaitResponse {
     * ```
                 - `deviceId`: is device ID,
                 - `status`: is the notified deployment status for that deviceId,
-                - `found_position`: index of the device id from devices array of the \
+                - `found_position`: index of the device id from Edge Devices array of the \
                         `get_device_app_deploys` response
                 - `skip`: deploy status has captured, so skip for next iteration \
                         inside the loop
@@ -354,7 +354,7 @@ export class DeployDeviceAppWaitResponse {
                                                 const skip = arrayDeviceJson['skip'];
                                                 /**
                                                  * Check whether it's first occurrence
-                                                 * Then Add status of the added device to
+                                                 * Then Add status of the added Edge Device to
                                                  * the global array
                                                  */
 
@@ -381,7 +381,7 @@ export class DeployDeviceAppWaitResponse {
                                                     ) {
                                                         /**
                                                          * Set the skip value as 1 of the respective
-                                                         * device in global array
+                                                         * Edge Device in global array
                                                          */
                                                         this.setValues(
                                                             devicesIdFromResponse,

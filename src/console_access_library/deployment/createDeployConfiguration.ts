@@ -124,7 +124,7 @@ export class CreateDeployConfiguration {
 
     /**
      * createDeployConfiguration - Register the deploy config information to deploy \
-     *                             to the following devices. \
+     *                             to the following Edge Device. \
      *                              - Firmware \
      *                              - AIModel.
      * @params

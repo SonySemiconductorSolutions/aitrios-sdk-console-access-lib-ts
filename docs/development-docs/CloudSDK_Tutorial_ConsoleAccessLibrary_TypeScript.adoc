@@ -24,6 +24,7 @@ The following is the required software you need to install in your system.
 * Install TypeScript globally
 ** npm install -g typescript
 
+[[anchor-id]]
 === "**Console Access Library**" API Specification
 Please refer the below procedure regarding how to refer the "**Console Access Library**" API specifications. 
 
@@ -61,115 +62,163 @@ The following is a step for installing and setting up "**Console Access Library*
     npm install
 ```
 
-=== Set configuration parameter to start "**Console Access Library**" sample application
-
-* Create the following configuration file and set the parameters:
+5. Network proxy setting
 +
-`samples/demo-console/console_access_settings.yaml`
-
-|===
-| When using "**Console Developer Edition**"
-a|
-[source,Yaml]
-----
-   console_access_settings:
-     console_endpoint: "__console_endpoint__"
-     portal_authorization_endpoint: "__portal_authorization_endpoint__"
-     client_secret: "__client_secret__"
-     client_id: "__client_id__"
-----
-|===
-
-|===
-| When using "**Console Enterprise Edition**"
-a|
-[source,Yaml]
-----
-   console_access_settings:
-    console_endpoint: "__base_url__"
-    portal_authorization_endpoint: "https://login.microsoftonline.com/'__tenant_id__'"
-    client_secret: "__client_secret__"
-    client_id: "__client_id__"
-    application_id: "__application_id__"
-----
-|===
-
-* Open the following file and change the parameters:
+To use the "**Console Access Library**" in a proxy environment, set the `**https_proxy**` environment variable
 +
-|===
-|samples/demo-console/demo_config.yaml
-a|
-[source,Yaml]
-----
-  demo_configuration:
-    device_id: "__device_id__"
-    get_model_device_id: "__get_model_device_id__"
-    publish_model_wait_response_device_id: "__publish_model_wait_response_device_id__"
-    model_id: "__model_id__"
-    model: "__model__"
-    converted: "__converted__"
-    vendor_name: "__vendor_name__"
-    comment: "__comment__"
-    input_format_param: "__input_format_param__"
-    network_config: "__network_config__"
-    network_type: "__network_type__"
-    metadata_format_id: "__metadata_format_id__"
-    project_name: "__project_name__"
-    model_platform: "__model_platform__"
-    project_type: "__project_type__"
-    latest_type: "__latest_type__"
-    config_id: "__config_id__"
-    sensor_loader_version_number: "__sensor_loader_version_number__"
-    sensor_version_number: "__sensor_version_number__"
-    model_version_number: "__model_version_number__"
-    ap_fw_version_number: "__ap_fw_version_number__"
-    device_ids: "__device_ids__"
-    replace_model_id: "__replace_model_id__"
-    timeout: "__timeout__"
-    compiled_flg: "__compiled_flg__"
-    app_name: "__app_name__"
-    version_number: "__version_number__"
-    file_name: "__file_name__"
-    entry_point: "__entry_point__"
-    schema_info: "__schema_info__"
-    device_name: "__device_name__"
-    connection_state: "__connection_state__"  
-    device_group_id: "__device_group_id__"
-    scope: "__scope__"
-    sub_directory_name: "__sub_directory_name__"
-    number_of_images: "__number_of_images__"
-    skip: "__skip__"
-    order_by: "__order_by__"
-    number_of_inference_results: "__number_of_inference_results__"
-    filter: "__filter__"
-    raw: "__raw__"
-    time: "__time__"
-----
-|===
-
-=== Network proxy setting
-
-To use the "**Console Access Library**" in a proxy environment, set the `**https_proxy**` environment variable.
-
 ```
-export https_proxy=http://username:password@proxyhost:port
+    export https_proxy=http://username:password@proxyhost:port
 ```
 
-=== Starting the App
+=== Set configuration parameter to launch the "Console Access Library" sample application
 
-To run the CLI demo, open cmd terminal from the  `**samples/demo-console**` folder, and run the following command.
+1. Create the Console Access settings and input the user environment. +
+Place the created file below `**samples**` with a file name as `**console_access_settings.yaml**`
++
+`samples/demo-console/console_access_settings.yaml` 
++
+|===
+|In case of using "**Console Developer Edition**"
+a|
+[source,Yaml]
+----
+    console_access_settings:
+        console_endpoint: "__console_endpoint__"
+        portal_authorization_endpoint: "__portal_authorization_endpoint__"
+        client_secret: "__client_secret__"
+        client_id: "__client_id__"
+----
+|===
++
+|===
+|In case of using "**Console Enterprise Edition**"
+a|
+[source,Yaml]
+----
+    console_access_settings:
+        console_endpoint: "__base_url__"
+        portal_authorization_endpoint: "https://login.microsoftonline.com/'__tenant_id__'"
+        client_secret: "__client_secret__"
+        client_id: "__client_id__"
+        application_id: "__application_id__"
+----
+|===
++
+When exporting from the environment variable, set the user environment value to the
+environment variable using the following command. +
+In that case, it is not required to create
+a configuration file for `**console_access_settings.yaml**`.
++ 
+```
+    export CONSOLE_ENDPOINT="__console_endpoint__"
+    export PORTAL_AUTHORIZATION_ENDPOINT="__portal_authorization_endpoint__"
+    export CLIENT_SECRET="__client_secret__"
+    export CLIENT_ID="__client_id__"
+    export APPLICATION_ID="__application_id__"    # Perform this setting only when using "Console Enterprise Edition"
+```
+
+2. Place the application's wasm file or Aot file prepared by the user under `**samples**`.
+3. Open the below file and change the parameters appropriately.
++
+`samples/demo_config.yaml`
++
+|===
+|In case of setting only the mandatory parameters
+a|
+----
+demo_configuration:
+   device_id: "__device_id__"
+   model_id: "__model_id__"
+   model: "__model__"
+   config_id: "__config_id__"
+   app_name: "__app_name__"
+   file_content_name: "__file_content_name__"
+   version_number: "__version_number__"
+   sub_directory_name: "__sub_directory_name__"
+----
+|===
++
+    ** Specify the DeviceID in `**device_id**`.
+    ** In `**model_id**`, specify the name of any model to be registered with "**Console**".
+    ** Specify SAS URI or signed URI of the model file in `**model**`.
+    ** In `**config_id**`, specify any Config name to be registered with "**Console**".
+    ** In `**app_name**`, specify the name of any Application to be registered with "**Console**".
+    ** In `**file_content_name**`, specify the file name of the wasm file or Aot file placed in step 2.
+    ** In `**version_number**`, specify the version of any Application to be registered with "**Console**".
+    ** Specify any subdirectory of the Edge device in `**sub_directory_name**`.
+    
++
+NOTE: Specify a value that does not overlap with the `**model_id**`,  `**config_id**`, `**app_name**` that
+is already registered in "**Console**".
++
+|===
+|When performing settings including all the option parameters
+a|
+----
+demo_configuration:
+   device_id: "__device_id__"
+   get_model_device_id: "__get_model_device_id__"
+   publish_model_wait_response_device_id: "__publish_model_wait_response_device_id__"
+   model_id: "__model_id__"
+   model: "__model__"
+   converted: "__converted__"
+   vendor_name: "__vendor_name__"
+   comment: "__comment__"
+   input_format_param: "__input_format_param__"
+   network_config: "__network_config__"
+   network_type: "__network_type__"
+   metadata_format_id: "__metadata_format_id__"
+   project_name: "__project_name__"
+   model_platform: "__model_platform__"
+   project_type: "__project_type__"
+   latest_type: "__latest_type__"
+   config_id: "__config_id__"
+   sensor_loader_version_number: "__sensor_loader_version_number__"
+   sensor_version_number: "__sensor_version_number__"
+   model_version_number: "__model_version_number__"
+   ap_fw_version_number: "__ap_fw_version_number__"
+   device_ids: "__device_ids__"
+   replace_model_id: "__replace_model_id__"
+   timeout: "__timeout__"
+   app_name: "__app_name__"
+   file_content_name: "__file_content_name__"
+   version_number: "__version_number__"
+   file_name: "__file_name__"
+   entry_point: "__entry_point__"
+   schema_info: "__schema_info__"
+   device_name: "__device_name__"
+   connection_state: "__connection_state__"
+   device_group_id: "__device_group_id__"
+   scope: "__scope__"
+   sub_directory_name: "__sub_directory_name__"
+   number_of_images: "__number_of_images__"
+   skip: "__skip__"
+   order_by: "__order_by__"
+   number_of_inference_results: "__number_of_inference_results__"
+   filter: "__filter__"
+   raw: "__raw__"
+   time: "__time__"
+   from_datetime: "__from_datetime__"
+   to_datetime: "__to_datetime__"
+----
+|===
+As for details on the optional parameters, please refer to the <<anchor-id,"**Console Access Library**" API specifications.>>
+
+=== Launch the Application
+
+To run the CLI demo, open cmd terminal from the `**samples/demo-console**` folder, and run the
+following command.
 
 ```
 npx ts-node index.ts
 ```
 
-NOTE: When APIs are batch-executed in demo-console, it may fail due to the impact of the processing time of 
-other APIs. In such case, execute the failed APIs separately.  +
-When executing APIs individually, open samples/demo-console/src/controller/apiexecutor.ts and 
-comment out the APIs that are not to be executed.
+NOTE: When APIs are batch-executed in demo-console, it may fail due to the impact of the 
+processing time of other APIs. In such case, execute the failed APIs separately. +
+When executing APIs individually, open samples/demo-console/src/controller/apiexecutor.ts and comment out the APIs that are not to be 
+executed.
 
 * Example:
-
 |===
 |samples/demo-console/src/controller/apiexecutor.ts
 a|
@@ -192,3 +241,34 @@ a|
         // }
 ----
 |===
+
+== How to use "**Console Access Library**"
+1. Import the `**Client**` and `**Config**` classes from "**Console Access Library**"
++
+[source,TypeScript]
+----
+    import { Client, Config } from 'consoleAccessLibrary'
+----
+
+2. Pass the connection information to `**Config**` as an argument and generate a `**Config**` instance. +
+Pass the `**Config**` instance as an argument to the `**createInstance**` method of `**Client**` and 
+generate a `**Client**` instance.
++
+[source,TypeScript]
+----
+    const config = new Config(
+        console_endpoint,
+        portal_authorization_endpoint,
+        client_id,
+        client_secret,
+        application_id    # Perform this setting only when using "Console Enterprise Edition"
+    )
+    const client = await Client.createInstance(config)
+----
+
+3. Call any API held by the instance variable of the `**Client**` instance
++
+[source,TypeScript]
+----
+    const res = await client?.deviceManagement?.getCommandParameterFile()
+----

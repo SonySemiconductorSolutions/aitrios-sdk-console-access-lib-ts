@@ -349,7 +349,7 @@ export class Deployment {
 
     /**
      * createDeployConfiguration - Register the deploy config information to deploy \
-     *                             to the following devices. \
+     *                             to the following Edge Devices. \
      *                              - Firmware \
      *                              - AIModel.
      * @params
@@ -416,7 +416,7 @@ export class Deployment {
     }
 
     /**
-     * deployByConfiguration - Provide a function for deploying the following to devices \
+     * deployByConfiguration - Provide a function for deploying the following to Edge Devices \
      *                          specified with deploy config. \
      *                          - Firmware \
      *                          - AIModel
@@ -612,7 +612,7 @@ export class Deployment {
     }
 
     /**
-     * getDeployHistory - Get the deploy history for a specified device.
+     * getDeployHistory - Get the deploy history for a specified Edge Device.
      * @params
      * - deviceId (str, required) - Device ID.
      * @returns
@@ -636,7 +636,7 @@ export class Deployment {
             |          |                      |            | App: DeviceApp                |
             +----------+----------------------+------------+-------------------------------+
             |          |``deploy_status``     | ``string`` | Set the deploy status. Target |
-            |          |                      |            | device deployment status.     |
+            |          |                      |            | Edge Device deployment status.|
             |          |                      |            | - Value definition            |
             |          |                      |            |                               |
             |          |                      |            | 0: Deploying                  |
@@ -661,7 +661,7 @@ export class Deployment {
             |          | ``current_target``   | ``string`` | Set the current target.       |
             +----------+----------------------+------------+-------------------------------+
             |          |``total_status``      | ``string`` | Set the deploy status.        |
-            |          |                      |            | Total status of devices       |
+            |          |                      |            | Total status of Edge Devices  |
             |          |                      |            | deployed together.            |
             |          |                      |            | - Value definition            |
             |          |                      |            |                               |
@@ -823,7 +823,7 @@ export class Deployment {
     }
 
     /**
-     * cancelDeployment -  Force cancellation of the device deployment status.
+     * cancelDeployment -  Force cancellation of the Edge Device deployment status.
      *  @params
      * - deviceId (str, required) - Device ID.
      * - deployId (str, required) - Deploy ID.
@@ -1128,7 +1128,7 @@ export class Deployment {
      * - comment (str, optional) - Comment. *Max. 100 characters.
     * - callback (function, optional) : A function handle of the form - \
                 `deployDeviceAppCallback(deviceStatusArray)`, where `deviceStatusArray`\
-                is the array of the dictionary for each device :
+                is the array of the dictionary for each Edge Device :
     * ```ts
     *                [
     *                    {
@@ -1142,7 +1142,7 @@ export class Deployment {
     * ```
                 - `deviceId`: is device ID,
                 - `status`: is the notified deployment status for that deviceId,
-                - `found_position`: index of the device id from devices array of the \
+                - `found_position`: index of the device id from Edge Devices array of the \
                         `get_device_app_deploys` response
                 - `skip`: deploy status has captured, so skip for next iteration \
                         inside the loop
@@ -1212,7 +1212,7 @@ export class Deployment {
     }
 
     /**
-     *  deployByConfigurationWaitResponse - Provide a function for deploying the following to devices \
+     *  deployByConfigurationWaitResponse - Provide a function for deploying the following to Edge Devices \
      *                          specified with deploy config. \
      *                          - Firmware \
      *                          - AIModel
@@ -1225,12 +1225,12 @@ export class Deployment {
      *           Default: ''
      * - comment (str, optional) : Max. 100 characters. Default: ''
     * - timeout (number, optional) : Timeout waiting for completion. There are cases where the \
-                edge AI device hangs up during the deployment process,\
+                Edge Device hangs up during the deployment process,\
                 so there are cases where the process remains in progress,\
                 so timeout to exit the process, 3600 seconds if not specified.
      * - callback (function, optional) : A function handle of the form - \
                 `deployCallback(deviceStatusArray)`, where `deviceStatusArray`
-                is the array of the dictionary for each device :
+                is the array of the dictionary for each Edge Device :
      * ```ts
      *            [
      *                {

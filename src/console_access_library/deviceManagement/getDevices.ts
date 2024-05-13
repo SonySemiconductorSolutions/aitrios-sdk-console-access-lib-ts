@@ -45,7 +45,7 @@ ajv.addKeyword('isNotEmpty', {
 });
 
 /**
- * This class implements API to get devices list information.
+ * This class implements API to get Edge Devices list information.
  */
 export class GetDevices {
     config: Config;
@@ -109,7 +109,7 @@ export class GetDevices {
     };
 
     /**
-     * getDevices- Get the device list information.
+     * getDevices- Get the Edge Device list information.
      * @params
      *  - 'deviceId' (str, optional) : Device ID. Partial match search. Default:""
      *  - 'deviceName' (str, optional) : Device name. Partial match search. Default:""
