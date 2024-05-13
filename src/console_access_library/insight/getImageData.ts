@@ -55,7 +55,7 @@ export class GetImageData {
     }
 
     /**
-    * Schema for API to get a (saved) image of the specified device.
+    * Schema for API to get a (saved) image of the specified Edge Device.
 
     Args:
         Schema (object): Ajv JSON schema Validator
@@ -108,6 +108,24 @@ export class GetImageData {
                     isNotEmpty: 'orderBy required or can\'t be empty string',
                 },
             },
+            fromDatetime: {
+                type: 'string',
+                isNotEmpty: false,
+                default: '',
+                errorMessage: {
+                    type: 'Invalid string for fromDatetime',
+                    isNotEmpty: 'can\'t be empty string',
+                }
+            },
+            toDatetime: {
+                type: 'string',
+                isNotEmpty: false,
+                default: '',
+                errorMessage: {
+                    type: 'Invalid string for toDatetime',
+                    isNotEmpty: 'can\'t be empty string',
+                }
+            }
         },
         required: ['deviceId', 'subDirectoryName'],
         additionalProperties: false,
@@ -120,7 +138,7 @@ export class GetImageData {
     };
 
     /**
-     * getImageData- Get a (saved) image of the specified device.
+     * getImageData- Get a (saved) image of the specified Edge Device.
      *  @params
      * - deviceId (str, required) : Device ID
      * - subDirectoryName(str, required) : Directory name
@@ -131,6 +149,8 @@ export class GetImageData {
      * - orderBy (str, optional)- Sort order: Sorted by date image was created. \
                                   Value range: DESC, ASC \
                                   Default: ASC.
+     * - fromDatetime(str, optional) : Date and time (From).   - Format: yyyyMMddhhmm
+     * - toDatetime(str, optional) : Date and time (To).  - Format: yyyyMMddhhmm
      * @returns
      * - Object: table:: Success Response
      
@@ -193,7 +213,9 @@ export class GetImageData {
      *    const numberOfImages = '__numberOfImages__';
      *    const skip = '__skip__';
      *    const orderBy = '__orderBy__';
-     *    const response= await client.insight.getImageData(deviceId, subDirectoryName, numberOfImages , skip, orderBy);
+     *    const fromDatetime = 'fromDatetime';
+     *    const toDatetime = 'toDatetime';
+     *    const response= await client.insight.getImageData(deviceId, subDirectoryName, numberOfImages , skip, orderBy, fromDatetime, toDatetime);
      **/
 
     async getImageData(
@@ -201,7 +223,9 @@ export class GetImageData {
         subDirectoryName: string,
         numberOfImages = 50,
         skip = 0,
-        orderBy = 'ASC'
+        orderBy = 'ASC',
+        fromDatetime = '',
+        toDatetime = ''
     ) {
         Logger.info('getImageData');
         let valid = true;
@@ -214,7 +238,9 @@ export class GetImageData {
                 subDirectoryName,
                 orderBy,
                 numberOfImages,
-                skip
+                skip,
+                fromDatetime,
+                toDatetime
             });
             if (!valid) {
                 Logger.error(`${validate.errors}`);
@@ -244,7 +270,9 @@ export class GetImageData {
                         'client_credentials',
                         orderBy,
                         execNumberOfImages,
-                        _skip
+                        _skip,
+                        fromDatetime,
+                        toDatetime
                     );
                 } else {
                     response = await this.api.getImages(
@@ -253,7 +281,9 @@ export class GetImageData {
                         undefined,
                         orderBy,
                         execNumberOfImages,
-                        _skip
+                        _skip,
+                        fromDatetime,
+                        toDatetime
                     );
                 }
                 if (response.data) {

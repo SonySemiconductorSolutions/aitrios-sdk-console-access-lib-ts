@@ -51,7 +51,7 @@ export class DeployByConfiguration {
     }
 
     /**
-    * Schema for API to get the deployment history for a specified device.
+    * Schema for API to get the deployment history for a specified Edge Device.
 
     Args:
         Schema (object): Ajv JSON schema Validator
@@ -102,7 +102,7 @@ export class DeployByConfiguration {
     };
 
     /**
-     *  deployByConfiguration - Provide a function for deploying the following to devices \
+     *  deployByConfiguration - Provide a function for deploying the following to Edge Devices \
      *                          specified with deploy config. \
      *                          - Firmware \
      *                          - AIModel

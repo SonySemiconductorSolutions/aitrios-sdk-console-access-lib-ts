@@ -50,7 +50,7 @@ export class GetLastInferenceAndImageData {
     }
 
     /**
-    * Schema for API to retrieve (saved) inference result metadata list information for a specified device.
+    * Schema for API to retrieve (saved) inference result metadata list information for a specified Edge Device.
 
     Args:
         Schema (object): Ajv JSON schema Validator

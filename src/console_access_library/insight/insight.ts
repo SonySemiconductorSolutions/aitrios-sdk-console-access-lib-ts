@@ -55,7 +55,7 @@ export class Insight {
     }
 
     /**
-     * getImages- Get the (saved) images for a specified device. \
+     * getImages- Get the (saved) images for a specified Edge Device. \
         *Application: Use to display an image in a UI
      *  @params
      * - deviceId (str, required) - Device ID.
@@ -68,6 +68,8 @@ export class Insight {
      * - orderBy (str, optional) - Sort order: Sorted by date image was created.
             Value range: DESC, ASC \
             Default: ASC. 
+     * - fromDatetime(str, optional) : Date and time (From).   - Format: yyyyMMddhhmm
+     * - toDatetime(str, optional) : Date and time (To).  - Format: yyyyMMddhhmm
      * @returns 
      * - Object: table:: Success Response
 
@@ -115,20 +117,24 @@ export class Insight {
         subDirectoryName: string,
         numberOfImages?: number,
         skip?: number,
-        orderBy?: string
+        orderBy?: string,
+        fromDatetime?: string,
+        toDatetime?: string
     ) {
         const response = this.getImagesObj.getImages(
             deviceId,
             subDirectoryName,
             numberOfImages,
             skip,
-            orderBy
+            orderBy,
+            fromDatetime,
+            toDatetime
         );
         return response;
     }
 
     /**
-     * getImageDirectories- Get the image save directory list of the devices for each device \
+     * getImageDirectories- Get the image save directory list of the Edge Devices for each device \
         group.
      * 
      *  @params 
@@ -204,7 +210,7 @@ export class Insight {
 
     /**
      * getInferenceResults- Get the (saved) inference result metadata list information for \
-        a specified device.
+        a specified Edge Device.
      *  @params
      *  - deviceId (str, required)  : Device ID.
      *  - filter (str, optional) : Search filter \
@@ -390,7 +396,7 @@ export class Insight {
     }
 
     /**
-     * getImageData- abstract function to get a (saved) image of the specified device.
+     * getImageData- abstract function to get a (saved) image of the specified Edge Device.
      *  @params
      * - deviceId (str, required) : Device ID
      * - subDirectoryName(str, required) : Directory name
@@ -401,6 +407,8 @@ export class Insight {
      * - orderBy (str, optional)- Sort order: Sorted by date image was created. \
                                   Value range: DESC, ASC \
                                   Default: ASC.
+     * - fromDatetime(str, optional) : Date and time (From).   - Format: yyyyMMddhhmm
+     * - toDatetime(str, optional) : Date and time (To).  - Format: yyyyMMddhhmm
      * @returns 
      * - Object: table:: Success Response
 
@@ -450,14 +458,18 @@ export class Insight {
         subDirectoryName: string,
         numberOfImages?: number,
         skip?: number,
-        orderBy?: string
+        orderBy?: string,
+        fromDatetime?: string,
+        toDatetime?: string
     ) {
         const response = this.getImageDataObj.getImageData(
             deviceId,
             subDirectoryName,
             numberOfImages,
             skip,
-            orderBy
+            orderBy,
+            fromDatetime,
+            toDatetime
         );
         return response;
     }
@@ -626,7 +638,7 @@ export class Insight {
     }
 
     /**
-     * getLastInferenceData- Retrieves the latest inference result metadata list information for a specified device.
+     * getLastInferenceData- Retrieves the latest inference result metadata list information for a specified Edge Device.
      *  @params
      * - deviceId (str, required) - The Device Id
      * @returns

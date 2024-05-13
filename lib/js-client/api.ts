@@ -6095,10 +6095,12 @@ export const InsightApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} [orderBy] Sort order: Sorted by date image was created. Value range: DESC, ASC
          * @param {number} [numberOfImages] Number of images to fetch. Value range: 0 to 256
          * @param {number} [skip] Number of images to skip fetching.
+         * @param {string} [fromDatetime] Date and time (From).   - Format: yyyyMMddhhmm
+         * @param {string} [toDatetime] Date and time (To).  - Format: yyyyMMddhhmm  
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getImages: async (deviceId: string, subDirectoryName: string, grantType?: string, orderBy?: string, numberOfImages?: number, skip?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getImages: async (deviceId: string, subDirectoryName: string, grantType?: string, orderBy?: string, numberOfImages?: number, skip?: number, fromDatetime?: string, toDatetime?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'deviceId' is not null or undefined
             assertParamExists('getImages', 'deviceId', deviceId)
             // verify required parameter 'subDirectoryName' is not null or undefined
@@ -6135,6 +6137,14 @@ export const InsightApiAxiosParamCreator = function (configuration?: Configurati
 
             if (skip !== undefined) {
                 localVarQueryParameter['skip'] = skip;
+            }
+
+            if (fromDatetime !== undefined) {
+                localVarQueryParameter['from_datetime'] = fromDatetime;
+            }
+
+            if (toDatetime !== undefined) {
+                localVarQueryParameter['to_datetime'] = toDatetime;
             }
 
 
@@ -6258,11 +6268,13 @@ export const InsightApiFp = function(configuration?: Configuration) {
          * @param {string} [orderBy] Sort order: Sorted by date image was created. Value range: DESC, ASC
          * @param {number} [numberOfImages] Number of images to fetch. Value range: 0 to 256
          * @param {number} [skip] Number of images to skip fetching.
+         * @param {string} [fromDatetime] Date and time (From).   - Format: yyyyMMddhhmm
+         * @param {string} [toDatetime] Date and time (To).  - Format: yyyyMMddhhmm  
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getImages(deviceId: string, subDirectoryName: string, grantType?: string, orderBy?: string, numberOfImages?: number, skip?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetImages200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getImages(deviceId, subDirectoryName, grantType, orderBy, numberOfImages, skip, options);
+        async getImages(deviceId: string, subDirectoryName: string, grantType?: string, orderBy?: string, numberOfImages?: number, skip?: number, fromDatetime?: string, toDatetime?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetImages200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getImages(deviceId, subDirectoryName, grantType, orderBy, numberOfImages, skip, fromDatetime, toDatetime, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6326,11 +6338,13 @@ export const InsightApiFactory = function (configuration?: Configuration, basePa
          * @param {string} [orderBy] Sort order: Sorted by date image was created. Value range: DESC, ASC
          * @param {number} [numberOfImages] Number of images to fetch. Value range: 0 to 256
          * @param {number} [skip] Number of images to skip fetching.
+         * @param {string} [fromDatetime] Date and time (From).   - Format: yyyyMMddhhmm
+         * @param {string} [toDatetime] Date and time (To).  - Format: yyyyMMddhhmm  
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getImages(deviceId: string, subDirectoryName: string, grantType?: string, orderBy?: string, numberOfImages?: number, skip?: number, options?: any): AxiosPromise<GetImages200Response> {
-            return localVarFp.getImages(deviceId, subDirectoryName, grantType, orderBy, numberOfImages, skip, options).then((request) => request(axios, basePath));
+        getImages(deviceId: string, subDirectoryName: string, grantType?: string, orderBy?: string, numberOfImages?: number, skip?: number, fromDatetime?: string, toDatetime?: string, options?: any): AxiosPromise<GetImages200Response> {
+            return localVarFp.getImages(deviceId, subDirectoryName, grantType, orderBy, numberOfImages, skip, fromDatetime, toDatetime, options).then((request) => request(axios, basePath));
         },
         /**
          * Get the (saved) inference result metadata list information for a specified device.
@@ -6396,12 +6410,14 @@ export class InsightApi extends BaseAPI {
      * @param {string} [orderBy] Sort order: Sorted by date image was created. Value range: DESC, ASC
      * @param {number} [numberOfImages] Number of images to fetch. Value range: 0 to 256
      * @param {number} [skip] Number of images to skip fetching.
+     * @param {string} [fromDatetime] Date and time (From).   - Format: yyyyMMddhhmm
+     * @param {string} [toDatetime] Date and time (To).  - Format: yyyyMMddhhmm  
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof InsightApi
      */
-    public getImages(deviceId: string, subDirectoryName: string, grantType?: string, orderBy?: string, numberOfImages?: number, skip?: number, options?: AxiosRequestConfig) {
-        return InsightApiFp(this.configuration).getImages(deviceId, subDirectoryName, grantType, orderBy, numberOfImages, skip, options).then((request) => request(this.axios, this.basePath));
+    public getImages(deviceId: string, subDirectoryName: string, grantType?: string, orderBy?: string, numberOfImages?: number, skip?: number, fromDatetime?: string, toDatetime?: string, options?: AxiosRequestConfig) {
+        return InsightApiFp(this.configuration).getImages(deviceId, subDirectoryName, grantType, orderBy, numberOfImages, skip, fromDatetime, toDatetime, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
