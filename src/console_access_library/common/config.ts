@@ -305,7 +305,7 @@ export class Config {
         };
 
         const silentRequest = {
-            scopes: [`api://${this.applicationId}/.default`]
+            scopes: [`${this.applicationId}/.default`]
         };
 
         const cca = new msal.ConfidentialClientApplication(msalConfig);

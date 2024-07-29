@@ -21,15 +21,15 @@
 |2022/11/16
 |Initial draft
 
-|2023/1/30
+|2023/01/30
 |Changed for "**Cloud SDK**" 0.2.0 +
 Unified the swinging of expressions +
 Updated the PDF build environment
 
-|2023/5/26
+|2023/05/26
 |Fixed parenthesis notation for tool names
 
-|2023/7/24
+|2023/07/24
 |Console Enterprise Edition support
 
 |2023/12/22
