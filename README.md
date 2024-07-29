@@ -169,7 +169,7 @@ To verify the TypeScript installation
 - None
 
 ## Get support
-- [Contact us](https://developer.aitrios.sony-semicon.com/en/edge-ai-sensing/contact-us/)
+- [Contact us](https://support.aitrios.sony-semicon.com/hc/en-us/requests/new)
 
 ## See also
 - ["**Developer Site**"](https://developer.aitrios.sony-semicon.com/en/edge-ai-sensing/)
