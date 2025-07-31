@@ -407,7 +407,7 @@ Example: <br>- Filter by model ID <br>  c.ModelID = &quot;0201020001790103&quot;
 <li>ModelID: string  match filter <br>eg. &quot;c.ModelID=&quot;0300000001590100&quot;&quot; \</li>
 <li>Image: boolean  match filter <br>eg. &quot;c.Image=true&quot; \</li>
 <li>T: string  match or more filter <br>eg. &quot;c.Inferences[0].T&gt;=&quot;20230412140050618&quot;&quot; \</li>
-<li>T: string  range filter <br>eg. &quot;EXISTS(SELECT VALUE i FROM i IN c.Inferences <br>WHERE i.T &gt;= &quot;20230412140023098&quot; AND <br>i.T &lt;= &quot;20230412140029728&quot;)&quot; \</li>
+<li>T: string  range filter <br>eg. &quot;eg. &quot;c.Inferences[0].T &gt;= \&quot;20230412140023098\&quot; AND <br>c.Inferences[0].T &lt;= \&quot;20230412140029728\&quot;&quot; </li>
 <li>_ts: number  match filter <br>eg. &quot;c._ts=1681308028&quot;
 Default: &quot;&quot;</li>
 </ul>
